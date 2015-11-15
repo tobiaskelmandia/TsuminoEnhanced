@@ -2,7 +2,7 @@
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
 // @version      1.0
-// @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com 
+// @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @match        http://www.tsumino.com/Enhanced
 // @include		 http://www.tsumino.com/*
