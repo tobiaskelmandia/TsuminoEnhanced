@@ -230,7 +230,7 @@ else
 	
 	
 	// Tsumino Enhanced Footer.
-	$("body").append("<div id='tsuminoEnhanced_footer'>Check out the project on <a href='http://www.google.com/'>Github</a>!</div>");
+	$("body").append("<div id='tsuminoEnhanced_footer'>Check out the project on <a href='https://github.com/tobiaskelmandia/TsuminoEnhanced'>Github</a>!</div>");
 	
 	
 	/* Commit options to GM_values. */
