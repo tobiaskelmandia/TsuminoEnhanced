@@ -12,8 +12,6 @@ I plan to add more features to this collection as time goes on.
 To access these features, simply click the blue "ENHANCED" link in the Tsumino navigation bar at the top of any Tsumino page.
 You'll be able to pick and choose which features you want, and which ones you don't.
 Any applicable options for the various features will be included on this configuration page.
-For the moment, you will need to refresh Tsumino after changing your Enhanced configuration.
-I'll address this in the next update, more than likely.
 
 -----
 
