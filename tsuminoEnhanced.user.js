@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.1.02
+// @version      1.1.03
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include      http://www.tsumino.com/Enhanced
@@ -101,6 +101,15 @@
 				$("tsuminoEnhanced_prevButton").css("display","none");
 			}
 			$("#tsuminoEnhanced_prevButton").attr("href",tsuminoEnhanced.reader.prevPageURL);
+			if(tsuminoEnhanced.reader.currentPage > 1)
+			{
+				
+				$("#tsuminoEnhanced_prevButton").css("display","inline");
+			}
+			else
+			{
+				$("#tsuminoEnhanced_prevButton").css("display","none");
+			}
 			
 			// Enhance Next Page Button
 			if ($("a:contains('NEXT ')").length)
@@ -114,6 +123,14 @@
 				$("tsuminoEnhanced_nextButton").css("display","none");
 			}
 			$("#tsuminoEnhanced_nextButton").attr("href",tsuminoEnhanced.reader.nextPageURL);
+			if(tsuminoEnhanced.reader.currentPage < tsuminoEnhanced.reader.totalPages)
+			{
+				$("#tsuminoEnhanced_nextButton").css("display","inline");
+			}
+			else
+			{
+				$("#tsuminoEnhanced_nextButton").css("display","none");
+			}
 			
 			// Enhance reader's image link.
 			var imageLink = $("a[href='"+tsuminoEnhanced.tsumino.readerPrefix+tsuminoEnhanced.reader.currentBook+"/"+tsuminoEnhanced.reader.nextPage+"']")[0];
