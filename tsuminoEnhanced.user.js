@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.1
+// @version      1.1.01
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include      http://www.tsumino.com/Enhanced
@@ -284,6 +284,8 @@
 			else
 			{
 				console.log("No more pages to load.");
+				tsuminoEnhanced.slideshow.clearTimeouts();
+				$("#tsuminoEnhanced_slideshowTimer").css("display","none");
 			}
 		}
 		else
