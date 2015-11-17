@@ -486,7 +486,7 @@
 		if(GM_getValue("unstickedHeaderEnabled")){$("#unstickedHeaderSwitch").prop("checked",true);}
 		
 		// Scroll to Image Options.
-		$("#readerOptions").append("<div id='scrollToImageGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='scrollToImageSwitch' name='scrollToImageSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='scrollToImageSwitch'></label></div><div class='fauxCell'><h2>Scroll To Image</h2></div></div><div class='optionDescription'>Automatically scrolls the page down to the top of the doujin image.<br/>This feature requires the Unstickied Header feature.<br /></div></div>");
+		$("#readerOptions").append("<div id='scrollToImageGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='scrollToImageSwitch' name='scrollToImageSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='scrollToImageSwitch'></label></div><div class='fauxCell'><h2>Automatic Repositioning</h2></div></div><div class='optionDescription'>Automatically scrolls the page down to the top of the doujin image.<br/>This feature requires the Unstickied Header feature.<br /></div></div>");
 		if(GM_getValue("scrollToImageEnabled")){$("#scrollToImageSwitch").prop("checked",true);}
 		
 		// If the slideshow wasn't enabled, but a delay was selected, remove the delay.
@@ -517,7 +517,7 @@
 			}
 		
 		// Seamless Reader Options.
-		$("#readerOptions").append("<div id='slideshowGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessReaderSwitch' name='seamlessReaderSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessReaderSwitch'></label></div><div class='fauxCell'><h2>Seamless Reader</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />This feature requires both the Unstickied Header and Scroll to Image features.</div></div>");
+		$("#readerOptions").append("<div id='slideshowGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessReaderSwitch' name='seamlessReaderSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessReaderSwitch'></label></div><div class='fauxCell'><h2>Seamless Viewing</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />This feature requires both the Unstickied Header and Scroll to Image features.</div></div>");
 		if(GM_getValue("seamlessReader_enabled")){$("#seamlessReaderSwitch").prop("checked",true);}
 		
 		// Return to Tsumino
