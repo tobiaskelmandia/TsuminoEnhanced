@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.1.01
+// @version      1.1.02
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include      http://www.tsumino.com/Enhanced
@@ -283,9 +283,9 @@
 			}
 			else
 			{
+				$("#tsuminoEnhanced_slideshowTimer").css("display","none");
 				console.log("No more pages to load.");
 				tsuminoEnhanced.slideshow.clearTimeouts();
-				$("#tsuminoEnhanced_slideshowTimer").css("display","none");
 			}
 		}
 		else
@@ -325,11 +325,11 @@
 		{
 			var bk = function()
 			{
-				changePage(prevPage);
+				tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.prevPage);
 			}
 			var fwd = function()
 			{
-				changePage(nextPage);
+				tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.nextPage);
 			}
 			switch (e.which)
 			{
@@ -396,6 +396,7 @@
 		if(tsuminoEnhanced.reader.currentPage > 1)
 		{
 			
+			$("#tsuminoEnhanced_prevButton").css("display","inline");
 			$("#tsuminoEnhanced_prevButton").click(function(){ tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.prevPage); });
 		}
 		else
