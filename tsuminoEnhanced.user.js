@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.0.1
+// @version      1.1
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include      http://www.tsumino.com/Enhanced
@@ -10,44 +10,140 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant		 GM_deleteValue
+// @grant 		 unsafeWindow
 // ==/UserScript==
-
-/* Predefine Misc. variables. */
-	var onConfig = false;
-
-/* Convenience variables. */
-	// Easier to type current location.
-	var currentLocation = window.location.href;
-	// Tsumino Enhanced configuration location.
-	var tsuminoEnhancedURL = "http://www.tsumino.com/Enhanced";
-
-/* Location Checking */
-	// Is the user on the reader?
-	var tsuminoReader = new RegExp("http://www.tsumino.com/Home/Read/*");
-	var onReader = tsuminoReader.exec(currentLocation);
-
-	// Is the user on the Tsumino Enhanced config page?
-	if (currentLocation == tsuminoEnhancedURL)
-	{
-		onConfig = true;
-	}
-	
 
 /* Establish tsuminoEnhanced object. */
 	var tsuminoEnhanced = {};
 	
-	// Tsumino Enhanced internal use utilities.
-	tsuminoEnhanced.utilities = {};
-	// Save current location and go to config.
-	tsuminoEnhanced.utilities.toConfig = function()
+	// Create Tsumino Object
+	tsuminoEnhanced.tsumino = {};
+	
+	// Create Reader Object
+	tsuminoEnhanced.reader = {};
+	
+	/* Predefine Misc. variables. */
+		tsuminoEnhanced.onConfig = false;
+
+	/* Convenience variables. */
+		// Tsumino Base URL
+		tsuminoEnhanced.tsumino.baseURL = "http://www.tsumino.com";
+		
+		// Tsumino Enhanced configuration location.
+		tsuminoEnhanced.configURL = tsuminoEnhanced.tsumino.baseURL + "/Enhanced";		
+		
+		// Current Location
+		tsuminoEnhanced.currentLocation = window.location.href;
+		
+		// Tsumino's book page URL structure
+		tsuminoEnhanced.tsumino.bookPrefix = "/Home/Book/";
+		
+		// Tsumino's reader page URL structure
+		tsuminoEnhanced.tsumino.readerPrefix = "/Home/Read/";
+		
+		// Tsumino's image retrieval URL structure
+		tsuminoEnhanced.tsumino.imgPrefix = "/Home/GetPage/";
+		
+		// Tsumino's full reader page URL
+		tsuminoEnhanced.reader.url = tsuminoEnhanced.tsumino.baseURL + tsuminoEnhanced.tsumino.readerPrefix;
+		
+		// Is the user on the reader?
+		tsuminoEnhanced.onReader = RegExp(tsuminoEnhanced.reader.url + "*").exec(tsuminoEnhanced.currentLocation);
+			// If so, create the bookInfo object.
+			if(tsuminoEnhanced.onReader) { tsuminoEnhanced.bookInfo = {}; }
+		
+		// Is the user on the Tsumino Enhanced config page?
+		if (tsuminoEnhanced.currentLocation == tsuminoEnhanced.configURL) { tsuminoEnhanced.onConfig = true; }
+	
+	// Tsumino Enhanced utilities.
+	tsuminoEnhanced.utility = {};
+	
+	// Make the reader more easily managed by Tsumino Enhanced.
+	tsuminoEnhanced.utility.enhanceReader = function()
 	{
-		GM_setValue("returnTo",currentLocation);
-		window.location.href = tsuminoEnhancedURL;
+		// Add an ID to the Return Button.
+		$("a:contains('RETURN')").attr("id","tsuminoEnhanced_returnButton");
+		
+		// Determine Book ID, current page, and total number of pages in the book.
+		var returnURL = $("#tsuminoEnhanced_returnButton").attr("href");
+		var pageData = $("h1:contains('Page')").text();
+		pageData = pageData.replace(" Page ","");
+		pageData = pageData.split(" of ");
+		
+		tsuminoEnhanced.reader.currentBook = parseInt(returnURL.replace(tsuminoEnhanced.tsumino.bookPrefix,""));
+		tsuminoEnhanced.reader.currentPage = parseInt(pageData[0]);
+		tsuminoEnhanced.reader.totalPages = parseInt(pageData[1]);
+		tsuminoEnhanced.reader.nextPage = tsuminoEnhanced.reader.currentPage+1;
+		tsuminoEnhanced.reader.prevPage = tsuminoEnhanced.reader.currentPage-1;
+		tsuminoEnhanced.reader.currentPageURL = tsuminoEnhanced.tsumino.readerPrefix + tsuminoEnhanced.reader.currentBook + "/" + tsuminoEnhanced.reader.currentPage;
+		tsuminoEnhanced.reader.nextPageURL = tsuminoEnhanced.tsumino.readerPrefix + tsuminoEnhanced.reader.currentBook + "/" + tsuminoEnhanced.reader.nextPage;
+		tsuminoEnhanced.reader.prevPageURL = tsuminoEnhanced.tsumino.readerPrefix + tsuminoEnhanced.reader.currentBook + "/" + tsuminoEnhanced.reader.prevPage;
+		
+		console.log("Current Book: " + tsuminoEnhanced.reader.currentBook);
+		console.log("Current Page: " + tsuminoEnhanced.reader.currentPage);
+		console.log("Total Pages: " + tsuminoEnhanced.reader.totalPages);
+		
+		/* Reader Page Manipulation */
+		
+			// Enhance pagination information section.
+			$("h1:contains('Page')").attr("id","tsuminoEnhanced_pagination")
+			$("#tsuminoEnhanced_pagination").html("Page <span id='tsuminoEnhanced_currentPage'>" + tsuminoEnhanced.reader.currentPage + "</span> of <span id='tsuminoEnhanced_totalPages'>" + tsuminoEnhanced.reader.totalPages + "</span>");
+		
+			// Enhance Previous Page button.
+			if ($("a:contains(' PREV')").length)
+			{
+				$("a:contains(' PREV')").remove();
+				$("#tsuminoEnhanced_returnButton").before("<a id=\"tsuminoEnhanced_prevButton\" class=\"book-read-button\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a>");
+			}
+			else
+			{
+				$("#tsuminoEnhanced_returnButton").before("<a id=\"tsuminoEnhanced_prevButton\" class=\"book-read-button\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a>");
+				$("tsuminoEnhanced_prevButton").css("display","none");
+			}
+			$("#tsuminoEnhanced_prevButton").attr("href",tsuminoEnhanced.reader.prevPageURL);
+			
+			// Enhance Next Page Button
+			if ($("a:contains('NEXT ')").length)
+			{
+				$("a:contains('NEXT ')").remove();
+				$("#tsuminoEnhanced_returnButton").after(" <a id=\"tsuminoEnhanced_nextButton\" class=\"book-read-button\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
+			}
+			else
+			{
+				$("#tsuminoEnhanced_returnButton").after(" <a id=\"tsuminoEnhanced_nextButton\" class=\"book-read-button\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
+				$("tsuminoEnhanced_nextButton").css("display","none");
+			}
+			$("#tsuminoEnhanced_nextButton").attr("href",tsuminoEnhanced.reader.nextPageURL);
+			
+			// Enhance reader's image link.
+			var imageLink = $("a[href='"+tsuminoEnhanced.tsumino.readerPrefix+tsuminoEnhanced.reader.currentBook+"/"+tsuminoEnhanced.reader.nextPage+"']")[0];
+			$(imageLink).attr("id","tsuminoEnhanced_imageLink");
+			$("#tsuminoEnhanced_imageLink").attr("href",tsuminoEnhanced.reader.nextPageURL);
 	}
+	
+	// Save current location and go to config.
+	tsuminoEnhanced.utility.toConfig = function()
+	{
+		if(!(tsuminoEnhanced.onReader && GM_getValue("seamlessReader_enabled")))
+		{
+			GM_setValue("returnTo",tsuminoEnhanced.currentLocation);
+		}
+		window.location.href = tsuminoEnhanced.configURL;
+	}
+	
 	// Return to saved location.
-	tsuminoEnhanced.utilities.backToTsumino = function()
+	tsuminoEnhanced.utility.backToTsumino = function()
 	{
 		window.location.href = GM_getValue("returnTo");
+	}
+	
+	tsuminoEnhanced.utility.scrollToImage = function()
+	{
+		var imgPos = $(".reader-page").position().top;
+		$('html, body').animate(
+		{
+			scrollTop: imgPos
+		}, 1);
 	}
 	
 
@@ -62,139 +158,279 @@
 	{
 		$(document).ready(function()
 		{
-			var imgPos = $(".reader-page").position().top;
-			$('html, body').animate(
-			{
-				scrollTop: imgPos
-			}, 1);
+			tsuminoEnhanced.utility.scrollToImage();
 		});
 	}
 
 /* Slideshow */
-	// Need to add slideshow time remaining ticker back.
-	tsuminoEnhanced.slideshow = function()
+	// Slideshow - Main Object
+	tsuminoEnhanced.slideshow = {};
+	
+	if(GM_getValue("slideshowDelay"))
 	{
-		$("body").focus();
-		var slideshowStatus = "";
-		var slideshowTimer = 0;
-		var trString = "";
-		var temp = currentLocation.split("/Read")[1];
-		var slideshowActive = "";
-		temp = temp.split("/");
-		if (temp.length == 2)
+		tsuminoEnhanced.slideshow.delayStr = GM_getValue("slideshowDelay").toString();
+		if (tsuminoEnhanced.slideshow.delayStr.length == 1) { tsuminoEnhanced.slideshow.delayStr = "0" + tsuminoEnhanced.slideshow.delayStr; }
+	}
+	
+	// Slideshow - Initialization
+	tsuminoEnhanced.slideshow.init = function()
+	{
+		// Create Display Bubble.
+		$("body").append("<div id='tsuminoEnhanced_slideshowTimer'></div>");
+		$("#tsuminoEnhanced_slideshowTimer").text(tsuminoEnhanced.slideshow.delayStr);
+		
+		// If on the first page of a doujin, set the slideshow to inactive.
+		if (tsuminoEnhanced.reader.currentPage == 1)
 		{
 			GM_setValue("slideshowActive", false);
 		}
+		
+		// If the Slideshow is enabled and active, run it.
 		if (GM_getValue("slideshowActive"))
 		{
-			slideshowActive = true;
-			slideshowStatus = "Active";
-			console.log("slideshow is active.");
+			console.log("Slideshow is active.");
+			if(GM_getValue("slideshowDisplayTimer")) { $("#tsuminoEnhanced_slideshowTimer").css("display","block"); }
 			console.log(GM_getValue("slideshowDelay") + " seconds until next page.");
-			slideshowRunSlideshow();
+			tsuminoEnhanced.slideshow.run();
 		}
 		else
 		{
-			slideshowActive = false;
-			slideshowStatus = "Inactive";
-			console.log("slideshow is currently inactive.");
+			console.log("Slideshow is currently inactive.");
 			if (GM_getValue("slideshowDelay"))
 			{
 				console.log("Stored delay between pages is set at: " + GM_getValue("slideshowDelay") + " seconds.");
 			}
 		}
+		
+		// Establish Slideshow Toggle keybind.
 		$(document).keydown(function(data)
 		{
 			var keyCode = $(data)[0].keyCode;
-			if (keyCode == 16)
+			if (keyCode == 16) // SHIFT
 			{
 				console.log("SHIFT KEY PRESSED.");
-				slideshowToggle();
+				tsuminoEnhanced.slideshow.toggle();
 			}
 		});
-
-		function slideshowToggle()
+	}
+	
+	// Slideshow - Toggle Active State
+	tsuminoEnhanced.slideshow.toggle = function()
+	{
+		if (GM_getValue("slideshowActive"))
 		{
-			if (slideshowActive)
-			{
-				console.log("Stopping slideshow.");
-				if (slideshowTimer)
-				{
-					clearTimeout(slideshowTimer);
-				}
-				if (slideshowTTtimeout)
-				{
-					clearTimeout(slideshowTTtimeout);
-					$("#slideshowCounter").html("");
-				}
-				GM_setValue("slideshowActive", false);
-				slideshowActive = false;
-				slideshowStatus = "Inactive";
-				//$("#slideshowStatus").html(slideshowStatus);
-			}
-			else
-			{
-				if (!GM_getValue("slideshowDelay"))
-				{
-					alert("You must specify an amount of time to spend per page.");
-				}
-				else
-				{
-					GM_setValue("slideshowActive", true);
-					slideshowActive = true;
-					slideshowStatus = "Active";
-					//$("#slideshowStatus").html(slideshowStatus);
-					slideshowRunSlideshow(true);
-				}
-			}
+			console.log("Stopping slideshow.");
+			tsuminoEnhanced.slideshow.clearTimeouts();
+			$("#tsuminoEnhanced_slideshowTimer").css("display","none");
+			GM_setValue("slideshowActive", false);
 		}
-
-		function slideshowTimerTicker(timeRemaining)
+		else
 		{
-			if (timeRemaining.toString().length == 1)
-			{
-				trString = "0" + timeRemaining;
-			}
-			else
-			{
-				trString = timeRemaining;
-			}
-			$("#slideshowCounter").html(" (" + trString + ")");
-			slideshowTTtimeout = setTimeout(function()
-			{
-				timeRemaining--;
-				slideshowTimerTicker(timeRemaining);
-			}, 1000);
+			GM_setValue("slideshowActive", true);
+			tsuminoEnhanced.slideshow.run(true);
+			if(GM_getValue("slideshowDisplayTimer")) { $("#tsuminoEnhanced_slideshowTimer").css("display","block"); }
 		}
-
-		function slideshowRunSlideshow(startNow)
+	}
+	
+	// Slideshow - Clear all timeouts.
+	tsuminoEnhanced.slideshow.clearTimeouts = function()
+	{
+		if (tsuminoEnhanced.slideshow.timer)
 		{
-			startNow || false;
-			var waitFor = parseInt(GM_getValue("slideshowDelay")) * 1000;
-			if (startNow)
+			clearTimeout(tsuminoEnhanced.slideshow.timer);
+		}
+		if (tsuminoEnhanced.slideshow.ticker)
+		{
+			clearTimeout(tsuminoEnhanced.slideshow.ticker);
+		}
+		console.log("Slideshow timeouts cleared.");
+	}
+	
+	
+	// Slideshow - Countdown. (For displaying time left until the next page loads.)
+	tsuminoEnhanced.slideshow.countdown = function(timeRemaining)
+	{
+		timeRemaining--;
+		if (timeRemaining.toString().length == 1) { trString = "0" + timeRemaining;	}
+		else { trString = timeRemaining; }
+		tsuminoEnhanced.slideshow.ticker = setTimeout(function()
+		{
+			$("#tsuminoEnhanced_slideshowTimer").text(trString);
+			tsuminoEnhanced.slideshow.countdown(timeRemaining);
+		}, 1000);
+	}
+	
+	// Slideshow - Run
+	tsuminoEnhanced.slideshow.run = function(startNow)
+	{
+		startNow || false;
+		var waitFor = parseInt(GM_getValue("slideshowDelay")) * 1000;
+		if (startNow)
+		{
+			if (tsuminoEnhanced.reader.currentPage < tsuminoEnhanced.reader.totalPages)
 			{
-				if ($("a:contains('NEXT ')").length)
+				// If Seamless Reader is also enabled:
+				if(GM_getValue("seamlessReader_enabled"))
 				{
 					console.log("Loading next page...");
-					$("a:contains('NEXT')")[0].click();
+					tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.nextPage);
 				}
 				else
 				{
-					console.log("No more pages to load.");
+					console.log("Moving to next page...");
+					$("#tsuminoEnhanced_nextButton")[0].click();
 				}
 			}
 			else
 			{
-				slideshowTimerTicker(parseInt(GM_getValue("slideshowDelay")));
-				slideshowTimer = setTimeout(slideshowRunSlideshow, waitFor, true);
+				console.log("No more pages to load.");
 			}
+		}
+		else
+		{
+			tsuminoEnhanced.slideshow.countdown(parseInt(GM_getValue("slideshowDelay")));
+			tsuminoEnhanced.slideshow.timer = setTimeout(tsuminoEnhanced.slideshow.run, waitFor, true);
 		}
 	}
 	
 /* Seamless Reader */
-	tsuminoEnhanced.seamlessReader = function()
+	// Seamless Reader Object
+	tsuminoEnhanced.seamlessReader = {};
+	
+	// Seamless Reader - Initialization
+	tsuminoEnhanced.seamlessReader.init = function()
+	{		
+		// Replace default Tsumino reader keybinds with Enhanced Seamless Reader keybinds.
+		tsuminoEnhanced.seamlessReader.replaceKeybinds();
+		
+		// Remove default Tsumino doujin navigation links.
+		$("#tsuminoEnhanced_prevButton").attr("href","javascript:;");
+		$("#tsuminoEnhanced_nextButton").attr("href","javascript:;");
+		$("#tsuminoEnhanced_imageLink").attr("href","javascript:;");
+		
+		// Update doujin navigation links.
+		tsuminoEnhanced.seamlessReader.updateLinks();
+	}
+	
+	// Seamless Reader - Replace Keybinds.
+	tsuminoEnhanced.seamlessReader.replaceKeybinds = function()
 	{
-		// Coming Soon...
+		// Disable default Tsumino Reader Keybinds.
+		unsafeWindow.$(document).off("keydown");
+		
+		// Use Enhanced Seamless Reader keybinds instead.
+		$(document).keydown(function(e)
+		{
+			var bk = function()
+			{
+				changePage(prevPage);
+			}
+			var fwd = function()
+			{
+				changePage(nextPage);
+			}
+			switch (e.which)
+			{
+				case 87: // w
+					window.scrollBy(0, -100);
+					break;
+				case 83: // s
+					window.scrollBy(0, 100);
+					break;
+				case 8: //back
+				case 37: //left
+				case 65: //a
+					bk();
+					break;
+				case 32: //space
+				case 13: //enter
+				case 39: //right
+				case 68: //d
+					fwd();
+					break;
+				default:
+					return;
+			}
+			e.preventDefault();
+		});
+	}
+	
+	// Seamless Reader - Load Image.
+	tsuminoEnhanced.seamlessReader.loadImage = function(pageNumber)
+	{
+		var dfd = jQuery.Deferred();
+		var newImageSrc = tsuminoEnhanced.tsumino.imgPrefix + tsuminoEnhanced.reader.currentBook + "/" + pageNumber;
+		console.log("Loading Image: " + pageNumber + "...");
+		$("body").append("<img id='tsuminoEnhanced_imagePreload_"+pageNumber+"' style='display:none;'>");
+		$("#tsuminoEnhanced_imagePreload_"+pageNumber).attr("src",newImageSrc);
+		$( "#tsuminoEnhanced_imagePreload_"+pageNumber).load(function() {
+			console.log("Image "+pageNumber+" loaded.");
+			$(".reader-img").attr("src",newImageSrc);
+			$("#tsuminoEnhanced_imagePreload_"+pageNumber).remove();
+			dfd.resolve();
+		});
+		return dfd.promise();
+	}
+	
+	// Seamless Reader - Update Links
+	tsuminoEnhanced.seamlessReader.updateLinks = function()
+	{
+		// Remove old click binds from links.
+		$("#tsuminoEnhanced_prevButton").off("click");
+		$("#tsuminoEnhanced_nextButton").off("click");
+		$("#tsuminoEnhanced_imageLink").off("click");
+		
+		// Establish updated click binds.
+		if(tsuminoEnhanced.reader.currentPage < tsuminoEnhanced.reader.totalPages)
+		{
+			$("#tsuminoEnhanced_nextButton").css("display","inline");
+			$("#tsuminoEnhanced_nextButton").click(function(){ tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.nextPage); });
+			$("#tsuminoEnhanced_imageLink").click(function(){ tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.nextPage); });
+		}
+		else
+		{
+			$("#tsuminoEnhanced_nextButton").css("display","none");
+		}
+		if(tsuminoEnhanced.reader.currentPage > 1)
+		{
+			
+			$("#tsuminoEnhanced_prevButton").click(function(){ tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.prevPage); });
+		}
+		else
+		{
+			$("#tsuminoEnhanced_prevButton").css("display","none");
+		}
+	}
+	
+	// Seamless Reader - Change Page
+	tsuminoEnhanced.seamlessReader.changePage = function(pageNumber)
+	{
+		var dfd = jQuery.Deferred();
+		$.when(tsuminoEnhanced.seamlessReader.loadImage(pageNumber)).then(function()
+		{
+			tsuminoEnhanced.utility.scrollToImage();
+			tsuminoEnhanced.reader.prevPage = pageNumber-1;
+			tsuminoEnhanced.reader.currentPage = pageNumber;
+			tsuminoEnhanced.reader.nextPage = pageNumber+1;
+			tsuminoEnhanced.seamlessReader.updateLinks();
+			tsuminoEnhanced.reader.currentPageURL = tsuminoEnhanced.tsumino.readerPrefix + tsuminoEnhanced.reader.currentBook + "/" + tsuminoEnhanced.reader.currentPage;
+			GM_setValue("returnTo",tsuminoEnhanced.reader.currentPageURL);
+			$("#tsuminoEnhanced_currentPage").html("<a href='"+tsuminoEnhanced.reader.currentPageURL+"'>"+tsuminoEnhanced.reader.currentPage+"</a>");
+			// If also using Slideshow:
+			if (GM_getValue("slideshowEnabled")) 
+			{
+				// And if the slideshow is active:
+				if (GM_getValue("slideshowActive"))
+				{
+					// Reset existing timeouts.
+					tsuminoEnhanced.slideshow.clearTimeouts();
+					$("#tsuminoEnhanced_slideshowTimer").text(tsuminoEnhanced.slideshow.delayStr);
+					tsuminoEnhanced.slideshow.run();
+				}
+			}
+			dfd.resolve();
+		});
+		return dfd.promise();
 	}
 
 /* Single Page View Reader */
@@ -205,10 +441,11 @@
 
 /* Page Modifications */
 	// If the user isn't already on the config page, include a link to it in Tsumino's navigation.
-	if (!onConfig)
+	if (!tsuminoEnhanced.onConfig)
 	{
 		$("ul.nav.navbar-nav:contains('FORUM')").append("<li><a id='tsuminoEnhancedNavlink' style='color:#22a7f0 !important; cursor:pointer;'>ENHANCED</a></li>");
-		$("#tsuminoEnhancedNavlink").click(function(){tsuminoEnhanced.utilities.toConfig();});
+		$("head").append("<style>#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none;}</style>");
+		$("#tsuminoEnhancedNavlink").click(function(){tsuminoEnhanced.utility.toConfig();});
 	}
 	// If the user is on the config page, write it.
 	else
@@ -229,14 +466,16 @@
 		if(GM_getValue("unstickedHeaderEnabled")){$("#unstickedHeaderSwitch").prop("checked",true);}
 		
 		// Scroll to Image Options.
-		$("#readerOptions").append("<div id='scrollToImageGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='scrollToImageSwitch' name='scrollToImageSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='scrollToImageSwitch'></label></div><div class='fauxCell'><h2>Scroll To Image</h2></div></div><div class='optionDescription'>Automatically scrolls the page down to the top of the doujin image.<br/>Works best in conjunction with the Unstickied Header feature.<br /></div></div>");
+		$("#readerOptions").append("<div id='scrollToImageGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='scrollToImageSwitch' name='scrollToImageSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='scrollToImageSwitch'></label></div><div class='fauxCell'><h2>Scroll To Image</h2></div></div><div class='optionDescription'>Automatically scrolls the page down to the top of the doujin image.<br/>This feature requires the Unstickied Header feature.<br /></div></div>");
 		if(GM_getValue("scrollToImageEnabled")){$("#scrollToImageSwitch").prop("checked",true);}
 		
 		// If the slideshow wasn't enabled, but a delay was selected, remove the delay.
 		if(!GM_getValue("slideshowEnabled")) { $("#slideshowDelay").val(GM_deleteValue("slideshowDelay")); }
 		
 		// Slideshow Options.
-		$("#readerOptions").append("<div id='slideshowGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='slideshowSwitch' name='slideshowSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' disabled='disabled' /><label for='slideshowSwitch'></label></div><div class='fauxCell'><h2>Slideshow</h2></div></div><div class='optionDescription'>Adds slideshow functionality to the reader.<br/>Press SHIFT while on the reader to toggle it on and off.<br/>Once you select how long the slideshow will remain on a page, you can enable this feature.<br/><br/><select id='slideshowDelay' name='slideshowDelay'><option value='default' disabled='disabled'>Spend how many seconds per page?</option></select></div></div>");
+		$("#readerOptions").append("<div id='slideshowGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='slideshowSwitch' name='slideshowSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' disabled='disabled' /><label for='slideshowSwitch'></label></div><div class='fauxCell'><h2>Slideshow</h2></div></div><div class='optionDescription'>Adds slideshow functionality to the reader.<br/>Press SHIFT while on the reader to toggle it on and off.<br/>Select how long the slideshow will remain on a page to enable this feature.<br/><br/><select id='slideshowDelay' name='slideshowDelay'><option value='default' disabled='disabled'>Spend how many seconds per page?</option></select></div></div>");
+		$("#slideshowGroup").append("<br /><div class='fauxRow'><div class='fauxCell switchContainer'><input id='slideshowDisplayTimerSwitch' name='slideshowDisplayTimerSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' disabled='disabled' /><label for='slideshowDisplayTimerSwitch'></label></div><div class='fauxCell'>Display Timer</div></div>");
+		
 		
 			// Populate slideshow delay select box.
 			var pluralize = "";
@@ -253,47 +492,106 @@
 				$("#slideshowSwitch").prop("checked",true); 
 				$("#slideshowSwitch").prop("disabled",false);
 				$("#slideshowDelay").val(GM_getValue("slideshowDelay"));
+				$("#slideshowDisplayTimerSwitch").prop("checked",GM_getValue("slideshowDisplayTimer"));
+				$("#slideshowDisplayTimerSwitch").prop("disabled",false);
 			}
 		
+		// Seamless Reader Options.
+		$("#readerOptions").append("<div id='slideshowGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessReaderSwitch' name='seamlessReaderSwitch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessReaderSwitch'></label></div><div class='fauxCell'><h2>Seamless Reader</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />This feature requires both the Unstickied Header and Scroll to Image features.</div></div>");
+		if(GM_getValue("seamlessReader_enabled")){$("#seamlessReaderSwitch").prop("checked",true);}
 		
 		// Return to Tsumino
 		$("body").append("<div id='tsuminoReturnButtonContainer'><a id='tsuminoReturnButton' class='tsuminoEnhancedButton'>Return to Tsumino</a></div>");
-		$("#tsuminoReturnButton").click(function(){ tsuminoEnhanced.utilities.backToTsumino(); });
+		$("#tsuminoReturnButton").click(function(){ tsuminoEnhanced.utility.backToTsumino(); });
 		
 		// Tsumino Enhanced Footer.
 		$("body").append("<div id='tsuminoEnhanced_footer'>Check out the project on <a href='https://github.com/tobiaskelmandia/TsuminoEnhanced'>Github</a>!</div>");
 		
 		
 	/* Commit options to GM_values. */
+	function commitOptions()
+	{
+		GM_setValue("unstickedHeaderEnabled", $("#unstickedHeaderSwitch").prop("checked"));
+		GM_setValue("scrollToImageEnabled", $("#scrollToImageSwitch").prop("checked"));
+		GM_setValue("slideshowEnabled", $("#slideshowSwitch").prop("checked"));
+		GM_setValue("seamlessReader_enabled", $("#seamlessReaderSwitch").prop("checked"));
+		GM_setValue("slideshowDelay", $("#slideshowDelay").val());
+		GM_setValue("slideshowDisplayTimer", $("#slideshowDisplayTimerSwitch").prop("checked"));
+	}
+	
+		// Unstickied Header		
 		$("#unstickedHeaderSwitch").change(function()
 		{
-			GM_setValue("unstickedHeaderEnabled", $("#unstickedHeaderSwitch").prop("checked"));
+			if(!$("#unstickedHeaderSwitch").prop("checked"))
+			{
+				$("#scrollToImageSwitch").prop("checked",false);
+				$("#seamlessReaderSwitch").prop("checked",false);
+			}
+			commitOptions();
 		});
+		
+		// Scroll to Image
 		$("#scrollToImageSwitch").change(function()
 		{
-			GM_setValue("scrollToImageEnabled", $("#scrollToImageSwitch").prop("checked"));
+			if($("#scrollToImageSwitch").prop("checked"))
+			{
+				$("#unstickedHeaderSwitch").prop("checked",true);
+			}
+			else
+			{
+				$("#seamlessReaderSwitch").prop("checked",false);
+			}
+			commitOptions();
 		});
+		
+		// Slideshow
 		$("#slideshowSwitch").change(function()
 		{
-			GM_setValue("slideshowEnabled", $("#slideshowSwitch").prop("checked"));
 			if(!$("#slideshowSwitch").prop("checked"))
 			{
 				$("#slideshowDelay").val( 'default' );
 				$("#slideshowSwitch").prop("disabled",true);
 				GM_deleteValue("slideshowDelay");
+				GM_deleteValue("slideshowDisplayTimer");
 			}
+			commitOptions();
 		});
-		$("#slideshowDelay").change(function()
+			// Slideshow Delay
+			$("#slideshowDelay").change(function()
+			{
+				if($("#slideshowDelay").val() != "default")
+				{
+					$("#slideshowSwitch").removeProp("disabled");
+					$("#slideshowSwitch").prop("checked",true);
+					$("#slideshowDisplayTimerSwitch").removeProp("disabled");
+					$("#slideshowDisplayTimerSwitch").prop("checked",true);
+				}
+				commitOptions();
+			});
+			// Slideshow Display Timer
+			$("#slideshowDisplayTimerSwitch").change(function()
+			{
+				commitOptions();
+			});
+			
+		// Seamless Reader
+		$("#seamlessReaderSwitch").change(function()
 		{
-			GM_setValue("slideshowDelay", $("#slideshowDelay").val());
-			$("#slideshowSwitch").removeProp("disabled");
+			if($("#seamlessReaderSwitch").prop("checked"))
+			{
+				$("#unstickedHeaderSwitch").prop("checked",true);
+				$("#scrollToImageSwitch").prop("checked",true);
+			}
+			commitOptions();
 		});
 	}
 
 /* If the user is on the Reader, apply any enabled Reader Options */
-	if (onReader)
+	if (tsuminoEnhanced.onReader)
 	{
+		tsuminoEnhanced.utility.enhanceReader();
 		if (GM_getValue("unstickedHeaderEnabled")) { tsuminoEnhanced.unstickyHeader(); }
 		if (GM_getValue("scrollToImageEnabled")) { tsuminoEnhanced.scrollToImage(); }
-		if (GM_getValue("slideshowEnabled")) { tsuminoEnhanced.slideshow(); }
+		if (GM_getValue("slideshowEnabled")) { tsuminoEnhanced.slideshow.init(); }
+		if (GM_getValue("seamlessReader_enabled")) { tsuminoEnhanced.seamlessReader.init(); }
 	}
