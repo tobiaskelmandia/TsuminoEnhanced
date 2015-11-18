@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.2
+// @version      1.2.1
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include      http://www.tsumino.com/Enhanced
@@ -18,13 +18,16 @@
 	var tsuminoEnhanced = {};
 	
 	// Current Version
-	tsuminoEnhanced.version = "1.2";
+	tsuminoEnhanced.version = "1.2.1";
 	
 	// Create Tsumino Object
 	tsuminoEnhanced.tsumino = {};
 	
 	// Create Reader Object
 	tsuminoEnhanced.reader = {};
+	
+	// Create Browse Object
+	tsuminoEnhanced.browse = {};
 	
 	/* Predefine Misc. variables. */
 		tsuminoEnhanced.onConfig = false;
@@ -48,8 +51,17 @@
 		// Tsumino's image retrieval URL structure
 		tsuminoEnhanced.tsumino.imgPrefix = "/Home/GetPage/";
 		
+		// Tsumino's browse page URL structure
+		tsuminoEnhanced.tsumino.browsePrefix = "/Home/Browse";
+		
 		// Tsumino's full reader page URL
 		tsuminoEnhanced.reader.url = tsuminoEnhanced.tsumino.baseURL + tsuminoEnhanced.tsumino.readerPrefix;
+		
+		// Tsumino's full browse page URL
+		tsuminoEnhanced.browse.url = tsuminoEnhanced.tsumino.baseURL + tsuminoEnhanced.tsumino.browsePrefix;
+		
+		// Is the user browsing?
+		if (tsuminoEnhanced.currentLocation == tsuminoEnhanced.browse.url) { tsuminoEnhanced.isBrowsing = true; }
 		
 		// Is the user on the reader?
 		tsuminoEnhanced.onReader = RegExp(tsuminoEnhanced.reader.url + "*").exec(tsuminoEnhanced.currentLocation);
@@ -481,6 +493,19 @@
 		// Coming Soon... (Pending Staff Approval)
 	}
 
+/* Bigger Browse Links */
+	tsuminoEnhanced.biggerBrowseLinks = function()
+	{
+		$(".overlay").each(function()
+		{
+			//console.log($(this).find("a.overlay-button")[0].href);
+			$(this).click(function()
+			{
+				$(this).find("a.overlay-button")[0].click();
+			});
+		});
+	}
+
 /* Page Modifications */
 	// If the user isn't already on the config page, include a link to it in Tsumino's navigation.
 	if (!tsuminoEnhanced.onConfig)
@@ -513,52 +538,59 @@
 			
 			// Tsumino Enhanced Stylesheet.
 			$("head").append("<style>#tsuminoEnhanced_brand,.tsuminoEnhancement,h2{color:#22a7f0}.cmn-toggle+label,select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}#tsuminoEnhanced_footer,#tsuminoEnhanced_header{background-color:#333;color:#FFF;padding:5px 15px;margin:0;font-weight:700}#tsuminoEnhanced_version{font-size:.5em}.cmn-toggle+label,select{cursor:pointer;outline:0}body{margin:0;background-color:#1a1a1a;font-family:'Open Sans';font-size:1em}a,a:visited{color:#23a7f0;text-decoration:none}a:hover{color:#23a7f0;text-decoration:underline}h1,h2,h3,h4,h5,h6{padding:0;margin:0;font-weight:700}#tsuminoEnhanced_header,h1{font-size:2em}h2{font-size:1.5em;margin-bottom:5px}#tsuminoEnhanced_footer{bottom:0;left:0;text-align:center;margin-top:15px}#tsuminoEnhanced_body{padding:15px;color:#fff}.options{padding-left:2em}.optionDescription{margin-top:10px}.optionGroup{margin-bottom:20px;border:2px solid #fff;border-radius:5px;background-color:#222;padding:15px}.cmn-toggle{position:absolute;margin-left:-9999px;visibility:hidden}.cmn-toggle+label{display:block;position:relative;user-select:none}input.cmn-toggle-round-flat+label{padding:2px;width:40px;height:20px;background-color:#ddd;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.cmn-toggle-round-flat+label:after,input.cmn-toggle-round-flat+label:before{display:block;position:absolute;content:''}input.cmn-toggle-round-flat+label:before{top:2px;left:2px;bottom:2px;right:2px;background-color:#1a1a1a;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.cmn-toggle-round-flat+label:after{top:4px;left:4px;bottom:4px;width:16px;background-color:#ddd;-webkit-border-radius:16px;-moz-border-radius:16px;-ms-border-radius:16px;-o-border-radius:16px;border-radius:16px;-webkit-transition:margin .4s,background .4s;-moz-transition:margin .4s,background .4s;-o-transition:margin .4s,background .4s;transition:margin .4s,background .4s}input.cmn-toggle-round-flat:checked+label{background-color:#22a7f0}input.cmn-toggle-round-flat:checked+label:after{margin-left:20px;background-color:#22a7f0}select,select option{background-color:#1a1a1a;color:#fff}.tsuminoEnhancedButton,.tsuminoEnhancedButton:hover{background-color:#23a8f0;color:#fff;text-decoration:none}select{border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;user-select:none}.fauxRow{display:table-row}.fauxCell{display:table-cell;vertical-align:middle}.switchContainer{padding-right:10px}.tsuminoEnhancedButton{-moz-border-radius:28px;-webkit-border-radius:28px;border-radius:30px;border:2px solid #ddd;display:inline-block;cursor:pointer;font-size:1.2em;font-weight:700;padding:5px 15px;text-shadow:0 1px 0 #12587d;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.tsuminoEnhancedButton:active{position:relative;top:1px}#tsuminoReturnButtonContainer{margin-left:15px}</style>");
-			
-			// Tsumino Reader Options header.
-			$("#tsuminoEnhanced_body").append("<h1>Reader Enhancements</h1>The following Enhancements only apply to the Tsumino Reader.<br /><br /><div id='readerOptions' class='options'></div>");
 
-			// If the slideshow wasn't enabled, but a delay was selected, remove the delay.
-			if(!GM_getValue("slideshow_enabled")) { $("#slideshow_delay").val(GM_deleteValue("slideshow_delay")); }
+			/* Tsumino Browsing Enhancements. */
+				$("#tsuminoEnhanced_body").append("<h1>Browsing Enhancements</h1>The following Enhancements only apply to the Tsumino Browse page.<br /><br /><div id='browsingEnhancements' class='options'></div>");
+				
+				// Thumbnail Links.
+				$("#browsingEnhancements").append("<div id='containerLinks_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='browseThumbnailLinks_switch' name='browseThumbnailLinks_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='browseThumbnailLinks_switch'></label></div><div class='fauxCell'><h2>Thumbnail Links</h2></div></div><div class='optionDescription'>You no longer have to specifically click View Info to load a Doujin.<br />Clicking anywhere on the thumbnail image will load the Doujin as well.</div></div>");
+				if(GM_getValue("browseThumbnailLinks_enabled")) { $("#browseThumbnailLinks_switch").prop("checked",true); }
 			
-			// Slideshow Options.
-			$("#readerOptions").append("<div id='slideshow_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='slideshow_switch' name='slideshow_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' disabled='disabled' /><label for='slideshow_switch'></label></div><div class='fauxCell'><h2>Slideshow</h2></div></div><div class='optionDescription'>Adds slideshow functionality to the reader.<br/>Press SHIFT while on the reader to toggle it on and off.<br/>Select how long the slideshow will remain on a page to enable this Enhancement.<br/><br/><select id='slideshow_delay' name='slideshow_delay'><option value='default' disabled='disabled'>Spend how many seconds per page?</option></select></div></div>");
-			$("#slideshow_group").append("<br /><div class='fauxRow'><div class='fauxCell switchContainer'><input id='slideshow_displayTimer_switch' name='slideshow_displayTimer_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' disabled='disabled' /><label for='slideshow_displayTimer_switch'></label></div><div class='fauxCell'>Display Timer</div></div>");
-			
-			
-				// Populate slideshow delay select box.
-				var pluralize = "";
-				var iDisp = "";
-				for (var i = 1; i < 61; i++)
-				{
-					if(i != 1) { pluralize = "s"; }
-					iDisp = i.toString();
-					if(iDisp.length==1){iDisp = "0"+i}
-					$("#slideshow_delay").append("<option value='" + i + "'>" + iDisp + " Second"+pluralize+"</option>");
-				}
-				if(GM_getValue("slideshow_enabled"))
-				{
-					$("#slideshow_switch").prop("checked",true); 
-					$("#slideshow_switch").prop("disabled",false);
-					$("#slideshow_delay").val(GM_getValue("slideshow_delay"));
-					$("#slideshow_displayTimer_switch").prop("checked",GM_getValue("slideshow_displayTimer"));
-					$("#slideshow_displayTimer_switch").prop("disabled",false);
-				}
-			
-			// Seamless Reader Options.
-			$("#readerOptions").append("<div id='slideshow_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessReader_switch' name='seamlessReader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessReader_switch'></label></div><div class='fauxCell'><h2>Seamless Viewing</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />Requires the following Enhancements:<br /><span class='tsuminoEnhancement'>Unstickied Header</span><br /><span class='tsuminoEnhancement'>Automatic Repositioning</span><br /><span class='tsuminoEnhancement'>Preloader</span></div></div>");
-			if(GM_getValue("seamlessReader_enabled")){$("#seamlessReader_switch").prop("checked",true);}
-			
-			// Unstickied Header Options.
-			$("#readerOptions").append("<div id='unstickiedHeaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='unstickedHeader_switch' name='unstickedHeader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='unstickedHeader_switch'></label></div><div class='fauxCell'><h2>Unstickied Header</h2></div></div><div class='optionDescription'>Prevents the Tsumino header from following you as you scroll down the page.<br/></div></div>");
-			if(GM_getValue("unstickedHeader_enabled")){$("#unstickedHeader_switch").prop("checked",true);}
-			
-			// Automatic Repositioning Options.
-			$("#readerOptions").append("<div id='automaticRepositioningGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='automaticRepositioning_switch' name='automaticRepositioning_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='automaticRepositioning_switch'></label></div><div class='fauxCell'><h2>Automatic Repositioning</h2></div></div><div class='optionDescription'>Automatically scrolls the page down to the top of the doujin image.<br/>Requires <span class='tsuminoEnhancement'>Unstickied Header</span>.<br /></div></div>");
-			if(GM_getValue("automaticRepositioning_enabled")){$("#automaticRepositioning_switch").prop("checked",true);}
-			
-			// Preloader Options.
-			$("#readerOptions").append("<div id='preloaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='preloader_switch' name='preloader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='preloader_switch'></label></div><div class='fauxCell'><h2>Preloader</h2></div></div><div class='optionDescription'>Automatically preloads the next image in the background.<br /></div></div>");
-			if(GM_getValue("preloader_enabled")){$("#preloader_switch").prop("checked",true);}
+			/* Tsumino Reader Enhancements */
+				$("#tsuminoEnhanced_body").append("<h1>Reader Enhancements</h1>The following Enhancements only apply to the Tsumino Reader.<br /><br /><div id='readerEnhancements' class='options'></div>");
+				
+				// If the slideshow wasn't enabled, but a delay was selected, remove the delay.
+				if(!GM_getValue("slideshow_enabled")) { $("#slideshow_delay").val(GM_deleteValue("slideshow_delay")); }
+				
+				// Slideshow Options.
+				$("#readerEnhancements").append("<div id='slideshow_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='slideshow_switch' name='slideshow_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' disabled='disabled' /><label for='slideshow_switch'></label></div><div class='fauxCell'><h2>Slideshow</h2></div></div><div class='optionDescription'>Adds slideshow functionality to the reader.<br/>Press SHIFT while on the reader to toggle it on and off.<br/>Select how long the slideshow will remain on a page to enable this Enhancement.<br/><br/><select id='slideshow_delay' name='slideshow_delay'><option value='default' disabled='disabled'>Spend how many seconds per page?</option></select></div></div>");
+				$("#slideshow_group").append("<br /><div class='fauxRow'><div class='fauxCell switchContainer'><input id='slideshow_displayTimer_switch' name='slideshow_displayTimer_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' disabled='disabled' /><label for='slideshow_displayTimer_switch'></label></div><div class='fauxCell'>Display Timer</div></div>");
+				
+				
+					// Populate slideshow delay select box.
+					var pluralize = "";
+					var iDisp = "";
+					for (var i = 1; i < 61; i++)
+					{
+						if(i != 1) { pluralize = "s"; }
+						iDisp = i.toString();
+						if(iDisp.length==1){iDisp = "0"+i}
+						$("#slideshow_delay").append("<option value='" + i + "'>" + iDisp + " Second"+pluralize+"</option>");
+					}
+					if(GM_getValue("slideshow_enabled"))
+					{
+						$("#slideshow_switch").prop("checked",true); 
+						$("#slideshow_switch").prop("disabled",false);
+						$("#slideshow_delay").val(GM_getValue("slideshow_delay"));
+						$("#slideshow_displayTimer_switch").prop("checked",GM_getValue("slideshow_displayTimer"));
+						$("#slideshow_displayTimer_switch").prop("disabled",false);
+					}
+				
+				// Seamless Reader Options.
+				$("#readerEnhancements").append("<div id='slideshow_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessReader_switch' name='seamlessReader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessReader_switch'></label></div><div class='fauxCell'><h2>Seamless Viewing</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />Requires the following Enhancements:<br /><span class='tsuminoEnhancement'>Unstickied Header</span><br /><span class='tsuminoEnhancement'>Automatic Repositioning</span><br /><span class='tsuminoEnhancement'>Preloader</span></div></div>");
+				if(GM_getValue("seamlessReader_enabled")){$("#seamlessReader_switch").prop("checked",true);}
+				
+				// Unstickied Header Options.
+				$("#readerEnhancements").append("<div id='unstickiedHeaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='unstickedHeader_switch' name='unstickedHeader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='unstickedHeader_switch'></label></div><div class='fauxCell'><h2>Unstickied Header</h2></div></div><div class='optionDescription'>Prevents the Tsumino header from following you as you scroll down the page.<br/></div></div>");
+				if(GM_getValue("unstickedHeader_enabled")){$("#unstickedHeader_switch").prop("checked",true);}
+				
+				// Automatic Repositioning Options.
+				$("#readerEnhancements").append("<div id='automaticRepositioningGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='automaticRepositioning_switch' name='automaticRepositioning_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='automaticRepositioning_switch'></label></div><div class='fauxCell'><h2>Automatic Repositioning</h2></div></div><div class='optionDescription'>Automatically scrolls the page down to the top of the doujin image.<br/>Requires <span class='tsuminoEnhancement'>Unstickied Header</span>.<br /></div></div>");
+				if(GM_getValue("automaticRepositioning_enabled")){$("#automaticRepositioning_switch").prop("checked",true);}
+				
+				// Preloader Options.
+				$("#readerEnhancements").append("<div id='preloaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='preloader_switch' name='preloader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='preloader_switch'></label></div><div class='fauxCell'><h2>Preloader</h2></div></div><div class='optionDescription'>Automatically preloads the next image in the background.<br /></div></div>");
+				if(GM_getValue("preloader_enabled")){$("#preloader_switch").prop("checked",true);}
 			
 			// Return to Tsumino
 			$("body").append("<div id='tsuminoReturnButtonContainer'><a id='tsuminoReturnButton' class='tsuminoEnhancedButton'>Return to Tsumino</a></div>");
@@ -578,6 +610,7 @@
 			GM_setValue("unstickedHeader_enabled", $("#unstickedHeader_switch").prop("checked"));
 			GM_setValue("automaticRepositioning_enabled", $("#automaticRepositioning_switch").prop("checked"));
 			GM_setValue("preloader_enabled", $("#preloader_switch").prop("checked"));
+			GM_setValue("browseThumbnailLinks_enabled", $("#browseThumbnailLinks_switch").prop("checked"));
 		}
 		
 			// Unstickied Header		
@@ -656,10 +689,24 @@
 				}
 				commitOptions();
 			});
+			
+			$("#browseThumbnailLinks_switch").change(function()
+			{
+				commitOptions();
+			});
 		});
 	}
 
-/* If the user is on the Reader, apply any enabled Reader Options */
+/* If the user is browsing, apply any enabled Browsing Enhancements */
+	if (tsuminoEnhanced.isBrowsing)
+	{
+		$( document ).ready(function()
+		{
+			if (GM_getValue("browseThumbnailLinks_enabled")) { tsuminoEnhanced.biggerBrowseLinks(); }
+		});
+	}
+	
+/* If the user is on the Reader, apply any enabled Reader Enhancements */
 	if (tsuminoEnhanced.onReader)
 	{
 		// Run when DOM is ready.
