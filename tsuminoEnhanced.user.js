@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.1.2
+// @version      1.2
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include      http://www.tsumino.com/Enhanced
@@ -18,7 +18,7 @@
 	var tsuminoEnhanced = {};
 	
 	// Current Version
-	tsuminoEnhanced.version = "1.1.2";
+	tsuminoEnhanced.version = "1.2";
 	
 	// Create Tsumino Object
 	tsuminoEnhanced.tsumino = {};
