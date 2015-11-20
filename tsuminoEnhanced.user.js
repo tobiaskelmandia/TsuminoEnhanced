@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.3.1.2
+// @version      1.3.1.3
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include		 http://www.tsumino.com/*
@@ -23,10 +23,10 @@
 var tsuminoEnhanced = {};
 
 // Current Version
-tsuminoEnhanced.version = "1.3.1.2";
+tsuminoEnhanced.version = "1.3.1.3";
 
 // Is Debug mode on?
-tsuminoEnhanced.debugging = false;
+tsuminoEnhanced.debugging = true;
 
 // Tsumino Enhanced loaded at
 tsuminoEnhanced.startedAt = new Date();
@@ -955,47 +955,65 @@ tsuminoEnhanced.seamlessViewing.changePage = function(pageNumber)
 		window.location.href = tsuminoEnhanced.currentLocation + "#" + pageNumber;
 	}
 	
-	$("#tsuminoEnhanced_preloaderMessage").css("display","block");
-	if((tsuminoEnhanced.preloader.loader) && (pageNumber == (tsuminoEnhanced.reader.currentPage + 1)))
+	// Make sure the page is in range first.
+	if((pageNumber <= tsuminoEnhanced.reader.totalPages) && (pageNumber > 0))
 	{
-		tsuminoEnhanced.utility.log("Preloader is working. Waiting for next page to load.");
-		$.when(tsuminoEnhanced.preloader.loader).then(function()
-		{
-			changePageCommon(pageNumber);
-			tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
-			
-			dfd.resolve();
-		});
+		// Display the loading message.
+		$("#tsuminoEnhanced_preloaderMessage").css("display","block");
 		
-	}
-	else if((!tsuminoEnhanced.preloader.loader) && (pageNumber == (tsuminoEnhanced.reader.currentPage + 1)))
-	{
-		tsuminoEnhanced.utility.log("Preloader is not ready yet. Trying again in 1 second.");
-		setTimeout(function()
+		// If loading the next page.
+		if((tsuminoEnhanced.preloader.loader) && (pageNumber == (tsuminoEnhanced.reader.currentPage + 1)))
 		{
-			tsuminoEnhanced.seamlessViewing.changePage(pageNumber);
-			dfd.resolve();
-		},1000);
+			tsuminoEnhanced.utility.log("Preloader is working. Waiting for next page to load.");
+			// Wait for the preloader to finish, then continue.
+			$.when(tsuminoEnhanced.preloader.loader).then(function()
+			{
+				changePageCommon(pageNumber);
+				tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
+				dfd.resolve();
+			});
+		}
+		// If the user tried to progress before the page was loaded, wait for the preloader to be ready.
+		else if((!tsuminoEnhanced.preloader.loader) && (pageNumber == (tsuminoEnhanced.reader.currentPage + 1)))
+		{
+			tsuminoEnhanced.utility.log("Preloader is not ready yet. Trying again in 1 second.");
+			
+			// Check every second to see if the preloader is ready.
+			setTimeout(function()
+			{
+				tsuminoEnhanced.seamlessViewing.changePage(pageNumber);
+				dfd.resolve();
+			},1000);
+		}
+		// If the requested page wasn't already being preloaded, preload it.
+		else
+		{
+			tsuminoEnhanced.preloader.loader = tsuminoEnhanced.preloader.init(pageNumber);
+			// Once the requested page is preloaded, continue.
+			$.when(tsuminoEnhanced.preloader.loader).then(function()
+			{
+				changePageCommon(pageNumber);
+				tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
+				dfd.resolve();
+			});
+		}
 	}
+	// If the user requested a page that was less than 1 or greater than the total number of pages, stop.
 	else
 	{
-		tsuminoEnhanced.preloader.loader = tsuminoEnhanced.preloader.init(pageNumber);
-		$.when(tsuminoEnhanced.preloader.loader).then(function()
-		{
-			changePageCommon(pageNumber);
-			tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
-
-			dfd.resolve();
-		});
+		tsuminoEnhanced.utility.log("Image " + pageNumber + " is out of range and will not be loaded.");
+		dfd.resolve();
 	}
 	return dfd.promise();
 }
 
 // Seamless Reader - Redirection
+// Only run if the user is on the reader.
 tsuminoEnhanced.seamlessViewing.redirection = function()
 {
 	var temp = tsuminoEnhanced.currentLocation;
 	splitLocation = temp.split("#");
+	// If there is a # in the URL. (Used to identify the actual page number.)
 	if(splitLocation.length > 1)
 	{
 		tsuminoEnhanced.utility.log("Seamless Viewing is redirecting you...");
@@ -1056,9 +1074,9 @@ tsuminoEnhanced.singlePageView = function()
 }
 
 /*******************************************************
-* Bigger Links - Browsing Enhancement
+* Thumbnail Links - Browsing Enhancement
 *******************************************************/
-tsuminoEnhanced.biggerBrowseLinks = function()
+tsuminoEnhanced.browseThumbnailLinks = function()
 {
 	tsuminoEnhanced.utility.log("Thumbnail Links Enhancement is running.");
 	$(".overlay").each(function()
@@ -1264,7 +1282,6 @@ else
 		/*******************************************************
 		* End of Enhancement Configuration Options
 		*******************************************************/
-		
 		// Add the "Return to Tsumino" button.
 		$("body").append("<div id='tsuminoReturnButtonContainer'><a id='tsuminoReturnButton' class='tsuminoEnhancedButton'>Return to Tsumino</a></div>");
 		$("#tsuminoReturnButton").click(function(){ tsuminoEnhanced.utility.backToTsumino(); });
@@ -1510,7 +1527,7 @@ if (tsuminoEnhanced.isBrowsing)
 {
 	$( document ).ready(function()
 	{
-		if (GM_getValue("browseThumbnailLinks_enabled")) { tsuminoEnhanced.biggerBrowseLinks(); }
+		if (GM_getValue("browseThumbnailLinks_enabled")) { tsuminoEnhanced.browseThumbnailLinks(); }
 	});
 }
 
