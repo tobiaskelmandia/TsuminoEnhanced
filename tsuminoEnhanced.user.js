@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.3.1.0
+// @version      1.3.1.1
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include		 http://www.tsumino.com/*
@@ -23,10 +23,10 @@
 var tsuminoEnhanced = {};
 
 // Current Version
-tsuminoEnhanced.version = "1.3.1.0";
+tsuminoEnhanced.version = "1.3.1.1";
 
 // Is Debug mode on?
-tsuminoEnhanced.debugging = true;
+tsuminoEnhanced.debugging = false;
 
 // Tsumino Enhanced loaded at
 tsuminoEnhanced.startedAt = new Date();
@@ -830,7 +830,8 @@ tsuminoEnhanced.seamlessViewing.init = function()
 	tsuminoEnhanced.seamlessViewing.updateLinks();
 	
 	// Add the loading indicator.
-	$(".reader-img").parent().parent().append("<div class='tsuminoEnhanced_bubbleDisplay' id='tsuminoEnhanced_preloaderMessage'>Loading...</div>");
+	$(".reader-img").parent().parent().append("<div id='tsuminoEnhanced_messageContainer' style='width:inherit; position:absolute; float:right; bottom:5px;'></div>");
+	$("#tsuminoEnhanced_messageContainer").append("<div class='tsuminoEnhanced_bubbleDisplay' id='tsuminoEnhanced_preloaderMessage'>Loading...</div>");
 }
 
 // Seamless Reader - Replace Keybinds.
@@ -1087,7 +1088,7 @@ if (!tsuminoEnhanced.onConfig)
 		$("#tsuminoEnhancedNavlink").click(function(){tsuminoEnhanced.utility.toConfig();});
 		
 		// Add Tsumino Enhanced styles.
-		$("head").append("<style>.tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_preloaderMessage{position:absolute;float:right;bottom:5px;right:5px}</style>");
+		$("head").append("<style>.tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_preloaderMessage{margin-left:auto;margin-right:auto; width:8em; text-align:center;}</style>");
 	});
 }
 /*******************************************************
