@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.3.0.1
+// @version      1.3.1.0
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include		 http://www.tsumino.com/*
@@ -23,10 +23,19 @@
 var tsuminoEnhanced = {};
 
 // Current Version
-tsuminoEnhanced.version = "1.3.0.1";
+tsuminoEnhanced.version = "1.3.1.0";
+
+// Is Debug mode on?
+tsuminoEnhanced.debugging = true;
+
+// Tsumino Enhanced loaded at
+tsuminoEnhanced.startedAt = new Date();
 
 // Create Tsumino Object
 tsuminoEnhanced.tsumino = {};
+
+// Create Book Object
+tsuminoEnhanced.book = {};
 
 // Create Reader Object
 tsuminoEnhanced.reader = {};
@@ -36,6 +45,9 @@ tsuminoEnhanced.browse = {};
 
 // Create Search Object
 tsuminoEnhanced.search = {};
+
+// Create Record Keeper Object
+tsuminoEnhanced.recordKeeper = {};
 
 /*******************************************************
 * Convenience variables.
@@ -101,7 +113,7 @@ tsuminoEnhanced.tsumino.bookURL = tsuminoEnhanced.tsumino.baseURL + tsuminoEnhan
 tsuminoEnhanced.tsumino.browseTagsURL = tsuminoEnhanced.tsumino.baseURL + tsuminoEnhanced.tsumino.browseTagsPrefix;
 	
 /*******************************************************
-Location Detection Variables
+* Location Detection Variables
 *******************************************************/
 // Is the user browsing?
 tsuminoEnhanced.isBrowsing = RegExp(tsuminoEnhanced.tsumino.browseURL + "*").exec(tsuminoEnhanced.currentLocation);
@@ -112,9 +124,8 @@ if (tsuminoEnhanced.currentLocation == tsuminoEnhanced.tsumino.searchURL) { tsum
 // Is the user on the browse tags page?
 tsuminoEnhanced.onBrowseTags = RegExp(tsuminoEnhanced.tsumino.browseTagsURL + "*").exec(tsuminoEnhanced.currentLocation);
 
-// Is the user on the reader? If so, create the bookInfo object.
+// Is the user on the reader?
 tsuminoEnhanced.onReader = RegExp(tsuminoEnhanced.tsumino.readerURL + "*").exec(tsuminoEnhanced.currentLocation);
-if(tsuminoEnhanced.onReader) { tsuminoEnhanced.bookInfo = {}; }
 
 // Is the user on the Book Info page?
 tsuminoEnhanced.onBook = RegExp(tsuminoEnhanced.tsumino.bookURL + "*").exec(tsuminoEnhanced.currentLocation);
@@ -123,12 +134,30 @@ tsuminoEnhanced.onBook = RegExp(tsuminoEnhanced.tsumino.bookURL + "*").exec(tsum
 if (tsuminoEnhanced.currentLocation == tsuminoEnhanced.configURL) { tsuminoEnhanced.onConfig = true; }
 
 /*******************************************************
-Tsumino Enhanced Utilities
+* Tsumino Enhanced Utilities
 *******************************************************/
 tsuminoEnhanced.utility = {};
 
+
 /*******************************************************
-Simple "Replace All" utility function.
+* Page killing utility. Should always be run ASAP.
+*******************************************************/
+tsuminoEnhanced.utility.killPage = function()
+{
+	// Kill the page early.
+	document.replaceChild 
+	(
+		document.importNode (document.implementation.createHTMLDocument("").documentElement, true),
+		document.documentElement
+	);
+	
+	// Apply preliminary background color for smooth rendering appearance.
+	document.head.innerHTML = '<style>body{background-color:#1a1a1a;}</style>';
+	window.stop();
+}
+
+/*******************************************************
+* Simple "Replace All" utility function.
 *******************************************************/
 tsuminoEnhanced.utility.replaceAll = function(str, find, replace)
 {
@@ -138,6 +167,30 @@ tsuminoEnhanced.utility.replaceAll = function(str, find, replace)
 	}
 	return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
+
+/*******************************************************
+* Tsumino Enhanced logging utility.
+* Only log to console if debug mode is enabled.
+*******************************************************/
+tsuminoEnhanced.utility.log = function(logData)
+{
+	// Only log if we're debugging.
+	if(tsuminoEnhanced.debugging)
+	{
+		if(typeof logData == "string")
+		{
+			var ct = new Date();
+			var dt = ct - tsuminoEnhanced.startedAt;
+			console.log(dt + ": " + logData);
+		}
+		else
+		{
+			console.log(logData);
+		}
+	}
+}
+tsuminoEnhanced.utility.log("Tsumino Enhanced has started.");
+
 
 /*******************************************************
 * Upgrade Handling Utility
@@ -150,23 +203,39 @@ tsuminoEnhanced.utility.upgradeHandler = function()
 	// If this version of Tsumino Enhanced is different, proceed with upgrade handling.
 	if(GM_getValue("previousVersion") != tsuminoEnhanced.version)
 	{
+		tsuminoEnhanced.utility.log("Upgrade handler is working...");
+		
 		// If Unstickied Header was previously enabled, but no scope is set, set the scope to "Reader".
 		if(GM_getValue("unstickedHeader_enabled")) 
 		{ 
 			if(!GM_getValue("unstickedHeader_scope")) { GM_setValue("unstickedHeader_scope","Reader"); }
 		}
 		
+		// Update Seamless Reader to Seamless Viewing.
+		if(GM_getValue("seamlessReader_enabled")) 
+		{ 
+			GM_setValue("seamlessViewing_enabled",true);
+			GM_deleteValue("seamlessReader_enabled");
+		}
+		else
+		{
+			GM_setValue("seamlessViewing_enabled",false);
+		}
+		
 		// When upgrade handling is complete, set previous version to current version.
 		GM_setValue("previousVersion",tsuminoEnhanced.version);
+		tsuminoEnhanced.utility.log("Upgrade handler has finished working.");
 	}
 }
 
 /*******************************************************
-Enhance the Reader.
-Makes the reader more easily managed by Tsumino Enhanced.
+* Enhance the Reader.
+* Makes the reader more easily managed by Tsumino Enhanced.
 *******************************************************/
 tsuminoEnhanced.utility.enhanceReader = function()
 {
+	tsuminoEnhanced.utility.log("Performing reader enhancements...");
+	
 	// Add an ID to the Return Button.
 	$("a:contains('RETURN')").attr("id","tsuminoEnhanced_returnButton");
 	
@@ -185,63 +254,65 @@ tsuminoEnhanced.utility.enhanceReader = function()
 	tsuminoEnhanced.reader.nextPageURL = tsuminoEnhanced.tsumino.readerPrefix + tsuminoEnhanced.reader.currentBook + "/" + tsuminoEnhanced.reader.nextPage;
 	tsuminoEnhanced.reader.prevPageURL = tsuminoEnhanced.tsumino.readerPrefix + tsuminoEnhanced.reader.currentBook + "/" + tsuminoEnhanced.reader.prevPage;
 	
-	console.log("Current Book: " + tsuminoEnhanced.reader.currentBook);
-	console.log("Current Page: " + tsuminoEnhanced.reader.currentPage);
-	console.log("Total Pages: " + tsuminoEnhanced.reader.totalPages);
+	tsuminoEnhanced.utility.log("Current Book: " + tsuminoEnhanced.reader.currentBook);
+	tsuminoEnhanced.utility.log("Current Page: " + tsuminoEnhanced.reader.currentPage);
+	tsuminoEnhanced.utility.log("Total Pages: " + tsuminoEnhanced.reader.totalPages);
 	
-	/* Reader Page Manipulation */
-	
-		// Enhance pagination information section.
-		$("h1:contains('Page')").attr("id","tsuminoEnhanced_pagination")
-		$("#tsuminoEnhanced_pagination").html("Page <span id='tsuminoEnhanced_currentPage'>" + tsuminoEnhanced.reader.currentPage + "</span> of <span id='tsuminoEnhanced_totalPages'>" + tsuminoEnhanced.reader.totalPages + "</span>");
-	
-		// Enhance Previous Page button.
-		if ($("a:contains(' PREV')").length)
-		{
-			$("a:contains(' PREV')").remove();
-			$("#tsuminoEnhanced_returnButton").before("<a id=\"tsuminoEnhanced_prevButton\" class=\"book-read-button\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a>");
-		}
-		else
-		{
-			$("#tsuminoEnhanced_returnButton").before("<a id=\"tsuminoEnhanced_prevButton\" class=\"book-read-button\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a>");
-			$("tsuminoEnhanced_prevButton").css("display","none");
-		}
-		$("#tsuminoEnhanced_prevButton").attr("href",tsuminoEnhanced.reader.prevPageURL);
-		if(tsuminoEnhanced.reader.currentPage > 1)
-		{
-			
-			$("#tsuminoEnhanced_prevButton").css("display","inline");
-		}
-		else
-		{
-			$("#tsuminoEnhanced_prevButton").css("display","none");
-		}
+	/*******************************************************
+	* Reader Page Manipulation
+	*******************************************************/
+	// Enhance pagination information section.
+	$("h1:contains('Page')").attr("id","tsuminoEnhanced_pagination")
+	$("#tsuminoEnhanced_pagination").html("Page <span id='tsuminoEnhanced_currentPage'>" + tsuminoEnhanced.reader.currentPage + "</span> of <span id='tsuminoEnhanced_totalPages'>" + tsuminoEnhanced.reader.totalPages + "</span>");
+
+	// Enhance Previous Page button.
+	if ($("a:contains(' PREV')").length)
+	{
+		$("a:contains(' PREV')").remove();
+		$("#tsuminoEnhanced_returnButton").before("<a id=\"tsuminoEnhanced_prevButton\" class=\"book-read-button\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a>");
+	}
+	else
+	{
+		$("#tsuminoEnhanced_returnButton").before("<a id=\"tsuminoEnhanced_prevButton\" class=\"book-read-button\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a>");
+		$("tsuminoEnhanced_prevButton").css("display","none");
+	}
+	$("#tsuminoEnhanced_prevButton").attr("href",tsuminoEnhanced.reader.prevPageURL);
+	if(tsuminoEnhanced.reader.currentPage > 1)
+	{
 		
-		// Enhance Next Page Button
-		if ($("a:contains('NEXT ')").length)
-		{
-			$("a:contains('NEXT ')").remove();
-			$("#tsuminoEnhanced_returnButton").after(" <a id=\"tsuminoEnhanced_nextButton\" class=\"book-read-button\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
-		}
-		else
-		{
-			$("#tsuminoEnhanced_returnButton").after(" <a id=\"tsuminoEnhanced_nextButton\" class=\"book-read-button\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
-			$("tsuminoEnhanced_nextButton").css("display","none");
-		}
-		$("#tsuminoEnhanced_nextButton").attr("href",tsuminoEnhanced.reader.nextPageURL);
-		if(tsuminoEnhanced.reader.currentPage < tsuminoEnhanced.reader.totalPages)
-		{
-			$("#tsuminoEnhanced_nextButton").css("display","inline");
-		}
-		else
-		{
-			$("#tsuminoEnhanced_nextButton").css("display","none");
-		}
-		
-		// Enhance reader's image link.
-		var imageLink = $("a[href='"+tsuminoEnhanced.tsumino.readerPrefix+tsuminoEnhanced.reader.currentBook+"/"+tsuminoEnhanced.reader.nextPage+"']")[0];
-		$(imageLink).attr("id","tsuminoEnhanced_imageLink");
-		$("#tsuminoEnhanced_imageLink").attr("href",tsuminoEnhanced.reader.nextPageURL);
+		$("#tsuminoEnhanced_prevButton").css("display","inline");
+	}
+	else
+	{
+		$("#tsuminoEnhanced_prevButton").css("display","none");
+	}
+	
+	// Enhance Next Page Button
+	if ($("a:contains('NEXT ')").length)
+	{
+		$("a:contains('NEXT ')").remove();
+		$("#tsuminoEnhanced_returnButton").after(" <a id=\"tsuminoEnhanced_nextButton\" class=\"book-read-button\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
+	}
+	else
+	{
+		$("#tsuminoEnhanced_returnButton").after(" <a id=\"tsuminoEnhanced_nextButton\" class=\"book-read-button\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
+		$("tsuminoEnhanced_nextButton").css("display","none");
+	}
+	$("#tsuminoEnhanced_nextButton").attr("href",tsuminoEnhanced.reader.nextPageURL);
+	if(tsuminoEnhanced.reader.currentPage < tsuminoEnhanced.reader.totalPages)
+	{
+		$("#tsuminoEnhanced_nextButton").css("display","inline");
+	}
+	else
+	{
+		$("#tsuminoEnhanced_nextButton").css("display","none");
+	}
+	
+	// Enhance reader's image link.
+	var imageLink = $("a[href='"+tsuminoEnhanced.tsumino.readerPrefix+tsuminoEnhanced.reader.currentBook+"/"+tsuminoEnhanced.reader.nextPage+"']")[0];
+	$(imageLink).attr("id","tsuminoEnhanced_imageLink");
+	$("#tsuminoEnhanced_imageLink").attr("href",tsuminoEnhanced.reader.nextPageURL);
+	tsuminoEnhanced.utility.log("Reader enhancements have been applied.");
 }
 
 /*******************************************************
@@ -259,6 +330,8 @@ tsuminoEnhanced.utility.enhanceSearch = function()
 *******************************************************/
 tsuminoEnhanced.utility.enhanceTags = function()
 {
+	tsuminoEnhanced.utility.log("Tag Search Links enhancement is running.");
+	
 	/*******************************************************
 	* Convenient internal functions.
 	*******************************************************/
@@ -271,7 +344,7 @@ tsuminoEnhanced.utility.enhanceTags = function()
 			var thisTag = thisLink.replace(tsuminoEnhanced.tsumino.baseURL,"");
 			thisTag = thisTag.replace(tsuminoEnhanced.tsumino.searchTagPrefix,"");
 			thisTag = tsuminoEnhanced.utility.replaceAll(thisTag,"%20","+");
-			//console.log(thisTag);
+			//tsuminoEnhanced.utility.log(thisTag);
 			$(searchTagLink).click(function()
 			{
 				GM_setValue("currentSearchedTags",thisTag);
@@ -298,7 +371,7 @@ tsuminoEnhanced.utility.enhanceTags = function()
 		if(GM_getValue("currentSearchedTags"))
 		{
 			var currentSearchedTags = GM_getValue("currentSearchedTags");
-			//console.log(currentSearchedTags);
+			//tsuminoEnhanced.utility.log(currentSearchedTags);
 			var tagArray = currentSearchedTags.split(",")
 			if(tagArray.length == 1)
 			{
@@ -320,11 +393,11 @@ tsuminoEnhanced.utility.enhanceTags = function()
 					if(i < (tagArray.length - 1)) { displayTags = displayTags + ", "; }
 				}
 			}
-			//console.log(displayTags);
+			//tsuminoEnhanced.utility.log(displayTags);
 			if(tsuminoEnhanced.isBrowsing)
 			{
 				$("div.pagination-container").prepend("<div id='tsuminoEnhanced_tagSearchContainer'><br />Latest Tag Search<br /><a id='tsuminoEnhanced_tagSearchLink' href='" + thisSearch + "'>" + displayTags + "</a></div>");
-				//console.log("<a id='tsuminoEnhanced_tagSearchLink' href='" + thisSearch + "'>" + displayTags + "</a><br />");
+				//tsuminoEnhanced.utility.log("<a id='tsuminoEnhanced_tagSearchLink' href='" + thisSearch + "'>" + displayTags + "</a><br />");
 			}
 		}
 	}
@@ -421,7 +494,7 @@ tsuminoEnhanced.utility.enhanceTags = function()
 		// When using any "Index By" link.
 		$("a[href*='" + tsuminoEnhanced.tsumino.indexByPrefix + "']").each(function()
 		{
-			console.log($(this));
+			tsuminoEnhanced.utility.log($(this));
 			$(this).click(function()
 			{
 				GM_deleteValue("currentSearchedTags");
@@ -439,7 +512,7 @@ tsuminoEnhanced.utility.enhanceTags = function()
 // Save current location and go to config.
 tsuminoEnhanced.utility.toConfig = function()
 {
-	if(!(tsuminoEnhanced.onReader && GM_getValue("seamlessReader_enabled")))
+	if(!(tsuminoEnhanced.onReader && GM_getValue("seamlessViewing_enabled")))
 	{
 		GM_setValue("returnTo",tsuminoEnhanced.currentLocation);
 	}
@@ -454,12 +527,138 @@ tsuminoEnhanced.utility.backToTsumino = function()
 
 
 /*******************************************************
-* Unsticky Header Enhancement
+* Unstickied Header - General Enhancement
 *******************************************************/
 tsuminoEnhanced.unstickyHeader = function()
 {
 	$(".navbar-fixed-top").css("position", "absolute");
 }
+
+
+
+/*******************************************************
+* Record Keeper - General Enhancement
+* Tracks what Doujin you've finished, and where you left off.
+*******************************************************/
+tsuminoEnhanced.recordKeeper.init = function()
+{
+	var recordKeeper_data = {};
+	var jsonString = "";
+	
+	// If the record keeper's data object doesn't exist, create it.
+	if(!GM_getValue("recordKeeper_data"))
+	{
+		GM_setValue("recordKeeper_data",JSON.stringify(recordKeeper_data));
+	}
+	
+	// Import data from JSON string.
+	recordKeeper_data = JSON.parse(GM_getValue("recordKeeper_data"));
+	
+	$(document).ready(function()
+	{
+		// Browsing functionality.
+		if(tsuminoEnhanced.isBrowsing)
+		{
+			$("a.overlay-button").each(function()
+			{
+				var thisLink = $(this).attr("href");
+				var thisBook = thisLink.replace(tsuminoEnhanced.tsumino.bookPrefix,"");
+				thisBook = parseInt(thisBook);
+				if(recordKeeper_data[thisBook])
+				{
+					if(recordKeeper_data[thisBook]['finished'])
+					{
+						$(this).parent().css("border","3px solid rgba(0,125,0,.8)");
+						$(this).siblings(".overlay-data").children(".overlay-sub").append("<br />You have finished this Doujin.");
+						$(this).siblings(".overlay-data").children(".overlay-sub").append("<br />(You left off on page: "+recordKeeper_data[thisBook]['lastSeen']+")");
+					}
+					if((!recordKeeper_data[thisBook]['finished']) && (recordKeeper_data[thisBook]['lastSeen'] > 1))
+					{
+						$(this).parent().css("border","3px solid rgba(190,190,90,.8)");
+						$(this).siblings(".overlay-data").children(".overlay-sub").append("<br />You left off on page: "+recordKeeper_data[thisBook]['lastSeen']);
+					}
+				}
+			});
+		}
+		
+		// Book Functionality
+		if(tsuminoEnhanced.onBook)
+		{
+			var bookID = tsuminoEnhanced.currentLocation.replace(tsuminoEnhanced.tsumino.bookURL,"");
+			
+			// If data doesn't exist for this book, create it.
+			if(!recordKeeper_data[bookID])
+			{
+				recordKeeper_data[bookID] = {};
+				recordKeeper_data[bookID]["totalPages"] = tsuminoEnhanced.reader.totalPages;
+				recordKeeper_data[bookID]["lastSeen"] = 1;
+				recordKeeper_data[bookID]["finished"] = false;
+				jsonString = JSON.stringify(recordKeeper_data);
+				GM_setValue("recordKeeper_data",jsonString);
+			}
+			
+			// If the user previously started reading this book, let them continue.
+			if(recordKeeper_data[bookID]['lastSeen'] > 1)
+			{
+				var continueURL = tsuminoEnhanced.tsumino.readerURL + bookID + "/" + recordKeeper_data[bookID]['lastSeen'];
+				$("a:contains('READ ONLINE')").before("<a class='book-read-button' href='"+continueURL+"'>CONTINUE READING</a> ");
+				$("a:contains('READ ONLINE')").text("START OVER");
+			}
+		}
+		
+		// Reader functionality.
+		if(tsuminoEnhanced.onReader)
+		{
+			setTimeout(function()
+			{
+				var thisBook = tsuminoEnhanced.reader.currentBook;
+				if(thisBook)
+				{					
+					// If data doesn't exist for this book, create it.
+					if(!recordKeeper_data[thisBook])
+					{
+						recordKeeper_data[thisBook] = {};
+						recordKeeper_data[thisBook]["totalPages"] = tsuminoEnhanced.reader.totalPages;
+						recordKeeper_data[thisBook]["lastSeen"] = tsuminoEnhanced.reader.currentPage;
+						recordKeeper_data[thisBook]["finished"] = false;
+						jsonString = JSON.stringify(recordKeeper_data);
+						GM_setValue("recordKeeper_data",jsonString);
+						tsuminoEnhanced.recordKeeper.update();
+					}
+					// If it does exist, update it.
+					else
+					{
+						tsuminoEnhanced.recordKeeper.update();
+					}
+				}
+			},100);
+		}
+	});
+}
+
+// Update record keeper's data.
+tsuminoEnhanced.recordKeeper.update = function()
+{
+	// Import data from JSON string.
+	var recordKeeper_data = JSON.parse(GM_getValue("recordKeeper_data"));
+
+	// Update tracking data for the current book.
+	var bookID = tsuminoEnhanced.reader.currentBook;
+	recordKeeper_data[bookID]["lastSeen"] = tsuminoEnhanced.reader.currentPage;
+	if(!recordKeeper_data[bookID]["finished"])
+	{
+		if(tsuminoEnhanced.reader.totalPages == tsuminoEnhanced.reader.currentPage)
+		{
+			recordKeeper_data[bookID]["finished"] = true;
+		}
+	}
+	
+	// Finished working. Convert object to JSON string.
+	var jsonString = JSON.stringify(recordKeeper_data);
+	GM_setValue("recordKeeper_data",jsonString);
+	//tsuminoEnhanced.utility.log(recordKeeper_data);
+}
+
 
 /*******************************************************
 * Automatic Repositioning - Reader Enhancement
@@ -491,7 +690,7 @@ if(GM_getValue("slideshow_delay"))
 tsuminoEnhanced.slideshow.init = function()
 {
 	// Create Display Bubble.
-	$("body").append("<div id='tsuminoEnhanced_slideshowTimer'></div>");
+	$("body").append("<div class='tsuminoEnhanced_bubbleDisplay' id='tsuminoEnhanced_slideshowTimer'></div>");
 	$("#tsuminoEnhanced_slideshowTimer").text(tsuminoEnhanced.slideshow.delayStr);
 	
 	// If on the first page of a doujin, set the slideshow to inactive.
@@ -503,17 +702,17 @@ tsuminoEnhanced.slideshow.init = function()
 	// If the Slideshow is enabled and active, run it.
 	if (GM_getValue("slideshow_active"))
 	{
-		console.log("Slideshow is active.");
+		tsuminoEnhanced.utility.log("Slideshow is active.");
 		if(GM_getValue("slideshow_displayTimer")) { $("#tsuminoEnhanced_slideshowTimer").css("display","block"); }
-		console.log(GM_getValue("slideshow_delay") + " seconds until next page.");
+		tsuminoEnhanced.utility.log(GM_getValue("slideshow_delay") + " seconds until next page.");
 		tsuminoEnhanced.slideshow.run();
 	}
 	else
 	{
-		console.log("Slideshow is currently inactive.");
+		tsuminoEnhanced.utility.log("Slideshow is currently inactive.");
 		if (GM_getValue("slideshow_delay"))
 		{
-			console.log("Stored delay between pages is set at: " + GM_getValue("slideshow_delay") + " seconds.");
+			tsuminoEnhanced.utility.log("Stored delay between pages is set at: " + GM_getValue("slideshow_delay") + " seconds.");
 		}
 	}
 	
@@ -524,7 +723,6 @@ tsuminoEnhanced.slideshow.init = function()
 		var keyCode = $(data)[0].keyCode;
 		if (keyCode == 16) // SHIFT
 		{
-			console.log("SHIFT KEY PRESSED.");
 			tsuminoEnhanced.slideshow.toggle();
 		}
 	});
@@ -535,7 +733,7 @@ tsuminoEnhanced.slideshow.toggle = function()
 {
 	if (GM_getValue("slideshow_active"))
 	{
-		console.log("Stopping slideshow.");
+		tsuminoEnhanced.utility.log("Stopping slideshow.");
 		tsuminoEnhanced.slideshow.clearTimeouts();
 		$("#tsuminoEnhanced_slideshowTimer").css("display","none");
 		GM_setValue("slideshow_active", false);
@@ -559,7 +757,6 @@ tsuminoEnhanced.slideshow.clearTimeouts = function()
 	{
 		clearTimeout(tsuminoEnhanced.slideshow.ticker);
 	}
-	console.log("Slideshow timeouts cleared.");
 }
 
 
@@ -579,28 +776,28 @@ tsuminoEnhanced.slideshow.countdown = function(timeRemaining)
 // Slideshow - Run
 tsuminoEnhanced.slideshow.run = function(startNow)
 {
-	startNow || false;
+	startNow = startNow || false;
 	var waitFor = parseInt(GM_getValue("slideshow_delay")) * 1000;
 	if (startNow)
 	{
 		if (tsuminoEnhanced.reader.currentPage < tsuminoEnhanced.reader.totalPages)
 		{
 			// If Seamless Reader is also enabled:
-			if(GM_getValue("seamlessReader_enabled"))
+			if(GM_getValue("seamlessViewing_enabled"))
 			{
-				console.log("Loading next page...");
-				tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.nextPage);
+				tsuminoEnhanced.utility.log("Loading next page...");
+				tsuminoEnhanced.seamlessViewing.changePage(tsuminoEnhanced.reader.nextPage);
 			}
 			else
 			{
-				console.log("Moving to next page...");
+				tsuminoEnhanced.utility.log("Moving to next page...");
 				$("#tsuminoEnhanced_nextButton")[0].click();
 			}
 		}
 		else
 		{
 			$("#tsuminoEnhanced_slideshowTimer").css("display","none");
-			console.log("No more pages to load.");
+			tsuminoEnhanced.utility.log("No more pages to load.");
 			tsuminoEnhanced.slideshow.clearTimeouts();
 		}
 	}
@@ -613,16 +810,16 @@ tsuminoEnhanced.slideshow.run = function(startNow)
 
 
 /*******************************************************
-* Seamless Reader - Reader Enhancement
+* Seamless Viewing - Reader Enhancement
 *******************************************************/
 // Seamless Reader Object
-tsuminoEnhanced.seamlessReader = {};
+tsuminoEnhanced.seamlessViewing = {};
 
 // Seamless Reader - Initialization
-tsuminoEnhanced.seamlessReader.init = function()
+tsuminoEnhanced.seamlessViewing.init = function()
 {		
 	// Replace default Tsumino reader keybinds with Enhanced Seamless Reader keybinds.
-	tsuminoEnhanced.seamlessReader.replaceKeybinds();
+	tsuminoEnhanced.seamlessViewing.replaceKeybinds();
 	
 	// Remove default Tsumino doujin navigation links.
 	$("#tsuminoEnhanced_prevButton").attr("href","javascript:;");
@@ -630,11 +827,14 @@ tsuminoEnhanced.seamlessReader.init = function()
 	$("#tsuminoEnhanced_imageLink").attr("href","javascript:;");
 	
 	// Update doujin navigation links.
-	tsuminoEnhanced.seamlessReader.updateLinks();
+	tsuminoEnhanced.seamlessViewing.updateLinks();
+	
+	// Add the loading indicator.
+	$(".reader-img").parent().parent().append("<div class='tsuminoEnhanced_bubbleDisplay' id='tsuminoEnhanced_preloaderMessage'>Loading...</div>");
 }
 
 // Seamless Reader - Replace Keybinds.
-tsuminoEnhanced.seamlessReader.replaceKeybinds = function()
+tsuminoEnhanced.seamlessViewing.replaceKeybinds = function()
 {
 	// Disable default Tsumino Reader Keybinds.
 	unsafeWindow.$(document).off("keydown");
@@ -644,11 +844,11 @@ tsuminoEnhanced.seamlessReader.replaceKeybinds = function()
 	{
 		var bk = function()
 		{
-			tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.prevPage);
+			tsuminoEnhanced.seamlessViewing.changePage(tsuminoEnhanced.reader.prevPage);
 		}
 		var fwd = function()
 		{
-			tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.nextPage);
+			tsuminoEnhanced.seamlessViewing.changePage(tsuminoEnhanced.reader.nextPage);
 		}
 		switch (e.which)
 		{
@@ -676,26 +876,11 @@ tsuminoEnhanced.seamlessReader.replaceKeybinds = function()
 	});
 }
 
-// Seamless Reader - Load Image.
-tsuminoEnhanced.seamlessReader.loadImage = function(pageNumber)
-{
-	var dfd = jQuery.Deferred();
-	var newImageSrc = tsuminoEnhanced.tsumino.imgPrefix + tsuminoEnhanced.reader.currentBook + "/" + pageNumber;
-	console.log("Loading Image: " + pageNumber + "...");
-	$("body").append("<img id='tsuminoEnhanced_imagePreload_"+pageNumber+"' style='display:none;'>");
-	$("#tsuminoEnhanced_imagePreload_"+pageNumber).attr("src",newImageSrc);
-	$( "#tsuminoEnhanced_imagePreload_"+pageNumber).load(function() {
-		console.log("Image "+pageNumber+" loaded.");
-		$(".reader-img").attr("src",newImageSrc);
-		$("#tsuminoEnhanced_imagePreload_"+pageNumber).remove();
-		dfd.resolve();
-	});
-	return dfd.promise();
-}
-
 // Seamless Reader - Update Links
-tsuminoEnhanced.seamlessReader.updateLinks = function()
+tsuminoEnhanced.seamlessViewing.updateLinks = function()
 {
+	tsuminoEnhanced.utility.log("Updating links... ");
+	
 	// Remove old click binds from links.
 	$("#tsuminoEnhanced_prevButton").off("click");
 	$("#tsuminoEnhanced_nextButton").off("click");
@@ -705,39 +890,55 @@ tsuminoEnhanced.seamlessReader.updateLinks = function()
 	if(tsuminoEnhanced.reader.currentPage < tsuminoEnhanced.reader.totalPages)
 	{
 		$("#tsuminoEnhanced_nextButton").css("display","inline");
-		$("#tsuminoEnhanced_nextButton").click(function(){ tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.nextPage); });
-		$("#tsuminoEnhanced_imageLink").click(function(){ tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.nextPage); });
+		$("#tsuminoEnhanced_nextButton").click(function(){ tsuminoEnhanced.seamlessViewing.changePage(tsuminoEnhanced.reader.nextPage); });
+		
+		$("#tsuminoEnhanced_imageLink").css("cursor","pointer");
+		$("#tsuminoEnhanced_imageLink").click(function(){ tsuminoEnhanced.seamlessViewing.changePage(tsuminoEnhanced.reader.nextPage); });
 	}
 	else
 	{
 		$("#tsuminoEnhanced_nextButton").css("display","none");
+		
+		$("#tsuminoEnhanced_imageLink").css("cursor","context-menu");
+		$("#tsuminoEnhanced_imageLink").attr("href","javascript:;");
 	}
 	if(tsuminoEnhanced.reader.currentPage > 1)
 	{
 		
 		$("#tsuminoEnhanced_prevButton").css("display","inline");
-		$("#tsuminoEnhanced_prevButton").click(function(){ tsuminoEnhanced.seamlessReader.changePage(tsuminoEnhanced.reader.prevPage); });
+		$("#tsuminoEnhanced_prevButton").click(function(){ tsuminoEnhanced.seamlessViewing.changePage(tsuminoEnhanced.reader.prevPage); });
 	}
 	else
 	{
 		$("#tsuminoEnhanced_prevButton").css("display","none");
 	}
+	
+	$("#tsuminoEnhanced_currentPage").html("<a href='"+tsuminoEnhanced.reader.currentPageURL+"'>"+tsuminoEnhanced.reader.currentPage+"</a>");
 }
 
 // Seamless Reader - Change Page
-tsuminoEnhanced.seamlessReader.changePage = function(pageNumber)
+tsuminoEnhanced.seamlessViewing.changePage = function(pageNumber)
 {
 	var dfd = jQuery.Deferred();
-	$.when(tsuminoEnhanced.seamlessReader.loadImage(pageNumber)).then(function()
-	{
-		tsuminoEnhanced.automaticRepositioning();
-		tsuminoEnhanced.reader.prevPage = pageNumber-1;
+	
+	function changePageCommon(pageNumber)
+	{		
+		// Update page and location variables.
 		tsuminoEnhanced.reader.currentPage = pageNumber;
+		tsuminoEnhanced.reader.prevPage = pageNumber-1;
 		tsuminoEnhanced.reader.nextPage = pageNumber+1;
-		tsuminoEnhanced.seamlessReader.updateLinks();
 		tsuminoEnhanced.reader.currentPageURL = tsuminoEnhanced.tsumino.readerPrefix + tsuminoEnhanced.reader.currentBook + "/" + tsuminoEnhanced.reader.currentPage;
 		GM_setValue("returnTo",tsuminoEnhanced.reader.currentPageURL);
-		$("#tsuminoEnhanced_currentPage").html("<a href='"+tsuminoEnhanced.reader.currentPageURL+"'>"+tsuminoEnhanced.reader.currentPage+"</a>");
+		
+		// Trigger Automatic Repositioning.
+		tsuminoEnhanced.automaticRepositioning();
+		
+		// Update links.
+		tsuminoEnhanced.seamlessViewing.updateLinks();
+		
+		// If record keeper is enabled, update the data.
+		if(GM_getValue("recordKeeper_enabled")) { tsuminoEnhanced.recordKeeper.update(); }
+		
 		// If also using Slideshow:
 		if (GM_getValue("slideshow_enabled")) 
 		{
@@ -750,29 +951,103 @@ tsuminoEnhanced.seamlessReader.changePage = function(pageNumber)
 				tsuminoEnhanced.slideshow.run();
 			}
 		}
-		// If also using the preloader enhancement:
-		if (GM_getValue("preloader_enabled")) { tsuminoEnhanced.preloader(); }
-		dfd.resolve();
-	});
+		$("#tsuminoEnhanced_preloaderMessage").css("display","none");
+		var newImageSrc = tsuminoEnhanced.tsumino.imgPrefix + tsuminoEnhanced.reader.currentBook + "/" + pageNumber;
+		$(".reader-img").attr("src",newImageSrc);
+		tsuminoEnhanced.preloader.loader = tsuminoEnhanced.preloader.init();
+		window.location.href = tsuminoEnhanced.currentLocation + "#" + pageNumber;
+	}
+	
+	$("#tsuminoEnhanced_preloaderMessage").css("display","block");
+	if((tsuminoEnhanced.preloader.loader) && (pageNumber == (tsuminoEnhanced.reader.currentPage + 1)))
+	{
+		tsuminoEnhanced.utility.log("Preloader is working. Waiting for next page to load.");
+		$.when(tsuminoEnhanced.preloader.loader).then(function()
+		{
+			changePageCommon(pageNumber);
+			tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
+			
+			dfd.resolve();
+		});
+		
+	}
+	else if((!tsuminoEnhanced.preloader.loader) && (pageNumber == (tsuminoEnhanced.reader.currentPage + 1)))
+	{
+		tsuminoEnhanced.utility.log("Preloader is not ready yet. Trying again in 1 second.");
+		setTimeout(function()
+		{
+			tsuminoEnhanced.seamlessViewing.changePage(pageNumber);
+			dfd.resolve();
+		},1000);
+	}
+	else
+	{
+		tsuminoEnhanced.preloader.loader = tsuminoEnhanced.preloader.init(pageNumber);
+		$.when(tsuminoEnhanced.preloader.loader).then(function()
+		{
+			changePageCommon(pageNumber);
+			tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
+
+			dfd.resolve();
+		});
+	}
 	return dfd.promise();
+}
+
+// Seamless Reader - Redirection
+tsuminoEnhanced.seamlessViewing.redirection = function()
+{
+	var temp = tsuminoEnhanced.currentLocation;
+	splitLocation = temp.split("#");
+	if(splitLocation.length > 1)
+	{
+		tsuminoEnhanced.utility.log("Seamless Viewing is redirecting you...");
+		// Kill the page before it can load.
+		tsuminoEnhanced.utility.killPage();
+		
+		// Redirect to the actual page.
+		newPage = splitLocation[1];
+		oldPage = splitLocation[0];
+		var urlSplit = oldPage.split("/");
+		var bookID = urlSplit[5];
+		var newLocation = tsuminoEnhanced.tsumino.readerURL + bookID + "/" + newPage;
+		
+		window.location.href = newLocation;
+	}
 }
 
 /*******************************************************
 * Preloader - Reader Enhancement
 *******************************************************/
-tsuminoEnhanced.preloader = function()
+tsuminoEnhanced.preloader = {};
+
+tsuminoEnhanced.preloader.init = function(pageNumber)
 {
-	if(tsuminoEnhanced.reader.currentPage < tsuminoEnhanced.reader.totalPages)
+	var dfd = jQuery.Deferred();
+	var newImageSrc = tsuminoEnhanced.tsumino.imgPrefix + tsuminoEnhanced.reader.currentBook + "/";
+	// If no page number was defined, try to load the next page.
+	pageNumber = pageNumber || tsuminoEnhanced.reader.nextPage;
+	
+	// Make sure the page exists first.
+	if((pageNumber <= tsuminoEnhanced.reader.totalPages) && (pageNumber > 0))
 	{
-		var newImageSrc = tsuminoEnhanced.tsumino.imgPrefix + tsuminoEnhanced.reader.currentBook + "/" + tsuminoEnhanced.reader.nextPage;
-		console.log("Preloading Image: " + tsuminoEnhanced.reader.nextPage + "...");
-		$("body").append("<img id='tsuminoEnhanced_imagePreload_"+tsuminoEnhanced.reader.nextPage+"' style='display:none;'>");
-		$("#tsuminoEnhanced_imagePreload_"+tsuminoEnhanced.reader.nextPage).attr("src",newImageSrc);
-		$( "#tsuminoEnhanced_imagePreload_"+tsuminoEnhanced.reader.nextPage).load(function() {
-			console.log("Image "+tsuminoEnhanced.reader.nextPage+" preloaded.");
-			$("#tsuminoEnhanced_imagePreload_"+tsuminoEnhanced.reader.nextPage).remove();
+		//tsuminoEnhanced.reader.nextPage
+		var newImageSrc = newImageSrc + pageNumber;
+		tsuminoEnhanced.utility.log("Preloading Image: " + pageNumber + "...");
+		$("body").append("<img id='tsuminoEnhanced_imagePreload_"+pageNumber+"' style='display:none;'>");
+		$("#tsuminoEnhanced_imagePreload_"+pageNumber).attr("src",newImageSrc);
+		$( "#tsuminoEnhanced_imagePreload_"+pageNumber).load(function() 
+		{
+			tsuminoEnhanced.utility.log("Image "+pageNumber+" preloaded.");
+			$("#tsuminoEnhanced_imagePreload_"+pageNumber).remove();
+			dfd.resolve();
 		});
 	}
+	else
+	{
+		dfd.resolve();
+	}
+	return dfd.promise();
 }
 
 /*******************************************************
@@ -788,9 +1063,10 @@ tsuminoEnhanced.singlePageView = function()
 *******************************************************/
 tsuminoEnhanced.biggerBrowseLinks = function()
 {
+	tsuminoEnhanced.utility.log("Thumbnail Links Enhancement is running.");
 	$(".overlay").each(function()
 	{
-		//console.log($(this).find("a.overlay-button")[0].href);
+		//tsuminoEnhanced.utility.log($(this).find("a.overlay-button")[0].href);
 		$(this).click(function()
 		{
 			$(this).find("a.overlay-button")[0].click();
@@ -806,9 +1082,12 @@ if (!tsuminoEnhanced.onConfig)
 {
 	$( document ).ready(function()
 	{
+		// Add link to Tsumino Enhanced config page.
 		$("ul.nav.navbar-nav:contains('FORUM')").append("<li><a id='tsuminoEnhancedNavlink' style='color:#22a7f0 !important; cursor:pointer;'>ENHANCED</a></li>");
-		$("head").append("<style>#tsuminoEnhanced_slideshowTimer{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;position:fixed;float:right;bottom:5px;right:5px;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}</style>");
 		$("#tsuminoEnhancedNavlink").click(function(){tsuminoEnhanced.utility.toConfig();});
+		
+		// Add Tsumino Enhanced styles.
+		$("head").append("<style>.tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_preloaderMessage{position:absolute;float:right;bottom:5px;right:5px}</style>");
 	});
 }
 /*******************************************************
@@ -816,19 +1095,14 @@ if (!tsuminoEnhanced.onConfig)
 *******************************************************/
 else
 {
-	// Kill the 404 page early.
-	document.replaceChild 
-	(
-		document.importNode (document.implementation.createHTMLDocument("").documentElement, true),
-		document.documentElement
-	);
-	
-	// Apply preliminary background color for smooth rendering appearance.
-	document.head.innerHTML = '<style>body{background-color:#1a1a1a;}</style>';
+	// Kill the page before it can load.
+	tsuminoEnhanced.utility.killPage();
 	
 	// Once the DOM is ready, begin the actual work.
 	$( document ).ready(function()
 	{
+		tsuminoEnhanced.utility.log("Rendering config page...");
+		
 		// Wipe the old head section.
 		$("head").html("");
 		
@@ -836,19 +1110,21 @@ else
 		$("head").append("<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wsRDAY5sIzTWwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAEaUlEQVRYw+2XW2xVRRSGv5nZ+1x6di/QUjinLdVUArVISIoJgRcEAoEQY4LxwUB8Ml4evEQTJGhQQ/SVGI2aaAzyohiDCMREEpUol4ACRROubSkl1tKeXjhnn+uePT7s5hRigJ62hhfmbe+ZWfOv9a/1rxmxZMkSwz0ckns87gOwpsOIERKUBcaAtDB2GF33IDI9iBrqnRwAY0XQNXGswe7gW9n4lbPwEm14TYvRtc2YaBVGWmCHMSqEKLiokT58pxa/JgFA7OB72Od/RmDKA6Brm0ht+piKQzsJnz2Au34rxYeWg1TI0T7UQBem4OI1txP68weiv32OzIwAUJi/AnfDmwC467ZQc/kIePnyckDk3cBY6yp8pw5n/7vEvn8HgOhPH+Hs20747EHwCnhzFyNy6QB41Rwyj704FkaDfeUk+Lr8JBT5NFbPKfyIg7EjAIQ6j4JXIP/oU4H9aDVYIcKn9yF8DwCvYSEmNhMAu+s4sf07SnNlUSCzNwhd+pXM6pcxoVjpvxrqRVfHybeuJt+2JojSghUUW5aC1vjVcwLDvR1ED3+K8HKTrwKRTgY8btgG2sOEohinDrw8hYVrsXtOEzm5B5lOggAMpJ7+AKu3g9iBHcjM8NTKULpJRGoAvyaBut5J9PCXqIFO5I1+MAahi+Tan0QUcwHXQPWHTyC8PEIXpy5EcrQfNXiFyLHdVO1+Dqv3DH5lPcIrlA7QM5tIb3yfwoKVpdzBmEAbJjBUIpF4+7YUeDlCncdQfecRukC+bS2ZDdtACOzeDgD82rl4jYvQ8Vbs7hN4DW3klm5CGO+uInRXCoy0AlGprMezQvgzGgAotiwjenRX4EHfBUQ+jV85C3fdFkTeDajT3jRIsRB4jYvIrHoJpEJdvzwW5tT4El0ABHL0Hyq/egVxU80bgtycfBXoIvaFX3BG/kbkXfTMuWTWvwFe4VbBMgaZGkD4mkLLMorzlhP660fsax1Tb0Yi7yKyNygsWImOz79FJUt++hov3srI899gQhXI9CDW1TNTp8CLt5J+fDvGqUOkk9hdx6BpMX5NHD9ajcyOBh1QBKCcvdtQY83rTvI7YQBW3zmqP9uMiVYj04Nklz0zFhYZHA6YUAWoEHb3Caz+ixhlgxCgLAwSjAZdvG0u3P0+oGz8qtm4a17Dr6oHY1D9l0rTfmU9SInX+Aju2tfRs1rwYzMCYKEKVP9FnL1vIdxkeQB8pxZd+wC59o3oxMNUHNqJHL5GavMnIMe3iVwKtIcfrcGvaUAUs6hhNygB3wMrjIk4UA6AYuMisiteQM+eh0xexfl2K1bfOYrN7UHYw85/ylANduN8/Soo+yYvNML45eeAzAxj9ZxCDXQR+X0PKtlT4j7Q3/EyNHYElEKmrgc8T7AH3BGAGuoleuQLUDaimB1f3PMHcvga4TP7xsGmkxghsfovTu+lVPhewOHN/4xP1a5nb/FSDV3F7jxO+PR3kwIgputlNBHZ/V/fBWKS++6/jO4D+BdYdNLmP/zOiQAAAABJRU5ErkJggg==\"/>");
 		
 		// Set the title and include the Open Sans font.
-		$("head").append("<title>Tsumino Enhanced</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>");
+		$("head").append("<title>Tsumino Enhanced</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'><style></style>");
 		
 		// Write the Tsumino Enhanced config page stylesheet.
-		$("head").append("<style>#tsuminoEnhanced_brand,.tsuminoEnhancement,h2{color:#22a7f0}.cmn-toggle+label,select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}#tsuminoEnhanced_footer,#tsuminoEnhanced_header{background-color:#333;color:#FFF;padding:5px 15px;margin:0;font-weight:700}#tsuminoEnhanced_version{font-size:.5em}.cmn-toggle+label,select{cursor:pointer;outline:0}body{margin:0;background-color:#1a1a1a;font-family:'Open Sans';font-size:1em}a,a:visited{color:#23a7f0;text-decoration:none}a:hover{color:#23a7f0;text-decoration:underline}h1,h2,h3,h4,h5,h6{padding:0;margin:0;font-weight:700}#tsuminoEnhanced_header,h1{font-size:2em}h2{font-size:1.5em;margin-bottom:5px}#tsuminoEnhanced_footer{bottom:0;left:0;text-align:center;margin-top:15px}#tsuminoEnhanced_body{padding:15px;color:#fff}.options{padding-left:2em}.optionDescription{margin-top:10px}.optionGroup{margin-bottom:20px;border:2px solid #fff;border-radius:5px;background-color:#222;padding:15px}.cmn-toggle{position:absolute;margin-left:-9999px;visibility:hidden}.cmn-toggle+label{display:block;position:relative;user-select:none}input.cmn-toggle-round-flat+label{padding:2px;width:40px;height:20px;background-color:#ddd;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.cmn-toggle-round-flat+label:after,input.cmn-toggle-round-flat+label:before{display:block;position:absolute;content:''}input.cmn-toggle-round-flat+label:before{top:2px;left:2px;bottom:2px;right:2px;background-color:#1a1a1a;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.cmn-toggle-round-flat+label:after{top:4px;left:4px;bottom:4px;width:16px;background-color:#ddd;-webkit-border-radius:16px;-moz-border-radius:16px;-ms-border-radius:16px;-o-border-radius:16px;border-radius:16px;-webkit-transition:margin .4s,background .4s;-moz-transition:margin .4s,background .4s;-o-transition:margin .4s,background .4s;transition:margin .4s,background .4s}input.cmn-toggle-round-flat:checked+label{background-color:#22a7f0}input.cmn-toggle-round-flat:checked+label:after{margin-left:20px;background-color:#22a7f0}select,select option{background-color:#1a1a1a;color:#fff}.tsuminoEnhancedButton,.tsuminoEnhancedButton:hover{background-color:#23a8f0;color:#fff;text-decoration:none}select{border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;user-select:none}.fauxRow{display:table-row}.fauxCell{display:table-cell;vertical-align:middle}.switchContainer{padding-right:10px}.tsuminoEnhancedButton{-moz-border-radius:28px;-webkit-border-radius:28px;border-radius:30px;border:2px solid #ddd;display:inline-block;cursor:pointer;font-size:1.2em;font-weight:700;padding:5px 15px;text-shadow:0 1px 0 #12587d;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.tsuminoEnhancedButton:active{position:relative;top:1px}#tsuminoReturnButtonContainer{margin-left:15px}input.subOption[type=checkbox]:not(old),input.subOption[type=radio]:not(old){width:2em;margin:0;padding:0;font-size:1em;opacity:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=checkbox]:not(old)+label,input.subOption[type=radio]:not(old)+label{display:inline-block;margin-left:-2em;line-height:1.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=checkbox]:not(old)+label>span,input.subOption[type=radio]:not(old)+label>span{display:inline-block;width:.875em;height:.875em;margin:.25em .5em .25em .25em;border:.0625em solid #626262;border-radius:.25em;background-color:#626262;vertical-align:bottom;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=checkbox]:not(old):checked+label>span,input.subOption[type=radio]:not(old):checked+label>span{background-color:#1a1a1a;border:.0625em solid #1c85bf;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=checkbox]:not(old):checked+label>span:before{content:'X';display:block;width:1em;color:#23a7f0;font-size:.875em;line-height:1em;text-align:center;text-shadow:0 0 .0714em #73994d;font-weight:700;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=radio]:not(old):checked+label>span>span{display:block;width:.5em;height:.5em;margin:.125em;border:.0625em solid #1c85bf;border-radius:.125em;background-color:#23a7f0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}</style>");
+		$("style").append("body{width:100%;max-width:100%;height:100%;min-height:100%;overflow-y:scroll}#tsuminoEnhanced_tsuminoLink,#tsuminoEnhanced_tsuminoLink:hover{color:#FFFFFF;text-decoration:none}#tsuminoEnhanced_header{background-color:#333;color:#FFF;padding:5px 15px;margin:0;font-weight:700}#tsuminoEnhanced_brand{color:#22a7f0}.tsuminoEnhancement{color:#22a7f0}#tsuminoEnhanced_version{font-size:.5em}.cmn-toggle+label,select{cursor:pointer;outline:0}body{margin:0;background-color:#1a1a1a;font-family:'Open Sans';font-size:1em}a,a:visited{color:#23a7f0;text-decoration:none}a:hover{color:#23a7f0;text-decoration:underline}h1,h2,h3,h4,h5,h6{padding:0;margin:0;font-weight:700}#tsuminoEnhanced_header,h1{font-size:2em}h2{font-size:1.5em;margin-bottom:5px;color:#22a7f0}#tsuminoEnhanced_footer{bottom:0px;text-align:center;margin-top:15px;float:left;display:block;position:fixed;width:100%}#tsuminoEnhanced_body{color:#fff;padding-right:2em}.options{padding-left:1em}.optionDescription{margin-top:10px}.optionGroup{margin-bottom:20px;border:2px solid #fff;border-radius:5px;background-color:#222;padding:15px;margin-left:1em}.cmn-toggle{position:absolute;margin-left:-9999px;visibility:hidden}.cmn-toggle+label{display:block;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}input.cmn-toggle-round-flat+label{padding:2px;width:40px;height:20px;background-color:#ddd;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.cmn-toggle-round-flat+label:after,input.cmn-toggle-round-flat+label:before{display:block;position:absolute;content:''}input.cmn-toggle-round-flat+label:before{top:2px;left:2px;bottom:2px;right:2px;background-color:#1a1a1a;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.cmn-toggle-round-flat+label:after{top:4px;left:4px;bottom:4px;width:16px;background-color:#ddd;-webkit-border-radius:16px;-moz-border-radius:16px;-ms-border-radius:16px;-o-border-radius:16px;border-radius:16px;-webkit-transition:margin .4s, background .4s;-moz-transition:margin .4s, background .4s;-o-transition:margin .4s, background .4s;transition:margin .4s, background .4s}input.cmn-toggle-round-flat:checked+label{background-color:#22a7f0}input.cmn-toggle-round-flat:checked+label:after{margin-left:20px;background-color:#22a7f0}select,select option{background-color:#1a1a1a;color:#fff}select{border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.fauxRow{display:table-row}.fauxCell{display:table-cell;vertical-align:middle}.switchContainer{padding-right:10px}.tsuminoEnhancedButton{background-color:#23a8f0;-moz-border-radius:28px;-webkit-border-radius:28px;border-radius:30px;border:2px solid #dddddd;display:inline-block;cursor:pointer;color:#ffffff;font-size:1.2em;font-weight:bold;padding:5px 15px;text-decoration:none;text-shadow:0px 1px 0px #12587d;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.tsuminoEnhancedButton:hover{background-color:#23a8f0;color:#fff;text-decoration:none}.tsuminoEnhancedButton:active{position:relative;top:1px}#tsuminoReturnButtonContainer{margin-left:15px}input.subOption[type=checkbox]:not(old),input.subOption[type=radio]:not(old){width:2em;margin:0;padding:0;font-size:1em;opacity:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=checkbox]:not(old) + label,input.subOption[type=radio]:not(old) + label{display:inline-block;margin-left:-2em;line-height:1.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=checkbox]:not(old) + label > span,input.subOption[type=radio]:not(old) + label > span{display:inline-block;width:0.875em;height:0.875em;margin:0.25em 0.5em 0.25em 0.25em;border:0.0625em solid #626262;border-radius:0.25em;background-color:#626262;vertical-align:bottom;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=checkbox]:not(old):checked + label > span,input.subOption[type=radio]:not(old):checked + label > span{background-color:#1a1a1a;border:0.0625em solid #1c85bf;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=checkbox]:not(old):checked + label > span:before{content:'X';display:block;width:1em;color:#23a7f0;font-size:0.875em;line-height:1em;text-align:center;text-shadow:0 0 0.0714em rgb(115, 153, 77);font-weight:bold;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.subOption[type=radio]:not(old):checked + label > span > span{display:block;width:0.5em;height:0.5em;margin:0.125em;border:0.0625em solid #1c85bf;border-radius:0.125em;background-color:#23a7f0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}#tabContainer{padding-bottom:1em}.configTab,.configTab nav ul{position:relative;margin:0 auto}.configTab nav,.configTab nav ul li{text-align:center}.configTab{overflow:hidden;width:100%;font-weight:300;font-size:2em}.configTab nav ul{display:-ms-flexbox;display:-webkit-flex;display:-moz-flex;display:-ms-flex;display:flex;padding:0;max-width:1200px;list-style:none;-ms-box-orient:horizontal;-ms-box-pack:center;-webkit-flex-flow:row wrap;-moz-flex-flow:row wrap;-ms-flex-flow:row wrap;flex-flow:row wrap;-webkit-justify-content:center;-moz-justify-content:center;-ms-justify-content:center;justify-content:center}.configTab nav a,.configTab nav ul li{display:block;position:relative}.configTab nav ul li{z-index:1;margin:0;-webkit-flex:1;-moz-flex:1;-ms-flex:1;flex:1}.configTab nav a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:2.5}.configTab nav a{vertical-align:middle;font-size:.75em}.configTab nav li.tab-current a{color:#74777b}.configTab nav a:focus{outline:0}.configTab nav a:hover{text-decoration:none}.no-flexbox nav ul li{min-width:15%;display:inline-block}.configTab nav li:last-child::before{position:absolute;bottom:0;left:0;width:100%;height:4px;background:#22a7f0;content:'';-webkit-transition:-webkit-transform .3s;transition:transform .3s}.configTab nav li:first-child.tab-current~li:last-child::before{-webkit-transform:translate3d(-400%, 0, 0);transform:translate3d(-400%, 0, 0)}.configTab nav li:nth-child(2).tab-current~li:last-child::before{-webkit-transform:translate3d(-300%, 0, 0);transform:translate3d(-300%, 0, 0)}.configTab nav li:nth-child(3).tab-current~li:last-child::before{-webkit-transform:translate3d(-200%, 0, 0);transform:translate3d(-200%, 0, 0)}.configTab nav li:nth-child(4).tab-current~li:last-child::before{-webkit-transform:translate3d(-100%, 0, 0);transform:translate3d(-100%, 0, 0)}.configTab nav a{padding:.5em;color:#74777b;line-height:1;-webkit-transition:color .3s, -webkit-transform .3s;transition:color .3s, transform .3s}.configTab nav li.tab-current a{color:#22a7f0}.configTab nav a{font-weight:700}.currentTabContent{display:block}.hiddenTabContent{display:none}");
 		
 		// Prepare the body of the page.
-		$("body").html("<div id='tsuminoEnhanced_header'>TSUMINO <span id='tsuminoEnhanced_brand'>ENHANCED</span> <span id='tsuminoEnhanced_version'>" + tsuminoEnhanced.version + "</span></div><div id='tsuminoEnhanced_body'></div>");
-
+		$("body").html("<div id='tsuminoEnhanced_header'><a href='javascript:;' id='tsuminoEnhanced_tsuminoLink'>TSUMINO</a> <span id='tsuminoEnhanced_brand'>ENHANCED</span> <span id='tsuminoEnhanced_version'>" + tsuminoEnhanced.version + "</span></div><div id='tsuminoEnhanced_body'></div>");
+		
+		$("#tsuminoEnhanced_tsuminoLink").click(function(){ tsuminoEnhanced.utility.backToTsumino(); });
+		
 		/*******************************************************
 		* General Enhancements
 		*******************************************************/
 		// Prepare the global enhancements section.
-		$("#tsuminoEnhanced_body").append("<h1>General Enhancements</h1>The following Enhancements can apply globally to Tsumino, or to specific areas.<br /><br /><div id='generalEnhancements' class='options'></div>");
+		$("#tsuminoEnhanced_body").append("<div id='generalEnhancements' class='options'>The following Enhancements can apply to multiple areas of Tsumino.<br /><br /></div>");
 		
 		// Unstickied Header - Options
 		$("#generalEnhancements").append("<div id='unstickiedHeaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='unstickedHeader_switch' name='unstickedHeader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='unstickedHeader_switch'></label></div><div class='fauxCell'><h2>Unstickied Header</h2></div></div><div class='optionDescription'>Prevents the Tsumino header from following you as you scroll down the page.</div></div>");
@@ -870,11 +1146,16 @@ else
 		if(GM_getValue("tagSearchLinks_enabled")) { $("#tagSearchLinks_switch").prop("checked",true); }
 		
 		
+		// Record Keeper - Options
+		$("#generalEnhancements").append("<div id='recordKeeper' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='recordKeeper_switch' name='recordKeeper_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='recordKeeper_switch'></label></div><div class='fauxCell'><h2>Record Keeper</h2></div></div><div class='optionDescription'>This Enhancement keeps a record of what Doujin you've read.<br />While browsing, unread Doujin will retain the normal blue border.<br />Doujin you have started but haven't finished will have a yellow border.<br />Doujin you've finished reading will have a green border.<br />There will be a 'Continue Reading' button on the book info page if you have previously read a Doujin.</div></div>");
+		if(GM_getValue("recordKeeper_enabled")) { $("#recordKeeper_switch").prop("checked",true); }
+		
+		
 		/*******************************************************
 		* Browsing Enhancements
 		*******************************************************/
 		// Prepare the browsing enhancements section.
-		$("#tsuminoEnhanced_body").append("<h1>Browsing Enhancements</h1>The following Enhancements only apply to the Tsumino Browse page.<br /><br /><div id='browsingEnhancements' class='options'></div>");
+		$("#tsuminoEnhanced_body").append("<div id='browsingEnhancements' class='options'>The following Enhancements only apply to the Tsumino Browse page.<br /><br /></div>");
 		
 		// Thumbnail Links - Options
 		$("#browsingEnhancements").append("<div id='containerLinks_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='browseThumbnailLinks_switch' name='browseThumbnailLinks_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='browseThumbnailLinks_switch'></label></div><div class='fauxCell'><h2>Thumbnail Links</h2></div></div><div class='optionDescription'>You no longer have to specifically click View Info to load a Doujin.<br />Clicking anywhere on the thumbnail image will load the Doujin as well.</div></div>");
@@ -886,7 +1167,7 @@ else
 		* Reader Enhancements
 		*******************************************************/
 		// Prepare the reader enhancements section.
-		$("#tsuminoEnhanced_body").append("<h1>Reader Enhancements</h1>The following Enhancements only apply to the Tsumino Reader.<br /><br /><div id='readerEnhancements' class='options'></div>");
+		$("#tsuminoEnhanced_body").append("<div id='readerEnhancements' class='options'>The following Enhancements only apply to the Tsumino Reader.<br /><br /></div>");
 		
 		// If the slideshow wasn't enabled, but a delay was selected, remove the delay.
 		if(!GM_getValue("slideshow_enabled")) { $("#slideshow_delay").val(GM_deleteValue("slideshow_delay")); }
@@ -897,16 +1178,19 @@ else
 		// Slideshow - Options - Delay Selection
 		$("#slideshow_group").append("<br/><select id='slideshow_delay' name='slideshow_delay'><option value='default' disabled='disabled'>Spend how many seconds per page?</option></select>");
 		
-		// Populate slideshow delay select box.
-		var pluralize = "";
-		var iDisp = "";
-		for (var i = 1; i < 61; i++)
+		// Populate slideshow delay select box.		
+		(function () 
 		{
-			if(i != 1) { pluralize = "s"; }
-			iDisp = i.toString();
-			if(iDisp.length==1){iDisp = "0"+i}
-			$("#slideshow_delay").append("<option value='" + i + "'>" + iDisp + " Second"+pluralize+"</option>");
-		}
+			var pluralize = "";
+			var iDisp = "";
+			for (var i = 1; i < 61; i++)
+			{
+				if(i != 1) { pluralize = "s"; }
+				iDisp = i.toString();
+				if(iDisp.length==1){iDisp = "0"+i}
+				$("#slideshow_delay").append("<option value='" + i + "'>" + iDisp + " Second"+pluralize+"</option>");
+			}
+		})();
 		
 		// Slideshow - Options - Show Timer?
 		$("#slideshow_group").append("<br /><br /><input id='slideshow_displayTimer_switch' name='slideshow_displayTimer_switch' type='checkbox' class='subOption' disabled='disabled' /><label for='slideshow_displayTimer_switch'><span></span>Display Timer</label>");
@@ -921,9 +1205,9 @@ else
 			$("#slideshow_displayTimer_switch").prop("disabled",false);
 		}
 			
-		// Seamless Reader - Options
-		$("#readerEnhancements").append("<div id='slideshow_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessReader_switch' name='seamlessReader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessReader_switch'></label></div><div class='fauxCell'><h2>Seamless Viewing</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />Requires the following Enhancements:<br /><span class='tsuminoEnhancement'>Unstickied Header</span><br /><span class='tsuminoEnhancement'>Automatic Repositioning</span><br /><span class='tsuminoEnhancement'>Preloader</span></div></div>");
-		if(GM_getValue("seamlessReader_enabled")){$("#seamlessReader_switch").prop("checked",true);}
+		// Seamless Viewing - Options
+		$("#readerEnhancements").append("<div id='seamlessViewing_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessViewing_switch' name='seamlessViewing_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessViewing_switch'></label></div><div class='fauxCell'><h2>Seamless Viewing</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />Requires the following Enhancements:<br /><span class='tsuminoEnhancement'>Unstickied Header</span><br /><span class='tsuminoEnhancement'>Automatic Repositioning</span><br /><span class='tsuminoEnhancement'>Preloader</span></div></div>");
+		if(GM_getValue("seamlessViewing_enabled")){$("#seamlessViewing_switch").prop("checked",true);}
 		
 		// Automatic Repositioning - Options
 		$("#readerEnhancements").append("<div id='automaticRepositioningGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='automaticRepositioning_switch' name='automaticRepositioning_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='automaticRepositioning_switch'></label></div><div class='fauxCell'><h2>Automatic Repositioning</h2></div></div><div class='optionDescription'>Automatically scrolls the page down to the top of the doujin image.<br/>Requires <span class='tsuminoEnhancement'>Unstickied Header</span>.<br /></div></div>");
@@ -933,6 +1217,53 @@ else
 		$("#readerEnhancements").append("<div id='preloaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='preloader_switch' name='preloader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='preloader_switch'></label></div><div class='fauxCell'><h2>Preloader</h2></div></div><div class='optionDescription'>Automatically preloads the next image in the background.<br /></div></div>");
 		if(GM_getValue("preloader_enabled")){$("#preloader_switch").prop("checked",true);}
 		
+		
+		/*******************************************************
+		* Search Enhancements
+		*******************************************************/
+		$("#tsuminoEnhanced_body").append("<div id='searchEnhancements' class='options'>The following Enhancements only apply to the Tsumino Search Page.<br /><br /></div>");
+		
+		/*******************************************************
+		* Forum Enhancements
+		*******************************************************/
+		$("#tsuminoEnhanced_body").append("<div id='forumEnhancements' class='options'>The following Enhancements only apply to the Tsumino Forum.<br /><br /></div>");
+		
+		
+		
+		
+		/*******************************************************
+		* Config Tabs
+		*******************************************************/
+		$("#tsuminoEnhanced_body").before("<div id='tabContainer' class='configTab'><nav><ul><li id='tab_generalEnhancements'><a href='javascript:;'>General</a></li><li id='tab_browsingEnhancements'><a href='javascript:;'>Browsing</a></li><li id='tab_readerEnhancements'><a href='javascript:;'>Reader</a></li><li id='tab_searchEnhancements'><a href='javascript:;'>Search</a></li><li id='tab_forumEnhancements'><a href='javascript:;'>Forum</a></li></ul></nav></div>");
+		(function () 
+		{
+			var newActiveTab = "";
+			$("#tabContainer").find("a").click(function()
+			{
+				$(this).parent().siblings().removeClass("tab-current");
+				$(this).parent().addClass("tab-current");
+				newActiveTab = "#" + $(this).parent().attr("id").replace("tab_","");
+				$(newActiveTab).siblings().removeClass("currentTabContent");
+				$(newActiveTab).siblings().addClass("hiddenTabContent");
+				$(newActiveTab).removeClass("hiddenTabContent");
+				$(newActiveTab).addClass("currentTabContent");
+			});
+			
+			// Temporarily deactivate Search and Forum tabs.
+			$("#tabContainer").find("a").each(function()
+			{
+				if(($(this).text() == "Search") || ($(this).text() == "Forum"))
+				{
+					$(this).off("click");
+					$(this).css("display","none");
+				}
+			});
+			
+			$(".options").addClass("hiddenTabContent");
+			$("#generalEnhancements").removeClass("hiddenTabContent");
+			$("#tab_generalEnhancements").addClass("tab-current");
+		})();
+		
 		/*******************************************************
 		* End of Enhancement Configuration Options
 		*******************************************************/
@@ -941,8 +1272,6 @@ else
 		$("body").append("<div id='tsuminoReturnButtonContainer'><a id='tsuminoReturnButton' class='tsuminoEnhancedButton'>Return to Tsumino</a></div>");
 		$("#tsuminoReturnButton").click(function(){ tsuminoEnhanced.utility.backToTsumino(); });
 		
-		// Add the config page footer.
-		$("body").append("<div id='tsuminoEnhanced_footer'>Check out the project on <a href='https://github.com/tobiaskelmandia/TsuminoEnhanced'>Github</a>!</div>");
 		
 		/*******************************************************
 		* Configuration Handling
@@ -956,12 +1285,12 @@ else
 			{
 				if($("#unstickedHeaderScope_global").prop("checked"))
 				{
-					//console.log("Unstickied Header Scope: Global");
+					//tsuminoEnhanced.utility.log("Unstickied Header Scope: Global");
 					GM_setValue("unstickedHeader_scope","Global");
 				}
 				if($("#unstickedHeaderScope_reader").prop("checked"))
 				{
-					//console.log("Unstickied Header Scope: Reader");
+					//tsuminoEnhanced.utility.log("Unstickied Header Scope: Reader");
 					GM_setValue("unstickedHeader_scope","Reader");
 				}
 			}
@@ -976,10 +1305,11 @@ else
 			GM_setValue("slideshow_enabled", $("#slideshow_switch").prop("checked"));
 			GM_setValue("slideshow_delay", $("#slideshow_delay").val());
 			GM_setValue("slideshow_displayTimer", $("#slideshow_displayTimer_switch").prop("checked"));
-			GM_setValue("seamlessReader_enabled", $("#seamlessReader_switch").prop("checked"));
+			GM_setValue("seamlessViewing_enabled", $("#seamlessViewing_switch").prop("checked"));
 			GM_setValue("automaticRepositioning_enabled", $("#automaticRepositioning_switch").prop("checked"));
 			GM_setValue("preloader_enabled", $("#preloader_switch").prop("checked"));
 			GM_setValue("browseThumbnailLinks_enabled", $("#browseThumbnailLinks_switch").prop("checked"));
+			GM_setValue("recordKeeper_enabled", $("#recordKeeper_switch").prop("checked"));
 		}
 
 		/*******************************************************
@@ -1013,7 +1343,7 @@ else
 			if(!$("#unstickedHeader_switch").prop("checked"))
 			{
 				$("#automaticRepositioning_switch").prop("checked",false);
-				$("#seamlessReader_switch").prop("checked",false);
+				$("#seamlessViewing_switch").prop("checked",false);
 				$("#unstickedHeaderScope_global").prop("checked",false);
 				$("#unstickedHeaderScope_reader").prop("checked",false);
 			}
@@ -1036,6 +1366,12 @@ else
 		
 		// Tag Search Links
 		$("#tagSearchLinks_switch").change(function()
+		{
+			commitOptions();
+		});
+		
+		// Record Keeper
+		$("#recordKeeper_switch").change(function()
 		{
 			commitOptions();
 		});
@@ -1085,9 +1421,9 @@ else
 		
 		
 		// Seamless Reader
-		$("#seamlessReader_switch").change(function()
+		$("#seamlessViewing_switch").change(function()
 		{
-			if($("#seamlessReader_switch").prop("checked"))
+			if($("#seamlessViewing_switch").prop("checked"))
 			{
 				$("#unstickedHeader_switch").prop("checked",true);
 				enforceUnstickiedHeaderScope();
@@ -1107,7 +1443,7 @@ else
 			}
 			else
 			{
-				$("#seamlessReader_switch").prop("checked",false);
+				$("#seamlessViewing_switch").prop("checked",false);
 				enforceUnstickiedHeaderScope();
 			}
 			commitOptions();
@@ -1119,7 +1455,7 @@ else
 		{
 			if(!$("#preloader_switch").prop("checked"))
 			{
-				$("#seamlessReader_switch").prop("checked",false)
+				$("#seamlessViewing_switch").prop("checked",false)
 			}
 			commitOptions();
 		});
@@ -1127,6 +1463,16 @@ else
 }
 
 
+
+
+
+/*******************************************************
+* Check if a redirect is needed first.
+*******************************************************/
+if((tsuminoEnhanced.onReader) && (GM_getValue("seamlessViewing_enabled")))
+{
+	tsuminoEnhanced.seamlessViewing.redirection();
+}
 
 /*******************************************************
 * Handle Tsumino Enhanced upgrades if necessary.
@@ -1155,6 +1501,11 @@ if (!tsuminoEnhanced.onConfig)
 			tsuminoEnhanced.unstickyHeader();
 		});
 	}
+	if(GM_getValue("recordKeeper_enabled"))
+	{
+		tsuminoEnhanced.utility.log("Starting Record Keeper Enhancement...");
+		tsuminoEnhanced.recordKeeper.init();
+	}
 }
 
 // Browsing Enhancements
@@ -1174,20 +1525,40 @@ if(tsuminoEnhanced.onSearch)
 
 // Reader Enhancements
 if (tsuminoEnhanced.onReader)
-{
+{	
 	// Run when DOM is ready.
 	$( document ).ready(function()
 	{
 		tsuminoEnhanced.utility.enhanceReader();
-		if((GM_getValue("unstickedHeader_enabled") && GM_getValue("unstickedHeader_scope") == "Reader")) { tsuminoEnhanced.unstickyHeader(); }
-		if (GM_getValue("automaticRepositioning_enabled")) { tsuminoEnhanced.automaticRepositioning(); }
-		if (GM_getValue("slideshow_enabled")) { tsuminoEnhanced.slideshow.init(); }
-		if (GM_getValue("seamlessReader_enabled")) { tsuminoEnhanced.seamlessReader.init(); }
+		if((GM_getValue("unstickedHeader_enabled") && GM_getValue("unstickedHeader_scope") == "Reader")) 
+		{ 
+			tsuminoEnhanced.utility.log("Starting Unstickied Header Enhancement...");
+			tsuminoEnhanced.unstickyHeader(); 
+		}
+		if (GM_getValue("automaticRepositioning_enabled")) 
+		{ 
+			tsuminoEnhanced.utility.log("Starting Automatic Repositioning Enhancement...");
+			tsuminoEnhanced.automaticRepositioning(); 
+		}
+		if (GM_getValue("slideshow_enabled")) 
+		{ 
+			tsuminoEnhanced.utility.log("Starting Slideshow Enhancement...");
+			tsuminoEnhanced.slideshow.init(); 
+		}
+		if (GM_getValue("seamlessViewing_enabled")) 
+		{ 
+			tsuminoEnhanced.utility.log("Starting Seamless Viewing Enhancement...");
+			tsuminoEnhanced.seamlessViewing.init();
+		}
 	});
 	
 	// Run when the page and all assets have fully completed loaded.
 	$( window ).load(function()
 	{
-		if (GM_getValue("preloader_enabled")) { tsuminoEnhanced.preloader(); }
+		if (GM_getValue("preloader_enabled")) 
+		{ 
+			tsuminoEnhanced.utility.log("Initial page load complete. Starting Preloader Enhancement...");
+			tsuminoEnhanced.preloader.loader = tsuminoEnhanced.preloader.init(); 
+		}
 	});
 }
