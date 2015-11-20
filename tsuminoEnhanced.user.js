@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.3.1.1
+// @version      1.3.1.2
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include		 http://www.tsumino.com/*
@@ -23,7 +23,7 @@
 var tsuminoEnhanced = {};
 
 // Current Version
-tsuminoEnhanced.version = "1.3.1.1";
+tsuminoEnhanced.version = "1.3.1.2";
 
 // Is Debug mode on?
 tsuminoEnhanced.debugging = false;
@@ -216,10 +216,6 @@ tsuminoEnhanced.utility.upgradeHandler = function()
 		{ 
 			GM_setValue("seamlessViewing_enabled",true);
 			GM_deleteValue("seamlessReader_enabled");
-		}
-		else
-		{
-			GM_setValue("seamlessViewing_enabled",false);
 		}
 		
 		// When upgrade handling is complete, set previous version to current version.
