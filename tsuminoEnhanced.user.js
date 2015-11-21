@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.3.1.3
+// @version      1.3.2.0
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include		 http://www.tsumino.com/*
@@ -23,7 +23,7 @@
 var tsuminoEnhanced = {};
 
 // Current Version
-tsuminoEnhanced.version = "1.3.1.3";
+tsuminoEnhanced.version = "1.3.2.0";
 
 // Is Debug mode on?
 tsuminoEnhanced.debugging = true;
@@ -920,6 +920,7 @@ tsuminoEnhanced.seamlessViewing.changePage = function(pageNumber)
 	
 	function changePageCommon(pageNumber)
 	{		
+		pageNumber = parseInt(pageNumber);
 		// Update page and location variables.
 		tsuminoEnhanced.reader.currentPage = pageNumber;
 		tsuminoEnhanced.reader.prevPage = pageNumber-1;
@@ -996,6 +997,10 @@ tsuminoEnhanced.seamlessViewing.changePage = function(pageNumber)
 				tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
 				dfd.resolve();
 			});
+		}
+		if (GM_getValue("pageJumping_enabled"))
+		{
+			$("#tsuminoEnhanced_pageJumper").val(pageNumber);
 		}
 	}
 	// If the user requested a page that was less than 1 or greater than the total number of pages, stop.
@@ -1074,6 +1079,32 @@ tsuminoEnhanced.singlePageView = function()
 }
 
 /*******************************************************
+* Page Jumping - Reader Enhancement
+*******************************************************/
+tsuminoEnhanced.pageJumping = function()
+{
+	$("#tsuminoEnhanced_pagination").after("<h1 style='display:inline;'>Jump to page: </h1><select id='tsuminoEnhanced_pageJumper'></select><br />");
+	for(i = 1; i <= tsuminoEnhanced.reader.totalPages; i++)
+	{
+		$("#tsuminoEnhanced_pageJumper").append("<option value='"+i+"'>"+i+"</option>");
+	}
+	$("#tsuminoEnhanced_pageJumper").val(tsuminoEnhanced.reader.currentPage);
+	$("#tsuminoEnhanced_pageJumper").change(function()
+	{
+		if(GM_getValue("seamlessViewing_enabled"))
+		{
+			tsuminoEnhanced.seamlessViewing.changePage($("#tsuminoEnhanced_pageJumper").val());
+		}
+		else
+		{
+			window.location.href = tsuminoEnhanced.tsumino.readerURL + tsuminoEnhanced.reader.currentBook + "/" + $("#tsuminoEnhanced_pageJumper").val();
+		}
+	});
+}
+
+
+
+/*******************************************************
 * Thumbnail Links - Browsing Enhancement
 *******************************************************/
 tsuminoEnhanced.browseThumbnailLinks = function()
@@ -1102,7 +1133,7 @@ if (!tsuminoEnhanced.onConfig)
 		$("#tsuminoEnhancedNavlink").click(function(){tsuminoEnhanced.utility.toConfig();});
 		
 		// Add Tsumino Enhanced styles.
-		$("head").append("<style>.tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_preloaderMessage{margin-left:auto;margin-right:auto; width:8em; text-align:center;}</style>");
+		$("head").append("<style>.tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_preloaderMessage{margin-left:auto;margin-right:auto; width:8em; text-align:center;}select,select option{background-color:#1a1a1a;color:#fff}select{cursor: pointer;border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;outline: 0;}</style>");
 	});
 }
 /*******************************************************
@@ -1232,6 +1263,10 @@ else
 		$("#readerEnhancements").append("<div id='preloaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='preloader_switch' name='preloader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='preloader_switch'></label></div><div class='fauxCell'><h2>Preloader</h2></div></div><div class='optionDescription'>Automatically preloads the next image in the background.<br /></div></div>");
 		if(GM_getValue("preloader_enabled")){$("#preloader_switch").prop("checked",true);}
 		
+		// Page Jumping - Options
+		$("#readerEnhancements").append("<div id='preloaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='pageJumping_switch' name='pageJumping_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='pageJumping_switch'></label></div><div class='fauxCell'><h2>Page Jumping</h2></div></div><div class='optionDescription'>Adds a dropdown box for skipping directly to specific pages.<br /></div></div>");
+		if(GM_getValue("pageJumping_enabled")){$("#pageJumping_switch").prop("checked",true);}
+		
 		
 		/*******************************************************
 		* Search Enhancements
@@ -1283,7 +1318,7 @@ else
 		* End of Enhancement Configuration Options
 		*******************************************************/
 		// Add the "Return to Tsumino" button.
-		$("body").append("<div id='tsuminoReturnButtonContainer'><a id='tsuminoReturnButton' class='tsuminoEnhancedButton'>Return to Tsumino</a></div>");
+		$("body").append("<div id='tsuminoReturnButtonContainer'><a id='tsuminoReturnButton' class='tsuminoEnhancedButton'>Return to Tsumino</a><br /><br /></div>");
 		$("#tsuminoReturnButton").click(function(){ tsuminoEnhanced.utility.backToTsumino(); });
 		
 		
@@ -1324,6 +1359,7 @@ else
 			GM_setValue("preloader_enabled", $("#preloader_switch").prop("checked"));
 			GM_setValue("browseThumbnailLinks_enabled", $("#browseThumbnailLinks_switch").prop("checked"));
 			GM_setValue("recordKeeper_enabled", $("#recordKeeper_switch").prop("checked"));
+			GM_setValue("pageJumping_enabled",$("#pageJumping_switch").prop("checked"));
 		}
 
 		/*******************************************************
@@ -1386,6 +1422,11 @@ else
 		
 		// Record Keeper
 		$("#recordKeeper_switch").change(function()
+		{
+			commitOptions();
+		});
+		
+		$("#pageJumping_switch").change(function()
 		{
 			commitOptions();
 		});
@@ -1563,6 +1604,11 @@ if (tsuminoEnhanced.onReader)
 		{ 
 			tsuminoEnhanced.utility.log("Starting Seamless Viewing Enhancement...");
 			tsuminoEnhanced.seamlessViewing.init();
+		}
+		if (GM_getValue("pageJumping_enabled"))
+		{
+			tsuminoEnhanced.utility.log("Starting Page Jumping Enhancement...");
+			tsuminoEnhanced.pageJumping();
 		}
 	});
 	
