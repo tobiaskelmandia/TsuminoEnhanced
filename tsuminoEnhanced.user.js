@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.3.2.0
+// @version      1.4.0.0
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include		 http://www.tsumino.com/*
@@ -23,7 +23,7 @@
 var tsuminoEnhanced = {};
 
 // Current Version
-tsuminoEnhanced.version = "1.3.2.0";
+tsuminoEnhanced.version = "1.4.0.0";
 
 // Is Debug mode on?
 tsuminoEnhanced.debugging = true;
@@ -521,6 +521,36 @@ tsuminoEnhanced.utility.backToTsumino = function()
 	window.location.href = GM_getValue("returnTo");
 }
 
+/*******************************************************
+* Loader - Utility Function
+*******************************************************/
+tsuminoEnhanced.utility.loader = function(pageNumber)
+{
+	var dfd = jQuery.Deferred();
+	var newImageSrc = tsuminoEnhanced.tsumino.imgPrefix + tsuminoEnhanced.reader.currentBook + "/";
+	
+	// Make sure the page exists first.
+	if((pageNumber <= tsuminoEnhanced.reader.totalPages) && (pageNumber > 0))
+	{
+		var newImageSrc = newImageSrc + pageNumber;
+		tsuminoEnhanced.utility.log("Preparing Image: " + pageNumber + "...");
+		$("body").append("<img id='tsuminoEnhanced_imageLoader_"+pageNumber+"' style='display:none;'>");
+		$("#tsuminoEnhanced_imageLoader_"+pageNumber).attr("src",newImageSrc);
+		$( "#tsuminoEnhanced_imageLoader_"+pageNumber).load(function() 
+		{
+			tsuminoEnhanced.utility.log("Image "+pageNumber+" is ready.");
+			$("#tsuminoEnhanced_imageLoader_"+pageNumber).remove();
+			dfd.resolve();
+		});
+	}
+	else
+	{
+		dfd.resolve();
+	}
+	return dfd.promise();
+}
+
+
 
 /*******************************************************
 * Unstickied Header - General Enhancement
@@ -827,7 +857,7 @@ tsuminoEnhanced.seamlessViewing.init = function()
 	
 	// Add the loading indicator.
 	$(".reader-img").parent().parent().append("<div id='tsuminoEnhanced_messageContainer' style='width:inherit; position:absolute; float:right; bottom:5px;'></div>");
-	$("#tsuminoEnhanced_messageContainer").append("<div class='tsuminoEnhanced_bubbleDisplay' id='tsuminoEnhanced_preloaderMessage'>Loading...</div>");
+	$("#tsuminoEnhanced_messageContainer").append("<div class='tsuminoEnhanced_bubbleDisplay' id='tsuminoEnhanced_loaderMessage'>Loading...</div>");
 }
 
 // Seamless Reader - Replace Keybinds.
@@ -949,10 +979,9 @@ tsuminoEnhanced.seamlessViewing.changePage = function(pageNumber)
 				tsuminoEnhanced.slideshow.run();
 			}
 		}
-		$("#tsuminoEnhanced_preloaderMessage").css("display","none");
+		$("#tsuminoEnhanced_loaderMessage").css("display","none");
 		var newImageSrc = tsuminoEnhanced.tsumino.imgPrefix + tsuminoEnhanced.reader.currentBook + "/" + pageNumber;
 		$(".reader-img").attr("src",newImageSrc);
-		tsuminoEnhanced.preloader.loader = tsuminoEnhanced.preloader.init();
 		window.location.href = tsuminoEnhanced.currentLocation + "#" + pageNumber;
 	}
 	
@@ -960,44 +989,18 @@ tsuminoEnhanced.seamlessViewing.changePage = function(pageNumber)
 	if((pageNumber <= tsuminoEnhanced.reader.totalPages) && (pageNumber > 0))
 	{
 		// Display the loading message.
-		$("#tsuminoEnhanced_preloaderMessage").css("display","block");
+		$("#tsuminoEnhanced_loaderMessage").css("display","block");
 		
-		// If loading the next page.
-		if((tsuminoEnhanced.preloader.loader) && (pageNumber == (tsuminoEnhanced.reader.currentPage + 1)))
+		// Load the requested page into the cache. Once ready, replace the previous image.
+		tsuminoEnhanced.utility.activeLoader = tsuminoEnhanced.utility.loader(pageNumber);
+		// Once the requested page is prepared, continue.
+		$.when(tsuminoEnhanced.utility.activeLoader).then(function()
 		{
-			tsuminoEnhanced.utility.log("Preloader is working. Waiting for next page to load.");
-			// Wait for the preloader to finish, then continue.
-			$.when(tsuminoEnhanced.preloader.loader).then(function()
-			{
-				changePageCommon(pageNumber);
-				tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
-				dfd.resolve();
-			});
-		}
-		// If the user tried to progress before the page was loaded, wait for the preloader to be ready.
-		else if((!tsuminoEnhanced.preloader.loader) && (pageNumber == (tsuminoEnhanced.reader.currentPage + 1)))
-		{
-			tsuminoEnhanced.utility.log("Preloader is not ready yet. Trying again in 1 second.");
-			
-			// Check every second to see if the preloader is ready.
-			setTimeout(function()
-			{
-				tsuminoEnhanced.seamlessViewing.changePage(pageNumber);
-				dfd.resolve();
-			},1000);
-		}
-		// If the requested page wasn't already being preloaded, preload it.
-		else
-		{
-			tsuminoEnhanced.preloader.loader = tsuminoEnhanced.preloader.init(pageNumber);
-			// Once the requested page is preloaded, continue.
-			$.when(tsuminoEnhanced.preloader.loader).then(function()
-			{
-				changePageCommon(pageNumber);
-				tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
-				dfd.resolve();
-			});
-		}
+			changePageCommon(pageNumber);
+			tsuminoEnhanced.utility.log("Image " + pageNumber + " has been placed in the reader.");
+			dfd.resolve();
+		});
+
 		if (GM_getValue("pageJumping_enabled"))
 		{
 			$("#tsuminoEnhanced_pageJumper").val(pageNumber);
@@ -1034,48 +1037,6 @@ tsuminoEnhanced.seamlessViewing.redirection = function()
 		
 		window.location.href = newLocation;
 	}
-}
-
-/*******************************************************
-* Preloader - Reader Enhancement
-*******************************************************/
-tsuminoEnhanced.preloader = {};
-
-tsuminoEnhanced.preloader.init = function(pageNumber)
-{
-	var dfd = jQuery.Deferred();
-	var newImageSrc = tsuminoEnhanced.tsumino.imgPrefix + tsuminoEnhanced.reader.currentBook + "/";
-	// If no page number was defined, try to load the next page.
-	pageNumber = pageNumber || tsuminoEnhanced.reader.nextPage;
-	
-	// Make sure the page exists first.
-	if((pageNumber <= tsuminoEnhanced.reader.totalPages) && (pageNumber > 0))
-	{
-		//tsuminoEnhanced.reader.nextPage
-		var newImageSrc = newImageSrc + pageNumber;
-		tsuminoEnhanced.utility.log("Preloading Image: " + pageNumber + "...");
-		$("body").append("<img id='tsuminoEnhanced_imagePreload_"+pageNumber+"' style='display:none;'>");
-		$("#tsuminoEnhanced_imagePreload_"+pageNumber).attr("src",newImageSrc);
-		$( "#tsuminoEnhanced_imagePreload_"+pageNumber).load(function() 
-		{
-			tsuminoEnhanced.utility.log("Image "+pageNumber+" preloaded.");
-			$("#tsuminoEnhanced_imagePreload_"+pageNumber).remove();
-			dfd.resolve();
-		});
-	}
-	else
-	{
-		dfd.resolve();
-	}
-	return dfd.promise();
-}
-
-/*******************************************************
-* Single Page View - Reader Enhancement
-*******************************************************/
-tsuminoEnhanced.singlePageView = function()
-{
-	// Coming Soon... (Pending Staff Approval)
 }
 
 /*******************************************************
@@ -1133,7 +1094,7 @@ if (!tsuminoEnhanced.onConfig)
 		$("#tsuminoEnhancedNavlink").click(function(){tsuminoEnhanced.utility.toConfig();});
 		
 		// Add Tsumino Enhanced styles.
-		$("head").append("<style>.tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_preloaderMessage{margin-left:auto;margin-right:auto; width:8em; text-align:center;}select,select option{background-color:#1a1a1a;color:#fff}select{cursor: pointer;border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;outline: 0;}</style>");
+		$("head").append("<style>.tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_loaderMessage{margin-left:auto;margin-right:auto; width:8em; text-align:center;}select,select option{background-color:#1a1a1a;color:#fff}select{cursor: pointer;border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;outline: 0;}</style>");
 	});
 }
 /*******************************************************
@@ -1252,19 +1213,15 @@ else
 		}
 			
 		// Seamless Viewing - Options
-		$("#readerEnhancements").append("<div id='seamlessViewing_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessViewing_switch' name='seamlessViewing_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessViewing_switch'></label></div><div class='fauxCell'><h2>Seamless Viewing</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />Requires the following Enhancements:<br /><span class='tsuminoEnhancement'>Unstickied Header</span><br /><span class='tsuminoEnhancement'>Automatic Repositioning</span><br /><span class='tsuminoEnhancement'>Preloader</span></div></div>");
+		$("#readerEnhancements").append("<div id='seamlessViewing_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='seamlessViewing_switch' name='seamlessViewing_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='seamlessViewing_switch'></label></div><div class='fauxCell'><h2>Seamless Viewing</h2></div></div><div class='optionDescription'>Makes the Tsumino Reader load doujin pages without needing to reload the webpage.<br />Requires the following Enhancements:<br /><span class='tsuminoEnhancement'>Unstickied Header</span><br /><span class='tsuminoEnhancement'>Automatic Repositioning</span></div></div>");
 		if(GM_getValue("seamlessViewing_enabled")){$("#seamlessViewing_switch").prop("checked",true);}
 		
 		// Automatic Repositioning - Options
 		$("#readerEnhancements").append("<div id='automaticRepositioningGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='automaticRepositioning_switch' name='automaticRepositioning_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='automaticRepositioning_switch'></label></div><div class='fauxCell'><h2>Automatic Repositioning</h2></div></div><div class='optionDescription'>Automatically scrolls the page down to the top of the doujin image.<br/>Requires <span class='tsuminoEnhancement'>Unstickied Header</span>.<br /></div></div>");
 		if(GM_getValue("automaticRepositioning_enabled")){$("#automaticRepositioning_switch").prop("checked",true);}
 		
-		// Preloader - Options
-		$("#readerEnhancements").append("<div id='preloaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='preloader_switch' name='preloader_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='preloader_switch'></label></div><div class='fauxCell'><h2>Preloader</h2></div></div><div class='optionDescription'>Automatically preloads the next image in the background.<br /></div></div>");
-		if(GM_getValue("preloader_enabled")){$("#preloader_switch").prop("checked",true);}
-		
 		// Page Jumping - Options
-		$("#readerEnhancements").append("<div id='preloaderGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='pageJumping_switch' name='pageJumping_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='pageJumping_switch'></label></div><div class='fauxCell'><h2>Page Jumping</h2></div></div><div class='optionDescription'>Adds a dropdown box for skipping directly to specific pages.<br /></div></div>");
+		$("#readerEnhancements").append("<div id='pageJumpingGroup' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='pageJumping_switch' name='pageJumping_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat'/><label for='pageJumping_switch'></label></div><div class='fauxCell'><h2>Page Jumping</h2></div></div><div class='optionDescription'>Adds a dropdown box for skipping directly to specific pages.<br /></div></div>");
 		if(GM_getValue("pageJumping_enabled")){$("#pageJumping_switch").prop("checked",true);}
 		
 		
@@ -1356,7 +1313,6 @@ else
 			GM_setValue("slideshow_displayTimer", $("#slideshow_displayTimer_switch").prop("checked"));
 			GM_setValue("seamlessViewing_enabled", $("#seamlessViewing_switch").prop("checked"));
 			GM_setValue("automaticRepositioning_enabled", $("#automaticRepositioning_switch").prop("checked"));
-			GM_setValue("preloader_enabled", $("#preloader_switch").prop("checked"));
 			GM_setValue("browseThumbnailLinks_enabled", $("#browseThumbnailLinks_switch").prop("checked"));
 			GM_setValue("recordKeeper_enabled", $("#recordKeeper_switch").prop("checked"));
 			GM_setValue("pageJumping_enabled",$("#pageJumping_switch").prop("checked"));
@@ -1483,7 +1439,6 @@ else
 				$("#unstickedHeader_switch").prop("checked",true);
 				enforceUnstickiedHeaderScope();
 				$("#automaticRepositioning_switch").prop("checked",true);
-				$("#preloader_switch").prop("checked",true);
 			}
 			commitOptions();
 		});
@@ -1500,17 +1455,6 @@ else
 			{
 				$("#seamlessViewing_switch").prop("checked",false);
 				enforceUnstickiedHeaderScope();
-			}
-			commitOptions();
-		});
-		
-		
-		// Preloader
-		$("#preloader_switch").change(function()
-		{
-			if(!$("#preloader_switch").prop("checked"))
-			{
-				$("#seamlessViewing_switch").prop("checked",false)
 			}
 			commitOptions();
 		});
@@ -1615,10 +1559,6 @@ if (tsuminoEnhanced.onReader)
 	// Run when the page and all assets have fully completed loaded.
 	$( window ).load(function()
 	{
-		if (GM_getValue("preloader_enabled")) 
-		{ 
-			tsuminoEnhanced.utility.log("Initial page load complete. Starting Preloader Enhancement...");
-			tsuminoEnhanced.preloader.loader = tsuminoEnhanced.preloader.init(); 
-		}
+
 	});
 }
