@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tsumino Enhanced
 // @namespace    tobias.kelmandia@gmail.com
-// @version      1.4.1.0
+// @version      1.4.2.0
 // @description  Adds multiple configurable enhancements, tweaks, and features to Tsumino.com
 // @author       Toby
 // @include		 http://www.tsumino.com/*
@@ -23,7 +23,7 @@
 var tsuminoEnhanced = {};
 
 // Current Version
-tsuminoEnhanced.version = "1.4.1.0";
+tsuminoEnhanced.version = "1.4.2.0";
 
 // Is Debug mode on?
 tsuminoEnhanced.debugging = true;
@@ -62,13 +62,26 @@ if(RegExp("https://www.tsumino.com*").exec(tsuminoEnhanced.currentLocation)) { t
 if(RegExp("https://tsumino.com*").exec(tsuminoEnhanced.currentLocation)) { tsuminoEnhanced.tsumino.baseURL = "https://tsumino.com"; }
 
 /*******************************************************
-* Tsumino Enhanced - Config Page Variables
+* Tsumino Enhanced - Special Page Variables
 *******************************************************/
-// Tsumino Enhanced configuration location.
-tsuminoEnhanced.configURL = tsuminoEnhanced.tsumino.baseURL + "/Enhanced";
+// Tsumino Enhanced config page structure
+tsuminoEnhanced.configPrefix = "/Enhanced";
+
+// Tsumino Enhanced full config page location
+tsuminoEnhanced.configURL = tsuminoEnhanced.tsumino.baseURL + tsuminoEnhanced.configPrefix;
 
 // Is the user on the Tsumino Enhanced config page?
 if (tsuminoEnhanced.currentLocation == tsuminoEnhanced.configURL) { tsuminoEnhanced.onConfig = true; }
+
+
+// Tsumino Enhanced Browse Tags Lite page structure.
+tsuminoEnhanced.btlPrefix = "/Enhanced/Tags";
+
+// Tsumino Enhanced Browse Tags Lite full URL.
+tsuminoEnhanced.btlURL = tsuminoEnhanced.tsumino.baseURL + tsuminoEnhanced.btlPrefix;
+
+// Is the user on the Tsumino Enhanced Browse Tags page?
+tsuminoEnhanced.onBTL = RegExp(tsuminoEnhanced.btlURL + "*").exec(tsuminoEnhanced.currentLocation);
 
 /*******************************************************
 * Book Info Variables
@@ -176,6 +189,182 @@ tsuminoEnhanced.tsumino.imgPrefix = "/Home/GetPage/";
 // Tsumino's Index by X link prefix
 tsuminoEnhanced.tsumino.indexByPrefix = "/Home/indexBy";
 
+/*******************************************************
+* Misc Other Variables
+*******************************************************/
+// Enhanced Favicon Data URI
+tsuminoEnhanced.favicon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wsRDAY5sIzTWwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAEaUlEQVRYw+2XW2xVRRSGv5nZ+1x6di/QUjinLdVUArVISIoJgRcEAoEQY4LxwUB8Ml4evEQTJGhQQ/SVGI2aaAzyohiDCMREEpUol4ACRROubSkl1tKeXjhnn+uePT7s5hRigJ62hhfmbe+ZWfOv9a/1rxmxZMkSwz0ckns87gOwpsOIERKUBcaAtDB2GF33IDI9iBrqnRwAY0XQNXGswe7gW9n4lbPwEm14TYvRtc2YaBVGWmCHMSqEKLiokT58pxa/JgFA7OB72Od/RmDKA6Brm0ht+piKQzsJnz2Au34rxYeWg1TI0T7UQBem4OI1txP68weiv32OzIwAUJi/AnfDmwC467ZQc/kIePnyckDk3cBY6yp8pw5n/7vEvn8HgOhPH+Hs20747EHwCnhzFyNy6QB41Rwyj704FkaDfeUk+Lr8JBT5NFbPKfyIg7EjAIQ6j4JXIP/oU4H9aDVYIcKn9yF8DwCvYSEmNhMAu+s4sf07SnNlUSCzNwhd+pXM6pcxoVjpvxrqRVfHybeuJt+2JojSghUUW5aC1vjVcwLDvR1ED3+K8HKTrwKRTgY8btgG2sOEohinDrw8hYVrsXtOEzm5B5lOggAMpJ7+AKu3g9iBHcjM8NTKULpJRGoAvyaBut5J9PCXqIFO5I1+MAahi+Tan0QUcwHXQPWHTyC8PEIXpy5EcrQfNXiFyLHdVO1+Dqv3DH5lPcIrlA7QM5tIb3yfwoKVpdzBmEAbJjBUIpF4+7YUeDlCncdQfecRukC+bS2ZDdtACOzeDgD82rl4jYvQ8Vbs7hN4DW3klm5CGO+uInRXCoy0AlGprMezQvgzGgAotiwjenRX4EHfBUQ+jV85C3fdFkTeDajT3jRIsRB4jYvIrHoJpEJdvzwW5tT4El0ABHL0Hyq/egVxU80bgtycfBXoIvaFX3BG/kbkXfTMuWTWvwFe4VbBMgaZGkD4mkLLMorzlhP660fsax1Tb0Yi7yKyNygsWImOz79FJUt++hov3srI899gQhXI9CDW1TNTp8CLt5J+fDvGqUOkk9hdx6BpMX5NHD9ajcyOBh1QBKCcvdtQY83rTvI7YQBW3zmqP9uMiVYj04Nklz0zFhYZHA6YUAWoEHb3Caz+ixhlgxCgLAwSjAZdvG0u3P0+oGz8qtm4a17Dr6oHY1D9l0rTfmU9SInX+Aju2tfRs1rwYzMCYKEKVP9FnL1vIdxkeQB8pxZd+wC59o3oxMNUHNqJHL5GavMnIMe3iVwKtIcfrcGvaUAUs6hhNygB3wMrjIk4UA6AYuMisiteQM+eh0xexfl2K1bfOYrN7UHYw85/ylANduN8/Soo+yYvNML45eeAzAxj9ZxCDXQR+X0PKtlT4j7Q3/EyNHYElEKmrgc8T7AH3BGAGuoleuQLUDaimB1f3PMHcvga4TP7xsGmkxghsfovTu+lVPhewOHN/4xP1a5nb/FSDV3F7jxO+PR3kwIgputlNBHZ/V/fBWKS++6/jO4D+BdYdNLmP/zOiQAAAABJRU5ErkJggg==";
+
+
+
+/*******************************************************
+* Tsumino Enhanced - Initialization
+*******************************************************/
+tsuminoEnhanced.init = function()
+{
+	// Check if a redirect is needed first.	
+	if((GM_getValue("seamlessViewing_enabled")))
+	{
+		if(tsuminoEnhanced.onReader || tsuminoEnhanced.onAuth)
+		{
+			tsuminoEnhanced.seamlessViewing.redirection();
+		}
+	}
+
+	// Always run.
+	$(document).ready(function()
+	{
+		tsuminoEnhanced.utility.upgradeHandler();
+	});
+	
+	/*******************************************************
+	* Enhancement Activation
+	*******************************************************/
+	// Global Activation
+	if (!tsuminoEnhanced.onConfig)
+	{
+		// Add Tsumino Enhanced config link and styles.
+		tsuminoEnhanced.utility.prepwork();
+		
+		// If Tag Search Links are enabled.
+		if(GM_getValue("tagSearchLinks_enabled"))
+		{
+			tsuminoEnhanced.utility.log("Starting Search Tag Links Enhancement...");
+			tsuminoEnhanced.utility.enhanceTags();
+		}
+		// If Unstickied Header is Enabled, and scope is set to Global.
+		if((GM_getValue("unstickedHeader_enabled") && GM_getValue("unstickedHeader_scope") == "Global"))
+		{
+			$( document ).ready(function()
+			{
+				tsuminoEnhanced.utility.log("Starting Unstickied Header Enhancement...");
+				tsuminoEnhanced.unstickyHeader();
+			});
+		}
+		// Record Keeper
+		if(GM_getValue("recordKeeper_enabled"))
+		{
+			tsuminoEnhanced.utility.log("Starting Record Keeper Enhancement...");
+			tsuminoEnhanced.recordKeeper.init();
+		}
+		
+		// Style Tweaks
+		$( document ).ready(function()
+		{
+			tsuminoEnhanced.utility.log("Activating Style Tweaks...");
+			tsuminoEnhanced.styleTweaks.init();
+		});
+	}
+
+	// Browsing Enhancements
+	if (tsuminoEnhanced.isBrowsing)
+	{
+		$( document ).ready(function()
+		{
+			tsuminoEnhanced.utility.log("Starting Thumbnail Links Enhancement...");
+			if (GM_getValue("browseThumbnailLinks_enabled")) { tsuminoEnhanced.browseThumbnailLinks(); }
+		});
+	}
+
+	// Book Enhancements
+	if(tsuminoEnhanced.onBook)
+	{
+		$(document).ready(function()
+		{
+			/* Default */
+			tsuminoEnhanced.utility.log("Alphebetizing book tags...");
+			tsuminoEnhanced.alphabeticalTags();
+		});
+	}
+
+	/* If the user is on the Search page */
+	if(tsuminoEnhanced.onSearch)
+	{
+		tsuminoEnhanced.utility.enhanceSearch();
+	}
+
+	// Reader Enhancements
+	if (tsuminoEnhanced.onReader)
+	{	
+		// Run when DOM is ready.
+		$( document ).ready(function()
+		{
+			tsuminoEnhanced.utility.enhanceReader();
+			if((GM_getValue("unstickedHeader_enabled") && GM_getValue("unstickedHeader_scope") == "Reader")) 
+			{ 
+				tsuminoEnhanced.utility.log("Starting Unstickied Header Enhancement...");
+				tsuminoEnhanced.unstickyHeader(); 
+			}
+			if (GM_getValue("automaticRepositioning_enabled")) 
+			{ 
+				tsuminoEnhanced.utility.log("Starting Automatic Repositioning Enhancement...");
+				tsuminoEnhanced.automaticRepositioning(); 
+			}
+			if (GM_getValue("slideshow_enabled")) 
+			{ 
+				tsuminoEnhanced.utility.log("Starting Slideshow Enhancement...");
+				tsuminoEnhanced.slideshow.init(); 
+			}
+			if (GM_getValue("seamlessViewing_enabled")) 
+			{ 
+				if(GM_getValue("seamlessViewing_style") == "Classic")
+				{
+					tsuminoEnhanced.utility.log("Starting Seamless Viewing in Classic Mode...");
+					tsuminoEnhanced.seamlessViewing.classic.init();
+				}
+				else if(GM_getValue("seamlessViewing_style") == "InfinityScroll")
+				{
+					tsuminoEnhanced.utility.log("Starting Seamless Viewing in Infinity Scrolling Mode...");
+					tsuminoEnhanced.seamlessViewing.infinityScroll.init();
+				}
+			}
+			if (GM_getValue("pageJumping_enabled"))
+			{
+				tsuminoEnhanced.utility.log("Starting Page Jumping Enhancement...");
+				tsuminoEnhanced.pageJumping();
+			}
+		});
+
+		// Run when the page and all assets have fully completed loaded.
+		$( window ).load(function()
+		{
+			if (GM_getValue("preloader_enabled")) 
+			{ 
+				tsuminoEnhanced.utility.log("Initial page load complete. Starting Preloader Enhancement...");
+				tsuminoEnhanced.utility.loader.active = tsuminoEnhanced.utility.loader.init(); 
+			}
+		});
+	}
+	
+	// If Browse Tags Lite is enabled.
+	if(GM_getValue("browseTagsLite_enabled"))
+	{
+		if(tsuminoEnhanced.onBTL)
+		{
+			tsuminoEnhanced.utility.log("Starting Browse Tags Lite Enhancement...");
+			if(!tsuminoEnhanced.browseTagsLite.active)
+			{
+				tsuminoEnhanced.browseTagsLite.init();
+			}
+		}
+		else
+		{
+			tsuminoEnhanced.browseTagsLite.updateLink();
+		}
+		if(tsuminoEnhanced.onBrowseTags)
+		{
+			window.location.href = tsuminoEnhanced.btlURL;
+		}
+	}
+	else
+	{
+		if(tsuminoEnhanced.onBTL)
+		{
+			window.location.href = tsuminoEnhanced.tsumino.browseTagsURL;
+		}
+	}
+}
+
 
 
 
@@ -184,6 +373,28 @@ tsuminoEnhanced.tsumino.indexByPrefix = "/Home/indexBy";
 *******************************************************/
 tsuminoEnhanced.utility = {};
 
+
+/*******************************************************
+* Prepwork - Utility Function
+*******************************************************/
+tsuminoEnhanced.utility.prepwork = function()
+{
+	var stylesheet = ".tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_preloaderMessage{margin-left:auto;margin-right:auto; width:8em; text-align:center;}select,select option{background-color:#1a1a1a;color:#fff}select{cursor: pointer;border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;outline: 0;}";
+	
+	$( document ).ready(function()
+	{
+		if(!tsuminoEnhanced.stylesApplied)
+		{
+			// Add Tsumino Enhanced styles.
+			if($("style").length) { $("style").append(stylesheet); }
+			else { $("head").append("<style></style>"); $("style").append(stylesheet); }
+			tsuminoEnhanced.stylesApplied = true;
+		}
+		// Add link to Tsumino Enhanced config page.
+		$("ul.nav.navbar-nav:contains('FORUM')").append("<li><a id='tsuminoEnhancedNavlink' style='color:#22a7f0 !important; cursor:pointer;'>ENHANCED</a></li>");
+		$("#tsuminoEnhancedNavlink").click(function(){tsuminoEnhanced.utility.toConfig();});
+	});
+}
 
 /*******************************************************
 * Page killing utility. Should always be run ASAP.
@@ -771,6 +982,241 @@ tsuminoEnhanced.styleTweaks.blackBackground = function()
 {
 	$("body").css("background-color", "#000000");
 }
+
+
+
+/*******************************************************
+* Browsing Enhancements
+*******************************************************/
+
+/*******************************************************
+* Thumbnail Links - Browsing Enhancement
+*******************************************************/
+tsuminoEnhanced.browseThumbnailLinks = function()
+{
+	tsuminoEnhanced.utility.log("Thumbnail Links Enhancement is running.");
+	$(".overlay").each(function()
+	{
+		//tsuminoEnhanced.utility.log($(this).find("a.overlay-button")[0].href);
+		$(this).click(function()
+		{
+			$(this).find("a.overlay-button")[0].click();
+		});
+	});
+}
+
+
+
+/*******************************************************
+* Browse Tags Lite - Browsing Enhancement
+*******************************************************/
+tsuminoEnhanced.browseTagsLite = {};
+
+// Make Tsumino's Browse Tag link lead to the Enhanced tags page.
+tsuminoEnhanced.browseTagsLite.updateLink = function()
+{
+	$(document).ready(function()
+	{
+		var allTagsLink = $("a:contains('All Tags')")[0];
+		$(allTagsLink).attr("href",tsuminoEnhanced.btlPrefix);
+	});
+}
+
+// Browse Tags Lite - Initialization
+tsuminoEnhanced.browseTagsLite.init = function()
+{	
+	// Kill the page early.
+	tsuminoEnhanced.utility.killPage();
+	
+	// Create an alphabet array for loops.
+	var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	alphabet = alphabet.split("");
+	var separator = " - ";
+	var tagCounter = [];
+	var tagArray = [];
+	
+	// Click handler for displaying sections.
+	function tebtl_toggleDisplay(event)
+	{
+		if(event.data.letter == "*")
+		{
+			$(".tebtl_tagContainer").css("display","block");
+		}
+		else
+		{
+			$(".tebtl_tagContainer").css("display","none");
+			$("#tebtl_tgc_" + event.data.letter).css("display","block");
+		}
+	}
+	tsuminoEnhanced.browseTagsLite.active = true;
+	// Wait for DOM
+	$(document).ready(function()
+	{
+		// Run once the search page has been retrieved.
+		$.when(tsuminoEnhanced.browseTagsLite.getSearchPage()).then(function()
+		{
+			// Build a new page using the search page as a template.
+			var tsuminoHeadData = tsuminoEnhanced.browseTagsLite.searchPage;
+			tsuminoHeadData = tsuminoHeadData.split("<head>")[1];
+			tsuminoHeadData = tsuminoHeadData.split("</head>")[0];
+			$("head").append(tsuminoHeadData);
+			
+			// Alter basics.
+			$("title").text("Tsumino Enhanced - Browse Tags");
+			var favicon = $("link[rel='icon']")[0];
+			$(favicon).prop("href",tsuminoEnhanced.favicon);
+			
+			// Insert Enhanced styles specific to the special browse tags page.
+			$("style").append("#tsuminoEnhanced_browseTagsLite { padding:20px; } #tebtl_alphaLinks { font-size:1.5em; text-align:center; } .tebtl_ib{ display: inline-block;} #tebtl_tagContainers{ margin-bottom:20px; } body { overflow-y:scroll; }");
+			
+			var tsuminoBodyData = tsuminoEnhanced.browseTagsLite.searchPage;
+			tsuminoBodyData = tsuminoBodyData.split("<body>")[1];
+			tsuminoBodyData = tsuminoBodyData.split("</body>")[0];
+			$("body").append($(tsuminoBodyData)[0]);
+			tsuminoEnhanced.init();
+			tsuminoEnhanced.browseTagsLite.updateLink();
+			tsuminoEnhanced.utility.log($(tsuminoBodyData));
+			
+			$("body").append("<div id='tsuminoEnhanced_browseTagsLite'></div>");
+			
+			$(".active").removeClass("active");
+			$(".dropdown").addClass("active");
+
+			
+			var tsuminoScriptData = tsuminoEnhanced.browseTagsLite.searchPage;
+			tsuminoScriptData = tsuminoScriptData.split("<script src=");
+			for (i = 1; i < tsuminoScriptData.length ; i++)
+			{
+				var thisScript = tsuminoScriptData[i];
+				thisScript = thisScript.split("</script>")[0];
+				thisScript = "<script src=" + thisScript + "</script>";
+				$("body").append(thisScript);
+			}
+			
+			// Get the form elements with the tag names.
+			var newTagList = $(tsuminoEnhanced.browseTagsLite.searchPage).find("#inc-select")[0];
+			newTagList = $(newTagList).children();
+			tsuminoEnhanced.utility.log("Total # of tags: " + $(newTagList).length);
+			
+			// Clear out the existing page content and write the new structure.
+
+			$("#tsuminoEnhanced_browseTagsLite").append("<div id='tebtl_alphaLinks'></div>");
+			$("#tsuminoEnhanced_browseTagsLite").append("<div id='tebtl_tagContainers'></div>");
+			$("#tebtl_alphaLinks").append("<a href='javascript:;' id='tebtl_alphaLink_ALL'>*</a>" + separator);
+			$("#tebtl_alphaLink_ALL").click({letter : "*"},tebtl_toggleDisplay);
+			
+			// Generate alphabet links for navigation and set up containers for tags by letter.
+			for(i = 0; i < alphabet.length; i++)
+			{
+				tagCounter[alphabet[i]] = 0;
+				if(i >= (alphabet.length - 1)) { separator = ""; }
+				$("#tebtl_alphaLinks").append("<a href='javascript:;' id='tebtl_alphaLink_"+alphabet[i]+"'>" + alphabet[i] + "</a>" + separator);
+				$("#tebtl_alphaLink_" + alphabet[i]).click({letter : alphabet[i]},tebtl_toggleDisplay);
+				
+				$("#tebtl_tagContainers").append("<div class='tebtl_tagContainer' id='tebtl_tgc_"+alphabet[i]+"'><h2 id='tebtl_bl_"+alphabet[i]+"' class='tebtl_ib'>"+alphabet[i]+"&nbsp;</h2></div>");
+			}
+			
+			// Generate tag links and populate counters.
+			$(newTagList).each(function()
+			{
+				var thisTag = $(this)[0];
+				thisTag = $(thisTag).val();
+				var thisTagFL = thisTag.charAt(0);
+				tagCounter[thisTagFL]++;
+				var thisTagUrl = tsuminoEnhanced.tsumino.searchTagPrefix;
+				
+				tagArray.push(thisTag);
+				urlFormattedTag = tsuminoEnhanced.utility.replaceAll(thisTag," ","+");
+				idFormattedTag = tsuminoEnhanced.utility.replaceAll(thisTag," ","_");
+				thisTagUrl = thisTagUrl + urlFormattedTag;
+				$("#tebtl_tgc_" + thisTagFL).append("<a id='tebtl_tagLink_"+idFormattedTag+"' href='"+thisTagUrl+"'>" + thisTag + "</a><br />");
+				// If Search Tag Links Enhancement is also enabled.
+				if(GM_getValue("tagSearchLinks_enabled"))
+				{
+					$("#tebtl_tagLink_" + idFormattedTag).click(function()
+					{
+						GM_setValue("currentSearchedTags",thisTag);
+					});					
+				}
+				
+			});
+			
+			// Remove links from empty sections and add tag counters to populated sections.
+			for(i = 0; i < alphabet.length; i++)
+			{
+				if(tagCounter[alphabet[i]] == 0)
+				{
+					$("#tebtl_alphaLink_" + alphabet[i]).replaceWith(alphabet[i]);
+					$("#tebtl_tgc_" + alphabet[i]).append("<br />No tags that start with '"+alphabet[i]+"'.<br />");
+				}
+				else
+				{
+					var pluralize = "";
+					if(tagCounter[alphabet[i]] > 1) { pluralize = "s"; }
+					$("#tebtl_bl_" + alphabet[i]).after(" ("+tagCounter[alphabet[i]]+" tag"+pluralize+")<br />");
+				}
+			}
+		});
+	});
+}
+
+// Retrieves the Search page to get a current tag list.
+tsuminoEnhanced.browseTagsLite.getSearchPage = function()
+{
+	var dfd = jQuery.Deferred();
+	$.ajax(
+	{
+		method: "GET",
+		url: tsuminoEnhanced.tsumino.searchURL,
+		success: function(data)
+		{
+			tsuminoEnhanced.browseTagsLite.searchPage = data;
+			dataType: 'html',
+			dfd.resolve();
+		},
+		error: function() { tsuminoEnhanced.utility.log("Error retrieving search page."); }
+	});
+	return dfd.promise();
+}
+
+
+
+
+/*******************************************************
+* Book Enhancements
+*******************************************************/
+
+/*******************************************************
+* Alphabetical Tags - Book Enhancement
+* Default Behavior
+*******************************************************/
+tsuminoEnhanced.alphabeticalTags = function()
+{
+	var $tags = $("div.book-data").children(".book-tag");
+	$tags.sort(function(a,b)
+	{
+		var an = $(a).text();
+		var bn = $(b).text();
+
+		if(an > bn) 
+		{
+			return 1;
+		}
+		if(an < bn) 
+		{
+			return -1;
+		}
+		return 0;
+	});
+	$tags.detach().prependTo($(".book-info:contains('Tags')").siblings());
+	
+	$tags.each(function()
+	{
+		$(this).after(" ");
+	});
+	$("div.book-data").children(".book-tag:contains(' ')").css("white-space","nowrap");
+}
+
 
 
 /*******************************************************
@@ -1433,42 +1879,11 @@ tsuminoEnhanced.pageJumping = function()
 
 
 
-/*******************************************************
-* Thumbnail Links - Browsing Enhancement
-*******************************************************/
-tsuminoEnhanced.browseThumbnailLinks = function()
-{
-	tsuminoEnhanced.utility.log("Thumbnail Links Enhancement is running.");
-	$(".overlay").each(function()
-	{
-		//tsuminoEnhanced.utility.log($(this).find("a.overlay-button")[0].href);
-		$(this).click(function()
-		{
-			$(this).find("a.overlay-button")[0].click();
-		});
-	});
-}
 
-/*******************************************************
-* Include a link to the Tsumino Enhanced config page.
-* Only if the user isn't already on the config page.
-*******************************************************/
-if (!tsuminoEnhanced.onConfig)
-{
-	$( document ).ready(function()
-	{
-		// Add link to Tsumino Enhanced config page.
-		$("ul.nav.navbar-nav:contains('FORUM')").append("<li><a id='tsuminoEnhancedNavlink' style='color:#22a7f0 !important; cursor:pointer;'>ENHANCED</a></li>");
-		$("#tsuminoEnhancedNavlink").click(function(){tsuminoEnhanced.utility.toConfig();});
-		
-		// Add Tsumino Enhanced styles.
-		$("head").append("<style>.tsuminoEnhanced_bubbleDisplay{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;background-color:#333;border:2px solid #DDD;border-radius:15px;background-color:rgba(51,51,51,.5);padding:5px 15px;color:#fff;display:none}#tsuminoEnhanced_slideshowTimer{position:fixed;float:right;bottom:5px;right:5px}#tsuminoEnhanced_loaderMessage{margin-left:auto;margin-right:auto; width:8em; text-align:center;}select,select option{background-color:#1a1a1a;color:#fff}select{cursor: pointer;border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;outline: 0;}</style>");
-	});
-}
 /*******************************************************
 * Tsumino Enhanced Config Page
 *******************************************************/
-else
+if (tsuminoEnhanced.onConfig)
 {
 	// Kill the page before it can load.
 	tsuminoEnhanced.utility.killPage();
@@ -1535,12 +1950,15 @@ else
 		* Browsing Enhancements
 		*******************************************************/
 		// Prepare the browsing enhancements section.
-		$("#tsuminoEnhanced_body").append("<div id='browsingEnhancements' class='options'>The following Enhancements only apply to the Tsumino Browse page.<br /><br /></div>");
+		$("#tsuminoEnhanced_body").append("<div id='browsingEnhancements' class='options'>The following Enhancements apply while browsing Tsumino.<br /><br /></div>");
 		
 		// Thumbnail Links - Options
 		$("#browsingEnhancements").append("<div id='containerLinks_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='browseThumbnailLinks_switch' name='browseThumbnailLinks_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='browseThumbnailLinks_switch'></label></div><div class='fauxCell'><h2>Thumbnail Links</h2></div></div><div class='optionDescription'>You no longer have to specifically click View Info to load a Doujin.<br />Clicking anywhere on the thumbnail image will load the Doujin as well.</div></div>");
 		if(GM_getValue("browseThumbnailLinks_enabled")) { $("#browseThumbnailLinks_switch").prop("checked",true); }
 		
+		// Browse Tags Lite - Options
+		$("#browsingEnhancements").append("<div id='browseTagsLite_group' class='optionGroup'><div class='fauxRow'><div class='fauxCell switchContainer'><input id='browseTagsLite_switch' name='browseTagsLite_switch' type='checkbox' class='cmn-toggle cmn-toggle-round-flat' /><label for='browseTagsLite_switch'></label></div><div class='fauxCell'><h2>Browse Tags Lite</h2></div></div><div class='optionDescription'>Replaces the default 'Browse All Tags' page with an image-free version.<br />Each tag is categorized by the first lettter for convenience, so you can more easily find the tag you're looking for.</div></div>");
+		if(GM_getValue("browseTagsLite_enabled")) { $("#browseTagsLite_switch").prop("checked",true); }
 		
 		
 		/*******************************************************
@@ -1717,6 +2135,7 @@ else
 			
 			GM_setValue("automaticRepositioning_enabled", $("#automaticRepositioning_switch").prop("checked"));
 			GM_setValue("browseThumbnailLinks_enabled", $("#browseThumbnailLinks_switch").prop("checked"));
+			GM_setValue("browseTagsLite_enabled", $("#browseTagsLite_switch").prop("checked"));
 			GM_setValue("recordKeeper_enabled", $("#recordKeeper_switch").prop("checked"));
 			GM_setValue("pageJumping_enabled",$("#pageJumping_switch").prop("checked"));
 		}
@@ -1796,6 +2215,12 @@ else
 		*******************************************************/
 		// Thumnail Links
 		$("#browseThumbnailLinks_switch").change(function()
+		{
+			commitOptions();
+		});
+		
+		// Browse Tags Lite
+		$("#browseTagsLite_switch").change(function()
 		{
 			commitOptions();
 		});
@@ -1897,121 +2322,5 @@ else
 }
 
 
-
-
-
-/*******************************************************
-* Check if a redirect is needed first.
-*******************************************************/
-if((GM_getValue("seamlessViewing_enabled")))
-{
-	if(tsuminoEnhanced.onReader || tsuminoEnhanced.onAuth)
-	{
-		tsuminoEnhanced.seamlessViewing.redirection();
-	}
-}
-
-/*******************************************************
-* Handle Tsumino Enhanced upgrades if necessary.
-*******************************************************/
-$(document).ready(function()
-{
-	tsuminoEnhanced.utility.upgradeHandler();
-});
-
-/*******************************************************
-* Enhancement Activation
-*******************************************************/
-// Global Enhancements
-if (!tsuminoEnhanced.onConfig)
-{
-	// If Tag Search Links are enabled.
-	if(GM_getValue("tagSearchLinks_enabled"))
-	{
-		tsuminoEnhanced.utility.enhanceTags();
-	}
-	// If Unstickied Header is Enabled, and scope is set to Global.
-	if((GM_getValue("unstickedHeader_enabled") && GM_getValue("unstickedHeader_scope") == "Global"))
-	{
-		$( document ).ready(function()
-		{
-			tsuminoEnhanced.unstickyHeader();
-		});
-	}
-	
-	// Record Keeper
-	if(GM_getValue("recordKeeper_enabled"))
-	{
-		tsuminoEnhanced.utility.log("Starting Record Keeper Enhancement...");
-		tsuminoEnhanced.recordKeeper.init();
-	}
-	
-	// Style Tweaks
-	$( document ).ready(function()
-	{
-		tsuminoEnhanced.styleTweaks.init();
-	});
-}
-
-// Browsing Enhancements
-if (tsuminoEnhanced.isBrowsing)
-{
-	$( document ).ready(function()
-	{
-		if (GM_getValue("browseThumbnailLinks_enabled")) { tsuminoEnhanced.browseThumbnailLinks(); }
-	});
-}
-
-/* If the user is on the Search page */
-if(tsuminoEnhanced.onSearch)
-{
-	tsuminoEnhanced.utility.enhanceSearch();
-}
-
-// Reader Enhancements
-if (tsuminoEnhanced.onReader)
-{	
-	// Run when DOM is ready.
-	$( document ).ready(function()
-	{
-		tsuminoEnhanced.utility.enhanceReader();
-		if((GM_getValue("unstickedHeader_enabled") && GM_getValue("unstickedHeader_scope") == "Reader")) 
-		{ 
-			tsuminoEnhanced.utility.log("Starting Unstickied Header Enhancement...");
-			tsuminoEnhanced.unstickyHeader(); 
-		}
-		if (GM_getValue("automaticRepositioning_enabled")) 
-		{ 
-			tsuminoEnhanced.utility.log("Starting Automatic Repositioning Enhancement...");
-			tsuminoEnhanced.automaticRepositioning(); 
-		}
-		if (GM_getValue("slideshow_enabled")) 
-		{ 
-			tsuminoEnhanced.utility.log("Starting Slideshow Enhancement...");
-			tsuminoEnhanced.slideshow.init(); 
-		}
-		if (GM_getValue("seamlessViewing_enabled")) 
-		{ 
-			tsuminoEnhanced.utility.log("Starting Seamless Viewing Enhancement...");
-			if(GM_getValue("seamlessViewing_style") == "Classic")
-			{
-				tsuminoEnhanced.seamlessViewing.classic.init();
-			}
-			else if(GM_getValue("seamlessViewing_style") == "InfinityScroll")
-			{
-				tsuminoEnhanced.seamlessViewing.infinityScroll.init();
-			}
-		}
-		if (GM_getValue("pageJumping_enabled"))
-		{
-			tsuminoEnhanced.utility.log("Starting Page Jumping Enhancement...");
-			tsuminoEnhanced.pageJumping();
-		}
-	});
-	
-	// Run when the page and all assets have fully completed loaded.
-	$( window ).load(function()
-	{
-
-	});
-}
+// Start Tsumino Enhanced.
+tsuminoEnhanced.init();
