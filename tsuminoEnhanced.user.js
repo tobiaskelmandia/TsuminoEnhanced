@@ -1075,7 +1075,6 @@ tsuminoEnhanced.browseTagsLite.init = function()
 			$("body").append($(tsuminoBodyData)[0]);
 			tsuminoEnhanced.init();
 			tsuminoEnhanced.browseTagsLite.updateLink();
-			tsuminoEnhanced.utility.log($(tsuminoBodyData));
 			
 			$("body").append("<div id='tsuminoEnhanced_browseTagsLite'></div>");
 			
