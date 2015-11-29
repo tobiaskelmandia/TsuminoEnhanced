@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.0
+// @version			2.0.0.1
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -34,7 +34,7 @@
 	TE.config =
 	{
 		debug : true,
-		verboseDebug : true,
+		verboseDebug : false,
 	};
 	
 	// User's current location.
@@ -88,38 +88,31 @@
 					// Perform location checking.
 					if(obj["prefix"])
 					{
-						// Common location checking.
-						if(key != "browse")
+
+						if(RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation))
 						{
-							if(RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation))
-							{
-								TE.on[key] = true;
-								if(key == "query") { TE.on.browse = true; }
-							}
-							else
-							{
-								TE.on[key] = false;
-							}
+							TE.on[key] = true;
 						}
-						// Location Checking Exception: User should be counted as browsing if:
-						// * On the homepage.
-						// * Using sorting on the homepage.
-						// * Looking at search results
 						else
 						{
-							var onBrowse = RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation), onHome = false;
-							if((TE.site.baseURL == TE.myLocation) || (TE.site.baseURL + "/" == TE.myLocation) ||
-								(RegExp(TE.site.baseURL + "/\\?sort=*").exec(TE.myLocation))) { onHome = true; }
-							if((onBrowse) || (onHome)) { TE.on[key] = true; }
-							else { TE.on[key] = false; }
+							TE.on[key] = false;
 						}
 					}
 				}
 			}
 		}
 	}
-	
-	
+	// Location Checking Exceptions
+	// User should be counted as browsing if:
+	// * On the homepage.
+	// * Using sorting on the homepage.
+	// * Looking at search results
+	var onBrowse = RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation), onHome = false;
+	if((TE.site.baseURL == TE.myLocation) || 
+		(TE.site.baseURL + "/" == TE.myLocation) ||
+		(RegExp(TE.site.baseURL + "/\\?sort=*").exec(TE.myLocation))) { onHome = true; }
+	if((onBrowse) || (onHome) || (TE.on.query)) { TE.on.browse = true; }
+	else { TE.on.browse = false; }
 	
 	/*************************************************************************************
 	* Utility Functions
