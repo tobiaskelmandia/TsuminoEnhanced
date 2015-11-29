@@ -34,7 +34,7 @@
 	TE.config =
 	{
 		debug : true,
-		verboseDebug : false,
+		verboseDebug : true,
 	};
 	
 	// User's current location.
@@ -94,6 +94,7 @@
 							if(RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation))
 							{
 								TE.on[key] = true;
+								if(key == "query") { TE.on.browse = true; }
 							}
 							else
 							{
@@ -103,6 +104,7 @@
 						// Location Checking Exception: User should be counted as browsing if:
 						// * On the homepage.
 						// * Using sorting on the homepage.
+						// * Looking at search results
 						else
 						{
 							var onBrowse = RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation), onHome = false;
