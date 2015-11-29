@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.1
+// @version			2.0.0.2
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -34,7 +34,7 @@
 	TE.config =
 	{
 		debug : true,
-		verboseDebug : false,
+		verboseDebug : true,
 	};
 	
 	// User's current location.
@@ -685,10 +685,16 @@
 	* Important functionality.
 	* Customization either not yet written or not required.
 	*******************************************************/
+	
+	
+	
+	/*******************************************************
+	* General Enhancements
+	*******************************************************/
 	(function()
 	{
 		/*******************************************************
-		* Unstickied Header - Hidden Enhancement
+		* Unstickied Header - General Enhancement
 		*******************************************************/
 		var name = "Unstickied Header",
 			shortName = TE.fn.camelize(name),
@@ -723,54 +729,8 @@
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 	
-	(function()
-	{
-		/*******************************************************
-		* Automatic Repositioning - Hidden Enhancement
-		*******************************************************/
-		var name = "Automatic Repositioning",
-			shortName = TE.fn.camelize(name),
-			description = "Automatically scrolls you to the top of the image.",
-			options = [],
-			section = "Reader",
-			incompatible = false,
-			main =
-			{
-				init : function()
-				{
-					if(TE.on.reader)
-					{
-						$.when(TE.status.enhancePage).done($.proxy(function()
-						{
-							TE.Enhancements.unstickiedHeader.fn.run();
-							this.run();
-						},this));
-					}
-				},
-				run : function()
-				{
-					var imgPos = $("#te_imageBlock").position().top;
-					$('html, body').animate({ scrollTop: imgPos}, 1);
-				},
-			};
-			
-		var opt1 =
-		{
-			type : "enable",
-			name : false,
-			description : false,
-			defaultValue : false,
-			arguments : false,
-		};
-		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
-	})();
 	
 	
-	
-	/*******************************************************
-	* General Enhancements
-	*******************************************************/
 	(function()
 	{
 		/*******************************************************
@@ -901,19 +861,15 @@
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 	
-	
-	
-	/*******************************************************
-	* Browsing Enhancements
-	*******************************************************/
+		
 	(function()
 	{
 		/*******************************************************
-		* Thumbnail Links - Browsing Enhancement
+		* Browsing Tweaks - Browsing Enhancement
 		*******************************************************/
-		var name = "Thumbnail Links",
+		var name = "Browsing Tweaks",
 			shortName = TE.fn.camelize(name),
-			description = "You no longer have to specifically click View Info to load a doujin.<br />Clicking anywhere on the thumbnail image will load the Doujin as well.",
+			description = "A collection of customizations to browsing.",
 			options = [],
 			section = "Browsing",
 			incompatible = false,
@@ -927,20 +883,88 @@
 				{
 					$.when(TE.status.enhancePage).done(function()
 					{
-						$("div.overlay").each(function()
+						if(typeof TE.User[shortName] !== "undefined")
 						{
-							$(this).click(function()
+							if(TE.User[shortName].removeSidebar)
 							{
-								$(this).find("a.overlay-button")[0].click();
-							});
-						});
+								$("#te_sidebarContainer").remove();
+								$("#te_bookshelfContainer").css("width","100%");
+							}
+							if(TE.User[shortName].thumbnailLinks)
+							{
+								$("div.overlay").each(function()
+								{
+									$(this).click(function()
+									{
+										$(this).find("a.overlay-button")[0].click();
+									});
+								});
+							}
+						}
 					});
 				}
 			},
-			
 		};
 		
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
+		var opt1 =
+		{
+			type : "toggle",
+			name : "Remove Sidebar",
+			description : "Removes the &quot;random picks&quot; sidebar.",
+			defaultValue : false,
+			arguments : false,
+		};
+		var opt2 =
+		{
+			type : "toggle",
+			name : "Thumbnail Links",
+			description : "Clicking anywhere on the thumbnail image will load the Doujin.",
+			defaultValue : false,
+			arguments : false,
+		};
+		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
+		options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
+		
+		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
+	})();
+	
+	
+	
+	/*******************************************************
+	* Reader Enhancements
+	*******************************************************/
+	(function()
+	{
+		/*******************************************************
+		* Automatic Repositioning - Reader Enhancement
+		*******************************************************/
+		var name = "Automatic Repositioning",
+			shortName = TE.fn.camelize(name),
+			description = "Automatically scrolls you to the top of the image.",
+			options = [],
+			section = "Reader",
+			incompatible = false,
+			main =
+			{
+				init : function()
+				{
+					if(TE.on.reader)
+					{
+						$.when(TE.status.enhancePage).done($.proxy(function()
+						{
+							TE.Enhancements.unstickiedHeader.fn.run();
+							this.run();
+						},this));
+					}
+				},
+				run : function()
+				{
+					var imgPos = $("#te_imageBlock").position().top;
+					$('html, body').animate({ scrollTop: imgPos}, 1);
+				},
+			};
+			
 		var opt1 =
 		{
 			type : "enable",
@@ -950,16 +974,9 @@
 			arguments : false,
 		};
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
-		
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 	
-	
-	
-	
-	/*******************************************************
-	* Reader Enhancements
-	*******************************************************/
 	(function()
 	{
 		/*******************************************************
@@ -1327,7 +1344,21 @@
 						if(noEnable)
 						{
 							// Display the title without a switch.
-							$("#"+obj["shortName"]+"_group").prepend("<h2 class='te_enhancementName'>"+obj["name"]+"</h2><br />");
+							$("#"+obj["shortName"]+"_group").prepend("<h2 class='te_enhancementName'>"+obj["name"]+"</h2>");
+							
+							// Apply user settings.
+							if(typeof TE.User[obj["shortName"]] !== "undefined")
+							{
+								for (var oKey in obj["options"])
+								{
+									var option = obj["options"][oKey];
+									if(option["type"] == "toggle")
+									{
+										$("#tes_"+obj["shortName"]+"_"+option['shortName'])
+											.prop("checked",TE.User[obj["shortName"]][option['shortName']]);
+									}
+								}
+							}
 						}
 						else
 						{
@@ -1535,7 +1566,8 @@
 		
 		// Check which Enhancements the user has enabled.
 		var enabledEnhancements = [],
-			eeLongNames = "";
+			eeLongNames = "",
+			autoOn = [];
 		for (var key in TE.User)
 		{
 			if (TE.User.hasOwnProperty(key))
@@ -1548,8 +1580,11 @@
 						if((prop == "enable") && (obj[prop] == true))
 						{
 							// Add enabled Enhancements to the appropriate array.
-							enabledEnhancements.push(key);
-							eeLongNames = eeLongNames + "[X] " + TE.Enhancements[key].name + "\r\n";
+							if(typeof TE.Enhancements[key] !== "undefined")
+							{
+								enabledEnhancements.push(key);
+								eeLongNames = eeLongNames + "[X] " + TE.Enhancements[key].name + "\r\n";
+							}
 						}
 						else if ((prop == "enable") && (obj[prop] == false))
 						{
@@ -1559,28 +1594,47 @@
 				}
 			}
 		}
-		// Enable automatic enhancements.
+		// Check for automatic enhancements.
 		for (var key in TE.Enhancements)
 		{
 			if (TE.Enhancements.hasOwnProperty(key))
 			{
 				var obj = TE.Enhancements[key];
+				autoOn.push(obj['shortName']);
 				for (var prop in obj)
 				{
 					if (obj.hasOwnProperty(prop))
 					{
-						if((prop == "section") && (!obj[prop]))
+						if(prop == "options")
 						{
-							// Add enabled Enhancements to the appropriate array.
-							enabledEnhancements.push(key);
-							eeLongNames = eeLongNames + "[X] " + TE.Enhancements[key].name + "\r\n";
+							for(var optNum in obj['options'])
+							{
+								for (var opt in obj['options'][optNum])
+								{
+									if((opt == "type") && (obj['options'][optNum][opt] == "enable"))
+									{
+										var thisIndex = autoOn.indexOf(obj['shortName']);
+										if (thisIndex > -1) 
+										{
+											autoOn.splice(thisIndex, 1);
+										}
+									}
+								}
+							}
 						}
 					}
 				}
 			}
 		}
+		// Enable automatic enhancements.
+		for (i = 0; i < autoOn.length; i++)
+		{
+			enabledEnhancements.push(autoOn[i]);
+			eeLongNames = eeLongNames + "[X] " + TE.Enhancements[autoOn[i]].name + "\r\n";
+		}
+		
 		// Output initialization messages.
-		TE.log("gname",TE.name,"Version:	" + TE.version,"Debugging:	" + debugState,"Enabled:",eeLongNames);
+		TE.log("gname",TE.name,"Version:	" + TE.version,"Debugging:	" + debugState,"Enhancements:",eeLongNames);
 		TE.vbLog("gname",TE.name,"Current Settings:",TE.User);
 		TE.vbLog("gname","TE.site",TE.site);
 		TE.vbLog("gname","TE.on",TE.on);
@@ -1592,7 +1646,10 @@
 		// Initialize all enabled Enhancements.
 		for(i = 0; i < enabledEnhancements.length; i++)
 		{
-			TE.Enhancements[enabledEnhancements[i]].fn.init();
+			if(typeof TE.Enhancements[enabledEnhancements[i]] !== "undefined")
+			{
+				TE.Enhancements[enabledEnhancements[i]].fn.init();
+			}
 		}
 	};
 	
