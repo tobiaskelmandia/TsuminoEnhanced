@@ -1032,7 +1032,7 @@
 				run : function()
 				{
 					var imgPos = $("#te_imageBlock").position().top;
-					$('html, body').animate({ scrollTop: imgPos}, 1);
+					$('html, body').animate({ scrollTop: imgPos}, 300);
 				},
 			};
 			
