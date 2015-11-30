@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.6
+// @version			2.0.0.7
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -1126,10 +1126,10 @@
 					// If on the auth page, wait for DOM and update form info to redirect to the appropriate page.
 					if(TE.on.auth)
 					{
-						$(document).ready(function()
+						$.when(TE.status.enhancePage).done($.proxy(function()
 						{
 							$("input#Page").val(newPage);
-						});
+						},this));
 					}
 				}
 			},
@@ -1201,9 +1201,14 @@
 				}
 				else
 				{
-					$("#te_nextButton").css("display","none");
-					$("#te_imageLink").css("cursor","context-menu");
-					$("#te_imageLink").attr("href","javascript:;");
+					//$("#te_nextButton").css("display","none");
+					//$("#te_imageLink").css("cursor","context-menu");
+					//$("#te_imageLink").attr("href","javascript:;");
+					if (TE.book.currentPage == TE.book.totalPages)
+					{
+						var returnToBookURL = TE.site.book.url + TE.book.id;
+						$("#te_imageLink").attr("href",returnToBookURL);
+					}
 				}
 				if(TE.book.currentPage > 1)
 				{
@@ -1243,6 +1248,10 @@
 						// Update doujin navigation links.
 						this.updateLinks();
 					},this));
+				}
+				else if (TE.on.auth)
+				{
+					this.redirection();
 				}
 			},
 		};
