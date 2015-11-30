@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.2
+// @version			2.0.0.3
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -34,7 +34,7 @@
 	TE.config =
 	{
 		debug : true,
-		verboseDebug : true,
+		verboseDebug : false,
 	};
 	
 	// User's current location.
@@ -266,7 +266,7 @@
 	** Beautify here:	http://www.cleancss.com/css-beautify/
 	** Minify here:		http://cssminifier.com/
 	*/
-	TE.ui.css = ".te_switch+label,select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{width:100%;max-width:100%;height:100%;min-height:100%;overflow-y:scroll}#te_brand,.te_enhancementColor{color:#22a7f0}#te_version{font-size:.5em}.te_en_incompatible{background-color:rgba(255,0,0,.1);border:2px solid rgba(255,0,0,0);border-radius:5px;padding:.5em}.te_switch+label,select.te_switch{cursor:pointer;outline:0}a.te_link,a.te_link:visited{color:#23a7f0;text-decoration:none}a.te_link:hover{color:#23a7f0;text-decoration:underline}.te_Button,.te_configTab nav a:hover{text-decoration:none}.te_options{padding-left:1em}.te_optionDescription{margin-top:10px}.te_optionGroup{margin-bottom:20px;border:2px solid #fff;border-radius:5px;background-color:#222;padding:15px;margin-left:1em}.te_enhancementName{color:#22a7f0;font-size:2em;margin:0;padding:0 0 5px}.te_switch{position:absolute;margin-left:-9999px;visibility:hidden}.te_switch+label{display:block;position:relative;user-select:none}input.te_switch-style+label{padding:2px;width:40px;height:20px;background-color:#ddd;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after,input.te_switch-style+label:before{display:block;position:absolute;content:''}input.te_switch-style+label:before{top:2px;left:2px;bottom:2px;right:2px;background-color:#1a1a1a;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after{top:4px;left:4px;bottom:4px;width:16px;background-color:#ddd;-webkit-border-radius:16px;-moz-border-radius:16px;-ms-border-radius:16px;-o-border-radius:16px;border-radius:16px;-webkit-transition:margin .4s,background .4s;-moz-transition:margin .4s,background .4s;-o-transition:margin .4s,background .4s;transition:margin .4s,background .4s}input.te_switch-style:checked+label{background-color:#22a7f0}input.te_switch-style:checked+label:after{margin-left:16px;background-color:#22a7f0}select,select option{background-color:#1a1a1a;color:#fff}select{border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;user-select:none}.te_fauxRow{display:table-row}.te_fauxCell{display:table-cell;vertical-align:middle}.te_switchContainer{padding-right:10px}.te_Button{background-color:#23a8f0;-moz-border-radius:28px;-webkit-border-radius:28px;border-radius:30px;border:2px solid #ddd;display:inline-block;cursor:pointer;color:#fff;font-size:1.2em;font-weight:700;padding:5px 15px;text-shadow:0 1px 0 #12587d;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}input.te_subOption[type=checkbox]:not(old),input.te_subOption[type=radio]:not(old){width:2em;margin:0;padding:0;font-size:1em;opacity:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label,input.te_subOption[type=radio]:not(old)+label{display:inline-block;margin-left:-2em;line-height:1.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label>span,input.te_subOption[type=radio]:not(old)+label>span{display:inline-block;width:1em;height:1em;padding:.2em;margin:.25em .5em .25em .25em;border:1px solid #FFF;border-radius:5px;background-color:#000;vertical-align:bottom;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span,input.te_subOption[type=radio]:not(old):checked+label>span{background-color:#000;border:1px solid #23a7f0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span:before{content:'x';display:block;color:#23a7f0;font-size:1em;line-height:1em;margin-top:-.35em;text-align:center;font-weight:700;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=radio]:not(old):checked+label>span>span{display:block;width:.5em;height:.5em;margin:.125em;border:.0625em solid #626262;border-radius:.125em;background-color:#626262;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}#te_tabContainer{padding-bottom:1em}.te_configTab,.te_configTab nav ul{position:relative;margin:0 auto}.te_configTab nav,.te_configTab nav ul li{text-align:center}.te_configTab{overflow:hidden;width:100%;font-weight:300;font-size:2em}.te_configTab nav ul{display:-ms-flexbox;display:-webkit-flex;display:-moz-flex;display:-ms-flex;display:flex;padding:0;max-width:1200px;list-style:none;-ms-box-orient:horizontal;-ms-box-pack:center;-webkit-flex-flow:row wrap;-moz-flex-flow:row wrap;-ms-flex-flow:row wrap;flex-flow:row wrap;-webkit-justify-content:center;-moz-justify-content:center;-ms-justify-content:center;justify-content:center}.te_configTab nav a,.te_configTab nav ul li{display:block;position:relative;text-decoration:none}.te_configTab nav ul li{z-index:1;margin:0;-webkit-flex:1;-moz-flex:1;-ms-flex:1;flex:1}.te_configTab nav a:focus{outline:0}.no-flexbox nav ul li{min-width:15%;display:inline-block}.te_configTab nav li:last-child::before{position:absolute;bottom:0;left:0;width:100%;height:4px;background:#22a7f0;content:'';-webkit-transition:-webkit-transform .3s;transition:transform .3s}.te_configTab nav li:first-child.te_tab-current~li:last-child::before{-webkit-transform:translate3d(-400%,0,0);transform:translate3d(-400%,0,0)}.te_configTab nav li:nth-child(2).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-300%,0,0);transform:translate3d(-300%,0,0)}.te_configTab nav li:nth-child(3).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-200%,0,0);transform:translate3d(-200%,0,0)}.te_configTab nav li:nth-child(4).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}.te_configTab nav a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-size:.75em;padding:.5em;color:#74777b;line-height:1;-webkit-transition:color .3s,-webkit-transform .3s;transition:color .3s,transform .3s;font-weight:700}.te_configTab nav li.te_tab-current a{color:#22a7f0}.te_currentTabContent{display:block}.te_hiddenTabContent{display:none}.te_recordKeeper_browseData{font-size:.5em}";
+	TE.ui.css = ".te_switch+label,select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{width:100%;max-width:100%;height:100%;min-height:100%;overflow-y:scroll}#te_brand,.te_enhancementColor{color:#22a7f0}#te_version{font-size:.5em}.te_en_incompatible{background-color:rgba(255,0,0,.1);border:2px solid rgba(255,0,0,0);border-radius:5px;padding:.5em}.te_switch+label,select.te_switch{cursor:pointer;outline:0}a.te_link,a.te_link:visited{color:#23a7f0;text-decoration:none}a.te_link:hover{color:#23a7f0;text-decoration:underline}.te_Button,.te_configTab nav a:hover{text-decoration:none}.te_options{padding-left:1em}.te_optionDescription{margin-top:10px}.te_optionGroup{margin-bottom:20px;border:2px solid #fff;border-radius:5px;background-color:#222;padding:15px;margin-left:1em}.te_enhancementName{color:#22a7f0;font-size:2em;margin:0;padding:0 0 5px}.te_switch{position:absolute;margin-left:-9999px;visibility:hidden}.te_switch+label{display:block;position:relative;user-select:none}input.te_switch-style+label{padding:2px;width:40px;height:20px;background-color:#ddd;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after,input.te_switch-style+label:before{display:block;position:absolute;content:''}input.te_switch-style+label:before{top:2px;left:2px;bottom:2px;right:2px;background-color:#1a1a1a;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after{top:4px;left:4px;bottom:4px;width:16px;background-color:#ddd;-webkit-border-radius:16px;-moz-border-radius:16px;-ms-border-radius:16px;-o-border-radius:16px;border-radius:16px;-webkit-transition:margin .4s,background .4s;-moz-transition:margin .4s,background .4s;-o-transition:margin .4s,background .4s;transition:margin .4s,background .4s}input.te_switch-style:checked+label{background-color:#22a7f0}input.te_switch-style:checked+label:after{margin-left:16px;background-color:#22a7f0}select,select option{background-color:#1a1a1a;color:#fff}select{border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;user-select:none}.te_fauxRow{display:table-row}.te_fauxCell{display:table-cell;vertical-align:middle}.te_switchContainer{padding-right:10px}.te_Button{background-color:#23a8f0;-moz-border-radius:28px;-webkit-border-radius:28px;border-radius:30px;border:2px solid #ddd;display:inline-block;cursor:pointer;color:#fff;font-size:1.2em;font-weight:700;padding:5px 15px;text-shadow:0 1px 0 #12587d;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}input.te_subOption[type=checkbox]:not(old),input.te_subOption[type=radio]:not(old){width:2em;margin:0;padding:0;font-size:1em;opacity:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label,input.te_subOption[type=radio]:not(old)+label{display:inline-block;margin-left:-2em;line-height:1.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label>span,input.te_subOption[type=radio]:not(old)+label>span{display:inline-block;width:1em;height:1em;padding:.2em;margin:.25em .5em .25em .25em;border:1px solid #FFF;border-radius:5px;background-color:#000;vertical-align:bottom;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span,input.te_subOption[type=radio]:not(old):checked+label>span{background-color:#000;border:1px solid #23a7f0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span:before{content:'x';display:block;color:#23a7f0;font-size:1em;line-height:1em;margin-top:-.35em;text-align:center;font-weight:700;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=radio]:not(old):checked+label>span>span{display:block;width:.5em;height:.5em;margin:.125em;border:.0625em solid #626262;border-radius:.125em;background-color:#626262;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}#te_tabContainer{padding-bottom:1em}.te_configTab,.te_configTab nav ul{position:relative;margin:0 auto}.te_configTab nav,.te_configTab nav ul li{text-align:center}.te_configTab{overflow:hidden;width:100%;font-weight:300;font-size:2em}.te_configTab nav ul{display:-ms-flexbox;display:-webkit-flex;display:-moz-flex;display:-ms-flex;display:flex;padding:0;max-width:1200px;list-style:none;-ms-box-orient:horizontal;-ms-box-pack:center;-webkit-flex-flow:row wrap;-moz-flex-flow:row wrap;-ms-flex-flow:row wrap;flex-flow:row wrap;-webkit-justify-content:center;-moz-justify-content:center;-ms-justify-content:center;justify-content:center}.te_configTab nav a,.te_configTab nav ul li{display:block;position:relative;text-decoration:none}.te_configTab nav ul li{z-index:1;margin:0;-webkit-flex:1;-moz-flex:1;-ms-flex:1;flex:1}.te_configTab nav a:focus{outline:0}.no-flexbox nav ul li{min-width:15%;display:inline-block}.te_configTab nav li:last-child::before{position:absolute;bottom:0;left:0;width:100%;height:4px;background:#22a7f0;content:'';-webkit-transition:-webkit-transform .3s;transition:transform .3s}.te_configTab nav li:first-child.te_tab-current~li:last-child::before{-webkit-transform:translate3d(-400%,0,0);transform:translate3d(-400%,0,0)}.te_configTab nav li:nth-child(2).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-300%,0,0);transform:translate3d(-300%,0,0)}.te_configTab nav li:nth-child(3).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-200%,0,0);transform:translate3d(-200%,0,0)}.te_configTab nav li:nth-child(4).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}.te_configTab nav a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-size:.75em;padding:.5em;color:#74777b;line-height:1;-webkit-transition:color .3s,-webkit-transform .3s;transition:color .3s,transform .3s;font-weight:700}.te_configTab nav li.te_tab-current a{color:#22a7f0}.te_currentTabContent{display:block}.te_hiddenTabContent{display:none}.te_recordKeeper_browseData{font-size:.5em}.te_browsetweak_readbutton{position:absolute;float:right;right:0;}";
 	
 	// Tsumino Enhanced Favicon Data URI
 	TE.ui.favicon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wsRDAY5sIzTWwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAEaUlEQVRYw+2XW2xVRRSGv5nZ+1x6di/QUjinLdVUArVISIoJgRcEAoEQY4LxwUB8Ml4evEQTJGhQQ/SVGI2aaAzyohiDCMREEpUol4ACRROubSkl1tKeXjhnn+uePT7s5hRigJ62hhfmbe+ZWfOv9a/1rxmxZMkSwz0ckns87gOwpsOIERKUBcaAtDB2GF33IDI9iBrqnRwAY0XQNXGswe7gW9n4lbPwEm14TYvRtc2YaBVGWmCHMSqEKLiokT58pxa/JgFA7OB72Od/RmDKA6Brm0ht+piKQzsJnz2Au34rxYeWg1TI0T7UQBem4OI1txP68weiv32OzIwAUJi/AnfDmwC467ZQc/kIePnyckDk3cBY6yp8pw5n/7vEvn8HgOhPH+Hs20747EHwCnhzFyNy6QB41Rwyj704FkaDfeUk+Lr8JBT5NFbPKfyIg7EjAIQ6j4JXIP/oU4H9aDVYIcKn9yF8DwCvYSEmNhMAu+s4sf07SnNlUSCzNwhd+pXM6pcxoVjpvxrqRVfHybeuJt+2JojSghUUW5aC1vjVcwLDvR1ED3+K8HKTrwKRTgY8btgG2sOEohinDrw8hYVrsXtOEzm5B5lOggAMpJ7+AKu3g9iBHcjM8NTKULpJRGoAvyaBut5J9PCXqIFO5I1+MAahi+Tan0QUcwHXQPWHTyC8PEIXpy5EcrQfNXiFyLHdVO1+Dqv3DH5lPcIrlA7QM5tIb3yfwoKVpdzBmEAbJjBUIpF4+7YUeDlCncdQfecRukC+bS2ZDdtACOzeDgD82rl4jYvQ8Vbs7hN4DW3klm5CGO+uInRXCoy0AlGprMezQvgzGgAotiwjenRX4EHfBUQ+jV85C3fdFkTeDajT3jRIsRB4jYvIrHoJpEJdvzwW5tT4El0ABHL0Hyq/egVxU80bgtycfBXoIvaFX3BG/kbkXfTMuWTWvwFe4VbBMgaZGkD4mkLLMorzlhP660fsax1Tb0Yi7yKyNygsWImOz79FJUt++hov3srI899gQhXI9CDW1TNTp8CLt5J+fDvGqUOkk9hdx6BpMX5NHD9ajcyOBh1QBKCcvdtQY83rTvI7YQBW3zmqP9uMiVYj04Nklz0zFhYZHA6YUAWoEHb3Caz+ixhlgxCgLAwSjAZdvG0u3P0+oGz8qtm4a17Dr6oHY1D9l0rTfmU9SInX+Aju2tfRs1rwYzMCYKEKVP9FnL1vIdxkeQB8pxZd+wC59o3oxMNUHNqJHL5GavMnIMe3iVwKtIcfrcGvaUAUs6hhNygB3wMrjIk4UA6AYuMisiteQM+eh0xexfl2K1bfOYrN7UHYw85/ylANduN8/Soo+yYvNML45eeAzAxj9ZxCDXQR+X0PKtlT4j7Q3/EyNHYElEKmrgc8T7AH3BGAGuoleuQLUDaimB1f3PMHcvga4TP7xsGmkxghsfovTu+lVPhewOHN/4xP1a5nb/FSDV3F7jxO+PR3kwIgputlNBHZ/V/fBWKS++6/jO4D+BdYdNLmP/zOiQAAAABJRU5ErkJggg==";
@@ -896,8 +896,48 @@
 								{
 									$(this).click(function()
 									{
-										$(this).find("a.overlay-button")[0].click();
+										if(TE.User[shortName].skipInfo)
+										{
+											$(this).find("a.te_browsetweak_readbutton")[0].click();
+										}
+										else
+										{
+											$(this).find("a.overlay-button")[0].click();
+										}
+										
 									});
+								});
+							}
+							if(TE.User[shortName].moreBooks)
+							{
+								$("style").append("@media(min-width:768px) { .col-sm-4 { width: 25% } }");
+								$("style").append("@media(min-width:992px) { .col-md-3 { width: 20% } }");
+							}
+							if(TE.User[shortName].skipInfo)
+							{
+								// Apply new CSS.
+								$("style").append(".te_browsetweak_infobutton,.te_browsetweak_readbutton{position:absolute;border:3px solid #fff;bottom:10px;padding:10px;margin-left:5%;margin-right:5%;font-size:17px;color:#fff;width:42.5%;display:inline-block}.te_browsetweak_readbutton{right:0}.te_browsetweak_infobutton:hover,.te_browsetweak_readbutton:hover{background-color:#22a7f0;color:#fff;text-decoration:none}.te_browsetweak_infobutton{left:0}");
+								$("div.overlay").each(function()
+								{
+									// Get Book ID
+									var bookID = $(this).attr("id");
+									bookID = bookID.replace("te_book_","");
+									bookID = bookID.replace("_overlay","");
+									
+									// Replace old class on view button.
+									var viewInfoButton = $(this).find("a.overlay-button");
+									$(viewInfoButton).text("INFO");
+									var viewButtonSrc = $(viewInfoButton)[0]['outerHTML'];
+									$(viewInfoButton).removeClass("overlay-button");
+									$(viewInfoButton).addClass("te_browsetweak_infobutton");
+									
+									// Add new read button.
+									var readButtonSrc = viewButtonSrc.replace("INFO","READ");
+									readButtonSrc = readButtonSrc.replace("class=\"overlay-button\"","class=\"te_browsetweak_readbutton\"");
+									$(this).append(readButtonSrc);
+									var readButton = $(this).find("a.te_browsetweak_readbutton");
+									var linkURL = TE.site.reader.prefix + bookID + "/1";
+									$(readButton).attr("href",linkURL);
 								});
 							}
 						}
@@ -918,14 +958,32 @@
 		var opt2 =
 		{
 			type : "toggle",
+			name : "More Books",
+			description : "Displays one extra book per row.",
+			defaultValue : false,
+			arguments : false,
+		};
+		var opt3 =
+		{
+			type : "toggle",
 			name : "Thumbnail Links",
 			description : "Clicking anywhere on the thumbnail image will load the Doujin.",
 			defaultValue : false,
 			arguments : false,
 		};
+		var opt4 =
+		{
+			type : "toggle",
+			name : "Skip Info",
+			description : "Skips the book info page and takes you directly to the reader.",
+			defaultValue : false,
+			arguments : false,
+		};
+
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 		options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
-		
+		options.push(new TE.Enhancement.option.main(opt3.type,opt3.name,opt3.description,opt3.defaultValue,opt3.arguments));
+		options.push(new TE.Enhancement.option.main(opt4.type,opt4.name,opt4.description,opt4.defaultValue,opt4.arguments));
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 	
