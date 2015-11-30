@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.3
+// @version			2.0.0.4
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -923,6 +923,7 @@
 									var bookID = $(this).attr("id");
 									bookID = bookID.replace("te_book_","");
 									bookID = bookID.replace("_overlay","");
+									bookID = parseInt(bookID);
 									
 									// Replace old class on view button.
 									var viewInfoButton = $(this).find("a.overlay-button");
@@ -938,6 +939,15 @@
 									var readButton = $(this).find("a.te_browsetweak_readbutton");
 									var linkURL = TE.site.reader.prefix + bookID + "/1";
 									$(readButton).attr("href",linkURL);
+									
+									if(TE.User.recordKeeper)
+									{
+										if(TE.User.recordKeeper.data[bookID])
+										{
+											linkURL = TE.site.reader.prefix + bookID + "/" + TE.User.recordKeeper.data[bookID]['lastSeen'];
+											$(readButton).attr("href",linkURL);
+										}
+									}
 								});
 							}
 						}
