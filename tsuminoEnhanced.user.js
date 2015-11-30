@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.7
+// @version			2.0.0.8
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -34,7 +34,7 @@
 	TE.config =
 	{
 		debug : true,
-		verboseDebug : false,
+		verboseDebug : true,
 	};
 	
 	// User's current location.
@@ -609,7 +609,7 @@
 					else { $("#te_nextButton").css("display","none"); }
 					
 					// Enhance Image link.
-					var imageLink = $("a[href*='"+TE.site.reader.prefix+"']")[0];
+					var imageLink = $("#te_readerCurrentImage").parent();
 					$(imageLink).attr("id","te_imageLink");
 					$("#te_imageLink").attr("href",TE.book.nextPageURL);
 					
@@ -1173,7 +1173,7 @@
 				// If the user requested a page that was less than 1 or greater than the total number of pages, stop.
 				else
 				{
-					if(pageNumber == TE.book.totalPages+1)
+					if(pageNumber == false)
 					{
 						window.location.href = TE.site.book.url + TE.book.id;
 					}
@@ -1192,23 +1192,16 @@
 				$("#te_imageLink").off("click");
 				
 				// Establish updated click binds.
-				if(TE.book.currentPage < TE.book.totalPages)
+				if(TE.book.currentPage <= TE.book.totalPages)
 				{
 					$("#te_nextButton").css("display","inline");
 					$("#te_nextButton").click($.proxy(function(){ this.changePage(TE.book.nextPage); },this) );
-					$("#te_imageLink").css("cursor","pointer");
 					$("#te_imageLink").click($.proxy(function(){ this.changePage(TE.book.nextPage); },this) );
 				}
-				else
+				if(TE.book.currentPage == TE.book.totalPages)
 				{
-					//$("#te_nextButton").css("display","none");
-					//$("#te_imageLink").css("cursor","context-menu");
-					//$("#te_imageLink").attr("href","javascript:;");
-					if (TE.book.currentPage == TE.book.totalPages)
-					{
-						var returnToBookURL = TE.site.book.url + TE.book.id;
-						$("#te_imageLink").attr("href",returnToBookURL);
-					}
+					$("#te_nextButton").css("display","none");
+					$("#te_imageLink").click($.proxy(function(){ this.changePage(TE.book.nextPage); },this) );
 				}
 				if(TE.book.currentPage > 1)
 				{
