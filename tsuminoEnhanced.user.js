@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.11
+// @version			2.0.0.12
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -1046,6 +1046,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 												{
 													var thisLink = $(this).find("a.overlay-button").attr("href");
 												}
+												thisLink = TE.site.baseURL + thisLink;
 												if(e.ctrlKey) { global.open(thisLink); }
 												else { global.location.href = thisLink; }
 
@@ -1063,6 +1064,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 												{
 													var thisLink = $(this).find("a.overlay-button").attr("href");
 												}
+												thisLink = TE.site.baseURL + thisLink;
 												global.open(thisLink);
 											}
 										}
