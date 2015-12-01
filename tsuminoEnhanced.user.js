@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.8
+// @version			2.0.0.9
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -17,8 +17,67 @@
 // ==/UserScript==
 
 /*************************************************************************************
+* Open source libraries.
+*************************************************************************************/
+
+/*************************************************************************************
+* This one adds arrayBuffer support to jQuery's ajax method.
+* -------------------------
+* jquery.binarytransport.js
+* @description. jQuery ajax transport for making binary data type requests.
+* @version 1.0 
+* @author Henry Algus <henryalgus@gmail.com>
+*************************************************************************************/
+
+// use this transport for "binary" data type
+$.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
+	// check for conditions and support for blob / arraybuffer response type
+	if (window.FormData && ((options.dataType && (options.dataType == 'binary')) || (options.data && ((window.ArrayBuffer && options.data instanceof ArrayBuffer) || (window.Blob && options.data instanceof Blob)))))
+	{
+		return {
+			// create new XMLHttpRequest
+			send: function(headers, callback){
+		// setup all variables
+				var xhr = new XMLHttpRequest(),
+		url = options.url,
+		type = options.type,
+		async = options.async || true,
+		// blob or arraybuffer. Default is blob
+		dataType = options.responseType || "blob",
+		data = options.data || null,
+		username = options.username || null,
+		password = options.password || null;
+					
+				xhr.addEventListener('load', function(){
+			var data = {};
+			data[options.dataType] = xhr.response;
+			// make callback and send data
+			callback(xhr.status, xhr.statusText, data, xhr.getAllResponseHeaders());
+				});
+
+				xhr.open(type, url, async, username, password);
+				
+		// setup custom headers
+		for (var i in headers ) {
+			xhr.setRequestHeader(i, headers[i] );
+		}
+				
+				xhr.responseType = dataType;
+				xhr.send(data);
+			},
+			abort: function(){
+				jqXHR.abort();
+			}
+		};
+	}
+});
+
+
+
+/*************************************************************************************
 * Tsumino Enhanced
 *************************************************************************************/
+
 // Establish Tsumino Enhanced
 (function(global)
 {
@@ -204,25 +263,88 @@
 		},
 		load : function(pageNumber)
 		{
-			var dfd = jQuery.Deferred();
-			var newImageSrc = TE.site.image.prefix + TE.book.id + "/";
+			var dfd = jQuery.Deferred(),
+				newImageSrc = TE.site.image.prefix + TE.book.id + "/",
+				nifs = TE.site.baseURL + newImageSrc,
+				authUrl = TE.site.baseURL + TE.site.auth.prefix + TE.book.id + "/" + pageNumber;
+			
 			// If no page number was defined, try to load the next page.
 			pageNumber = pageNumber || TE.book.nextPage;
 			
 			// Make sure the page exists first.
 			if((pageNumber <= TE.book.totalPages) && (pageNumber > 0))
 			{
-				//TE.book.nextPage
 				newImageSrc = newImageSrc + pageNumber;
+				nifs = nifs + pageNumber;
+				
 				this.vbLog("gname","TE.load","Loading Image: " + pageNumber + "...");
-				$("body").append("<img id='te_loadImage"+pageNumber+"' style='display:none;'>");
-				$("#te_loadImage"+pageNumber).attr("src",newImageSrc);
-				$("#te_loadImage"+pageNumber).load($.proxy(function()
+				
+				// Make an ajax request expecting a binary (arraybuffer) datatype.
+				var loadImage = $.ajax(
 				{
-					this.vbLog("gname","TE.load","Image "+pageNumber+" loaded.");
-					$("#te_loadImage"+pageNumber).remove();
-					dfd.resolve();
-				},this));
+					method: "GET",
+					url: nifs,
+					dataType: "binary",
+					processData: false,
+					responseType:'arraybuffer',
+					success: $.proxy(function(data, textStatus, request)
+					{
+						// Put the response headers into an array.
+						var rh = loadImage.getAllResponseHeaders();
+						rha = rh.split("\r\n");
+						
+						// Create a proper object from the response header array.
+						var responseHeader = {};
+						for (var i=0; i < rha.length; i++) 
+						{
+							var thisRH = rha[i];
+							thisRH = thisRH.split(": ");
+							if(thisRH[0] != "")
+							{
+								responseHeader[thisRH[0]] = thisRH[1];
+							}
+						}
+						
+						// Local logging to examine response headers.
+						//TE.vbLog("gname","TE.fn.load","Response Headers",responseHeader);
+						
+						// Content-Type is undefined if Tsumino requires us to solve a captcha.
+						if(typeof responseHeader["Content-Type"] === "undefined")
+						{
+							// Redirect to the auth page.
+							global.location.href = authUrl;
+						}
+						else
+						{
+							TE.vbLog("gname","TE.fn.load","Content Type: " + responseHeader["Content-Type"]);
+							
+							// If we're dealing with a JPEG image.
+							// (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
+							if(responseHeader["Content-Type"] == "images/jpeg")
+							{
+								// Use Uint8Array to view the arrayBuffer response data.
+								var typedArray = new Uint8Array(data);
+								
+								// Convert it into a useable binary string.
+								var binaryString = String.fromCharCode.apply(null,typedArray);
+								
+								// And finally encode the binary string as base64.
+								var encodedBS = btoa(binaryString);
+								
+								// Take the base64 string and prepend it so it can be used as a dataURI.
+								var dataURI="data:image/jpeg;base64,"+encodedBS;
+								
+								// Add a hidden image to the page so the dataURI can be harvested from its source later.
+								$("body").append("<img id='te_loadImage_"+pageNumber+"' src='"+dataURI+"' style='display:none;'>");
+
+								// And we're done.
+								this.vbLog("gname","TE.load","Image "+pageNumber+" loaded.");
+								dfd.resolve();
+							}
+						}
+					},this),
+					error: function() { TE.log("Error retrieving image."); }
+				});
 			}
 			else
 			{
@@ -263,6 +385,8 @@
 	TE.ui = {};
 	
 	/* Tsumino Enhanced CSS.
+	** Minified so it's easier to include in the script.
+	**
 	** Beautify here:	http://www.cleancss.com/css-beautify/
 	** Minify here:		http://cssminifier.com/
 	*/
@@ -662,9 +786,9 @@
 					var thisPages = $("#te_book_" + thisBookID + "_data").find("div.overlay-sub");
 					$(thisPages).attr("id","te_book_" + thisBookID + "_pagesContainer");
 					
-					
 					var bottomTitle = $(this).find("a.title");
 					$(bottomTitle).attr("id","te_book_" + thisBookID + "_bottomTitle");
+					$("#te_book_" + thisBookID + "_bottomTitle").attr("href","javascript:;");
 				});
 				TE.vbLog("gname","TE.enhancePage",bookshelf);
 			}
@@ -1121,7 +1245,7 @@
 						// Kill the page before it can load.
 						TE.fn.killPage();
 						var newLocation = TE.site.reader.url + bookID + "/" + newPage;
-						window.location.href = newLocation;
+						global.location.href = newLocation;
 					}
 					// If on the auth page, wait for DOM and update form info to redirect to the appropriate page.
 					if(TE.on.auth)
@@ -1149,10 +1273,18 @@
 						TE.book.currentPage = pageNumber;
 						TE.book.prevPage = pageNumber-1;
 						TE.book.nextPage = pageNumber+1;
+						if(TE.book.nextPage > TE.book.totalPages) { TE.book.nextPage = false; }
+						if(TE.book.prevPage <= 0) { TE.book.prevPage = false; }
 						TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
 						
-						var newImageSrc = TE.site.image.prefix + TE.book.id + "/" + TE.book.currentPage;
+						// Get the dataURI from the source of loader's hidden image.
+						var newImageSrc = $("#te_loadImage_"+pageNumber).attr("src");
+						//var newImageSrc = TE.site.image.prefix + TE.book.id + "/" + TE.book.currentPage;
+						
+						// Remove the loader's hidden image.
 						$("#te_readerCurrentImage").attr("src",newImageSrc);
+						
+						$("#te_loadImage_"+pageNumber).remove();
 						
 						// Reposition.
 						TE.Enhancements.automaticRepositioning.fn.run();
@@ -1165,7 +1297,7 @@
 						
 						// Update links.
 						this.updateLinks();
-						window.location.href = TE.myLocation + "#" + pageNumber;
+						global.location.href = TE.myLocation + "#" + pageNumber;
 						TE.log("gname",name,"Image " + pageNumber + " has been placed in the reader.");
 						dfd.resolve();
 					},this));
@@ -1175,7 +1307,7 @@
 				{
 					if(pageNumber == false)
 					{
-						window.location.href = TE.site.book.url + TE.book.id;
+						global.location.href = TE.site.book.url + TE.book.id;
 					}
 					TE.log("gname","Seamless Viewing","Image " + pageNumber + " is out of range and will not be loaded.");
 					dfd.resolve();
@@ -1312,7 +1444,7 @@
 							// Vanilla Tsumino
 							else
 							{
-								window.location.href = TE.site.reader.url + TE.book.id + "/" + $("#te_pageJumper").val();
+								global.location.href = TE.site.reader.url + TE.book.id + "/" + $("#te_pageJumper").val();
 							}
 						});
 					});
