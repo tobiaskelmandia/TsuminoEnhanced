@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.12
+// @version			2.0.0.13
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -322,19 +322,28 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 							// (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
 							if(responseHeader["Content-Type"] == "images/jpeg")
 							{
+								TE.vbLog("gname","TE.load","Running data conversions...");
+								var startTime = new Date();
+								
 								// Use Uint8Array to view the arrayBuffer response data.
 								var typedArray = new Uint8Array(data);
+								TE.vbLog("gname","TE.load","Response data typed to Uint8Array.");
 
 								// Determine number of bytes for the assembly loop.
 								var numBytes = typedArray.length;
 								var binaryString = "";
-								TE.vbLog("gname","TE.load","This image has " + typedArray.length + " bytes.");
+								TE.vbLog("gname","TE.load","This image has " + typedArray.length + " bytes.","Converting to binary string...");
 
 								// Convert it into a useable binary string.
 								for(i = 0; i < numBytes; i++) { binaryString = binaryString + String.fromCharCode(typedArray[i]); }
+								TE.vbLog("gname","TE.load","Conversion complete.","Encoding to base64...");
 
 								// And finally encode the binary string as base64.
 								var encodedBS = btoa(binaryString);
+								
+								var endTime = new Date();
+								var runTime = endTime - startTime;
+								TE.vbLog("gname","TE.load","Encoding complete.","Total time spent on conversion: " + runTime + "ms.");
 
 								// Take the base64 string and prepend it so it can be used as a dataURI.
 								var dataURI="data:image/jpeg;base64,"+encodedBS;
@@ -1297,47 +1306,56 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			changePage : function(pageNumber)
 			{
 				var dfd = jQuery.Deferred();
+				function changePageCommon(pageNumber)
+				{
+					pageNumber = parseInt(pageNumber);
+					// Update page and location variables.
+					TE.book.currentPage = pageNumber;
+					TE.book.prevPage = pageNumber-1;
+					TE.book.nextPage = pageNumber+1;
+					if(TE.book.nextPage > TE.book.totalPages) { TE.book.nextPage = false; }
+					if(TE.book.prevPage <= 0) { TE.book.prevPage = false; }
+					TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
 
+					// Get the dataURI from the source of loader's hidden image.
+					var newImageSrc = $("#te_loadImage_"+pageNumber).attr("src");
+					//var newImageSrc = TE.site.image.prefix + TE.book.id + "/" + TE.book.currentPage;
+
+					// Remove the loader's hidden image.
+					$("#te_readerCurrentImage").attr("src",newImageSrc);
+
+					// Reposition.
+					TE.Enhancements.automaticRepositioning.fn.run();
+
+					// If Record Keeper is Enabled.
+					if(TE.User.recordKeeper.enable) { TE.Enhancements.recordKeeper.fn.update(); }
+
+					// If Page Jumper is Enabled.
+					if(TE.User.pageJumper.enable) { $("#te_pageJumper").val(pageNumber); }
+
+					// Update links.
+					this.updateLinks();
+					global.location.href = TE.myLocation + "#" + pageNumber;
+					TE.log("gname",name,"Image " + pageNumber + " has been placed in the reader.");
+					dfd.resolve();
+				}
+				var cpc = changePageCommon.bind(this);
 				// Make sure the page is in range first.
 				if((pageNumber <= TE.book.totalPages) && (pageNumber > 0))
 				{
-					TE.status.load = TE.load(pageNumber);
-					// Once the requested page is preloaded, continue.
-					$.when(TE.status.load).then($.proxy(function()
+					if($("#te_loadImage_"+pageNumber).length > 0)
 					{
-						pageNumber = parseInt(pageNumber);
-						// Update page and location variables.
-						TE.book.currentPage = pageNumber;
-						TE.book.prevPage = pageNumber-1;
-						TE.book.nextPage = pageNumber+1;
-						if(TE.book.nextPage > TE.book.totalPages) { TE.book.nextPage = false; }
-						if(TE.book.prevPage <= 0) { TE.book.prevPage = false; }
-						TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
-
-						// Get the dataURI from the source of loader's hidden image.
-						var newImageSrc = $("#te_loadImage_"+pageNumber).attr("src");
-						//var newImageSrc = TE.site.image.prefix + TE.book.id + "/" + TE.book.currentPage;
-
-						// Remove the loader's hidden image.
-						$("#te_readerCurrentImage").attr("src",newImageSrc);
-
-						$("#te_loadImage_"+pageNumber).remove();
-
-						// Reposition.
-						TE.Enhancements.automaticRepositioning.fn.run();
-
-						// If Record Keeper is Enabled.
-						if(TE.User.recordKeeper.enable) { TE.Enhancements.recordKeeper.fn.update(); }
-
-						// If Page Jumper is Enabled.
-						if(TE.User.pageJumper.enable) { $("#te_pageJumper").val(pageNumber); }
-
-						// Update links.
-						this.updateLinks();
-						global.location.href = TE.myLocation + "#" + pageNumber;
-						TE.log("gname",name,"Image " + pageNumber + " has been placed in the reader.");
-						dfd.resolve();
-					},this));
+						cpc(pageNumber);
+					}
+					else
+					{
+						TE.status.load = TE.load(pageNumber);
+						// Once the requested page is preloaded, continue.
+						$.when(TE.status.load).then($.proxy(function()
+						{
+							cpc(pageNumber);
+						},this));
+					}
 				}
 				// If the user requested a page that was less than 1 or greater than the total number of pages, stop.
 				else
@@ -1409,6 +1427,21 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 
 						// Update doujin navigation links.
 						this.updateLinks();
+						$("body").append("<img id='te_loadImage_"+TE.book.currentPage+"' style='display:none;'>");
+						
+						// "Cache" the first image that loads for later.
+						var originImage = new Image();
+						originImage.onload = function () 
+						{
+							var canvas = document.createElement('canvas');
+							canvas.width = this.naturalWidth;
+							canvas.height = this.naturalHeight;
+							canvas.getContext('2d').drawImage(this, 0, 0);
+							var newSrc = canvas.toDataURL('image/jpeg');
+							$("#te_loadImage_"+TE.book.currentPage).attr("src",newSrc);
+						};
+						originImage.src = $("#te_readerCurrentImage").attr("src");
+						
 					},this));
 				}
 				else if (TE.on.auth)
