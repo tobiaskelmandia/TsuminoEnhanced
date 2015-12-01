@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.10
+// @version			2.0.0.11
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -25,7 +25,7 @@
 * -------------------------
 * jquery.binarytransport.js
 * @description. jQuery ajax transport for making binary data type requests.
-* @version 1.0 
+* @version 1.0
 * @author Henry Algus <henryalgus@gmail.com>
 *************************************************************************************/
 
@@ -47,7 +47,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		data = options.data || null,
 		username = options.username || null,
 		password = options.password || null;
-					
+
 				xhr.addEventListener('load', function(){
 			var data = {};
 			data[options.dataType] = xhr.response;
@@ -56,12 +56,12 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				});
 
 				xhr.open(type, url, async, username, password);
-				
+
 		// setup custom headers
 		for (var i in headers ) {
 			xhr.setRequestHeader(i, headers[i] );
 		}
-				
+
 				xhr.responseType = dataType;
 				xhr.send(data);
 			},
@@ -88,28 +88,28 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		version			: GM_info["script"]["version"],
 		status			: {},
 	};
-	
+
 	// Tsumino Enhanced Configuration
 	TE.config =
 	{
 		debug : true,
 		verboseDebug : true,
 	};
-	
+
 	// User's current location.
 	TE.myLocation = global.location.href;
-	
+
 	/*************************************************************************************
 	* Detect which features the user's browser has.
 	*************************************************************************************/
 	TE.ft = {};
 	if (typeof global.console.group === 'function') { TE.ft.logGroups = true; } else { TE.ft.logGroups = false; }
-	
-	
+
+
 	/*************************************************************************************
 	* Tsumino Site Configuration.
 	*************************************************************************************/
-	
+
 	// Define prefixes for all major site pages.
 	TE.site =
 	{
@@ -127,10 +127,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		reader			: { prefix : "/Read/View/" },
 		search			: { prefix : "/Search" },
 	};
-	
+
 	// Location Checking object.
 	TE.on = {};
-	
+
 	// Create full URLs and do location checking.
 	for (var key in TE.site)
 	{
@@ -143,7 +143,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					// Create Full URLs.
 					obj["url"] = TE.site.baseURL + obj[prop];
-					
+
 					// Perform location checking.
 					if(obj["prefix"])
 					{
@@ -167,12 +167,12 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	// * Using sorting on the homepage.
 	// * Looking at search results
 	var onBrowse = RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation), onHome = false;
-	if((TE.site.baseURL == TE.myLocation) || 
+	if((TE.site.baseURL == TE.myLocation) ||
 		(TE.site.baseURL + "/" == TE.myLocation) ||
 		(RegExp(TE.site.baseURL + "/\\?sort=*").exec(TE.myLocation))) { onHome = true; }
 	if((onBrowse) || (onHome) || (TE.on.query)) { TE.on.browse = true; }
 	else { TE.on.browse = false; }
-	
+
 	/*************************************************************************************
 	* Utility Functions
 	*************************************************************************************/
@@ -256,10 +256,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				document.importNode (document.implementation.createHTMLDocument("").documentElement, true),
 				document.documentElement
 			);
-			
+
 			// Apply preliminary background color for smooth rendering appearance.
 			document.head.innerHTML = '<style>body{background-color:#1a1a1a;}</style>';
-			window.stop();
+			global.stop();
 		},
 		load : function(pageNumber)
 		{
@@ -267,18 +267,18 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				newImageSrc = TE.site.image.prefix + TE.book.id + "/",
 				nifs = TE.site.baseURL + newImageSrc,
 				authUrl = TE.site.baseURL + TE.site.auth.prefix + TE.book.id + "/" + pageNumber;
-			
+
 			// If no page number was defined, try to load the next page.
 			pageNumber = pageNumber || TE.book.nextPage;
-			
+
 			// Make sure the page exists first.
 			if((pageNumber <= TE.book.totalPages) && (pageNumber > 0))
 			{
 				newImageSrc = newImageSrc + pageNumber;
 				nifs = nifs + pageNumber;
-				
+
 				this.vbLog("gname","TE.load","Loading Image: " + pageNumber + "...");
-				
+
 				// Make an ajax request expecting a binary (arraybuffer) datatype.
 				var loadImage = $.ajax(
 				{
@@ -292,10 +292,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						// Put the response headers into an array.
 						var rh = loadImage.getAllResponseHeaders();
 						rha = rh.split("\r\n");
-						
+
 						// Create a proper object from the response header array.
 						var responseHeader = {};
-						for (var i=0; i < rha.length; i++) 
+						for (var i=0; i < rha.length; i++)
 						{
 							var thisRH = rha[i];
 							thisRH = thisRH.split(": ");
@@ -304,10 +304,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 								responseHeader[thisRH[0]] = thisRH[1];
 							}
 						}
-						
+
 						// Local logging to examine response headers.
 						//TE.vbLog("gname","TE.fn.load","Response Headers",responseHeader);
-						
+
 						// Content-Type is undefined if Tsumino requires us to solve a captcha.
 						if(typeof responseHeader["Content-Type"] === "undefined")
 						{
@@ -317,28 +317,28 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						else
 						{
 							TE.vbLog("gname","TE.load","Content Type: " + responseHeader["Content-Type"]);
-							
+
 							// If we're dealing with a JPEG image.
 							// (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
 							if(responseHeader["Content-Type"] == "images/jpeg")
 							{
 								// Use Uint8Array to view the arrayBuffer response data.
 								var typedArray = new Uint8Array(data);
-								
+
 								// Determine number of bytes for the assembly loop.
 								var numBytes = typedArray.length;
 								var binaryString = "";
 								TE.vbLog("gname","TE.load","This image has " + typedArray.length + " bytes.");
-								
+
 								// Convert it into a useable binary string.
 								for(i = 0; i < numBytes; i++) { binaryString = binaryString + String.fromCharCode(typedArray[i]); }
-								
+
 								// And finally encode the binary string as base64.
 								var encodedBS = btoa(binaryString);
-								
+
 								// Take the base64 string and prepend it so it can be used as a dataURI.
 								var dataURI="data:image/jpeg;base64,"+encodedBS;
-								
+
 								// Add a hidden image to the page so the dataURI can be harvested from its source later.
 								$("body").append("<img id='te_loadImage_"+pageNumber+"' src='"+dataURI+"' style='display:none;'>");
 
@@ -373,7 +373,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			GM_setValue("TE_settings",JSON.stringify(TE.User));
 		},
 	};
-	
+
 	// Alias specific commonly used utility functions to the main namespace.
 	TE.log = TE.fn.log;
 	TE.vbLog = TE.fn.vbLog;
@@ -381,14 +381,14 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	TE.replaceAll = TE.fn.replaceAll;
 	TE.load = TE.fn.load;
 	TE.updateSettings = TE.fn.updateSettings;
-	
+
 	/*************************************************************************************
 	* Tsumino Enhanced User Interface settings.
 	* Stylesheets, data URI, etc.
 	*************************************************************************************/
 	// User Interface object.
 	TE.ui = {};
-	
+
 	/* Tsumino Enhanced CSS.
 	** Minified so it's easier to include in the script.
 	**
@@ -396,17 +396,20 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	** Minify here:		http://cssminifier.com/
 	*/
 	TE.ui.css = ".te_switch+label,select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{width:100%;max-width:100%;height:100%;min-height:100%;overflow-y:scroll}#te_brand,.te_enhancementColor{color:#22a7f0}#te_version{font-size:.5em}.te_en_incompatible{background-color:rgba(255,0,0,.1);border:2px solid rgba(255,0,0,0);border-radius:5px;padding:.5em}.te_switch+label,select.te_switch{cursor:pointer;outline:0}a.te_link,a.te_link:visited{color:#23a7f0;text-decoration:none}a.te_link:hover{color:#23a7f0;text-decoration:underline}.te_options{padding-left:1em}.te_optionDescription{margin-top:10px}.te_optionGroup{margin-bottom:20px;border:2px solid #fff;border-radius:5px;background-color:#222;padding:15px;margin-left:1em}.te_enhancementName,.te_enhancementName:active,.te_enhancementName:focus,.te_enhancementName:hover,.te_enhancementName:visited{color:#22a7f0;font-size:2em;text-decoration:none;margin:0;padding:0}.te_switch{position:absolute;margin-left:-9999px;visibility:hidden}.te_switch+label{display:block;position:relative;user-select:none;margin-bottom:0}input.te_switch-style+label{padding:2px;width:40px;height:20px;background-color:#ddd;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after,input.te_switch-style+label:before{display:block;position:absolute;content:''}input.te_switch-style+label:before{top:2px;left:2px;bottom:2px;right:2px;background-color:#1a1a1a;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after{top:4px;left:4px;bottom:4px;width:16px;background-color:#ddd;-webkit-border-radius:16px;-moz-border-radius:16px;-ms-border-radius:16px;-o-border-radius:16px;border-radius:16px;-webkit-transition:margin .4s,background .4s;-moz-transition:margin .4s,background .4s;-o-transition:margin .4s,background .4s;transition:margin .4s,background .4s}input.te_switch-style:checked+label{background-color:#22a7f0}input.te_switch-style:checked+label:after{margin-left:16px;background-color:#22a7f0}select,select option{background-color:#1a1a1a;color:#fff}select{border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;user-select:none}.te_fauxRow{display:table-row}.te_fauxCell{display:table-cell;vertical-align:middle}.te_switchContainer{padding-right:10px}.te_Button{background-color:#23a8f0;-moz-border-radius:28px;-webkit-border-radius:28px;border-radius:30px;border:2px solid #ddd;display:inline-block;cursor:pointer;color:#fff;font-size:1.2em;font-weight:700;padding:5px 15px;text-decoration:none;text-shadow:0 1px 0 #12587d;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}input.te_subOption[type=checkbox]:not(old),input.te_subOption[type=radio]:not(old){width:2em;margin:0;padding:0;font-size:1em;opacity:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label,input.te_subOption[type=radio]:not(old)+label{display:inline-block;margin-left:-2em;line-height:1.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label>span,input.te_subOption[type=radio]:not(old)+label>span{display:inline-block;width:1em;height:1em;padding:.2em;margin:.25em .5em .25em .25em;border:1px solid #FFF;border-radius:5px;background-color:#000;vertical-align:bottom;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span,input.te_subOption[type=radio]:not(old):checked+label>span{background-color:#000;border:1px solid #23a7f0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span:before{content:'x';display:block;color:#23a7f0;font-size:1em;line-height:1em;margin-top:-.35em;text-align:center;font-weight:700;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=radio]:not(old):checked+label>span>span{display:block;width:.5em;height:.5em;margin:.125em;border:.0625em solid #626262;border-radius:.125em;background-color:#626262;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}#te_tabContainer{padding-bottom:1em}.te_configTab,.te_configTab nav ul{position:relative;margin:0 auto}.te_configTab nav,.te_configTab nav ul li{text-align:center}.te_configTab{overflow:hidden;width:100%;font-weight:300;font-size:2em}.te_configTab nav ul{display:-ms-flexbox;display:-webkit-flex;display:-moz-flex;display:-ms-flex;display:flex;padding:0;max-width:1200px;list-style:none;-ms-box-orient:horizontal;-ms-box-pack:center;-webkit-flex-flow:row wrap;-moz-flex-flow:row wrap;-ms-flex-flow:row wrap;flex-flow:row wrap;-webkit-justify-content:center;-moz-justify-content:center;-ms-justify-content:center;justify-content:center}.te_configTab nav a,.te_configTab nav ul li{display:block;position:relative;text-decoration:none}.te_configTab nav ul li{z-index:1;margin:0;-webkit-flex:1;-moz-flex:1;-ms-flex:1;flex:1}.te_configTab nav a:focus{outline:0}.te_configTab nav a:hover{text-decoration:none}.no-flexbox nav ul li{min-width:15%;display:inline-block}.te_configTab nav li:last-child::before{position:absolute;bottom:0;left:0;width:100%;height:4px;background:#22a7f0;content:'';-webkit-transition:-webkit-transform .3s;transition:transform .3s}.te_configTab nav li:first-child.te_tab-current~li:last-child::before{-webkit-transform:translate3d(-400%,0,0);transform:translate3d(-400%,0,0)}.te_configTab nav li:nth-child(2).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-300%,0,0);transform:translate3d(-300%,0,0)}.te_configTab nav li:nth-child(3).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-200%,0,0);transform:translate3d(-200%,0,0)}.te_configTab nav li:nth-child(4).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}.te_configTab nav a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-size:.75em;padding:.5em;color:#74777b;line-height:1;-webkit-transition:color .3s,-webkit-transform .3s;transition:color .3s,transform .3s;font-weight:700}.te_configTab nav li.te_tab-current a{color:#22a7f0}.te_currentTabContent{display:block}.te_hiddenTabContent{display:none}.te_recordKeeper_browseData{font-size:.5em}";
-	
+
+	// Browsing Tweaks CSS.
+	TE.ui.btcss = ".te_browsetweak_infobutton,.te_browsetweak_readbutton{position:absolute;border:3px solid #fff;bottom:10px;padding:10px;margin-left:5%;margin-right:5%;font-size:17px;color:#fff;width:42.5%;display:inline-block;text-decoration:none}.te_browsetweak_readbutton{right:0}.te_browsetweak_infobutton:focus,.te_browsetweak_readbutton:focus{text-decoration:none}.te_browsetweak_infobutton:hover,.te_browsetweak_infobutton:visited,.te_browsetweak_readbutton:hover,.te_browsetweak_readbutton:visited{background-color:#22a7f0;color:#fff;text-decoration:none}.te_browsetweak_infobutton{left:0}";
+
 	// Tsumino Enhanced Favicon Data URI
 	TE.ui.favicon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wsRDAY5sIzTWwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAEaUlEQVRYw+2XW2xVRRSGv5nZ+1x6di/QUjinLdVUArVISIoJgRcEAoEQY4LxwUB8Ml4evEQTJGhQQ/SVGI2aaAzyohiDCMREEpUol4ACRROubSkl1tKeXjhnn+uePT7s5hRigJ62hhfmbe+ZWfOv9a/1rxmxZMkSwz0ckns87gOwpsOIERKUBcaAtDB2GF33IDI9iBrqnRwAY0XQNXGswe7gW9n4lbPwEm14TYvRtc2YaBVGWmCHMSqEKLiokT58pxa/JgFA7OB72Od/RmDKA6Brm0ht+piKQzsJnz2Au34rxYeWg1TI0T7UQBem4OI1txP68weiv32OzIwAUJi/AnfDmwC467ZQc/kIePnyckDk3cBY6yp8pw5n/7vEvn8HgOhPH+Hs20747EHwCnhzFyNy6QB41Rwyj704FkaDfeUk+Lr8JBT5NFbPKfyIg7EjAIQ6j4JXIP/oU4H9aDVYIcKn9yF8DwCvYSEmNhMAu+s4sf07SnNlUSCzNwhd+pXM6pcxoVjpvxrqRVfHybeuJt+2JojSghUUW5aC1vjVcwLDvR1ED3+K8HKTrwKRTgY8btgG2sOEohinDrw8hYVrsXtOEzm5B5lOggAMpJ7+AKu3g9iBHcjM8NTKULpJRGoAvyaBut5J9PCXqIFO5I1+MAahi+Tan0QUcwHXQPWHTyC8PEIXpy5EcrQfNXiFyLHdVO1+Dqv3DH5lPcIrlA7QM5tIb3yfwoKVpdzBmEAbJjBUIpF4+7YUeDlCncdQfecRukC+bS2ZDdtACOzeDgD82rl4jYvQ8Vbs7hN4DW3klm5CGO+uInRXCoy0AlGprMezQvgzGgAotiwjenRX4EHfBUQ+jV85C3fdFkTeDajT3jRIsRB4jYvIrHoJpEJdvzwW5tT4El0ABHL0Hyq/egVxU80bgtycfBXoIvaFX3BG/kbkXfTMuWTWvwFe4VbBMgaZGkD4mkLLMorzlhP660fsax1Tb0Yi7yKyNygsWImOz79FJUt++hov3srI899gQhXI9CDW1TNTp8CLt5J+fDvGqUOkk9hdx6BpMX5NHD9ajcyOBh1QBKCcvdtQY83rTvI7YQBW3zmqP9uMiVYj04Nklz0zFhYZHA6YUAWoEHb3Caz+ixhlgxCgLAwSjAZdvG0u3P0+oGz8qtm4a17Dr6oHY1D9l0rTfmU9SInX+Aju2tfRs1rwYzMCYKEKVP9FnL1vIdxkeQB8pxZd+wC59o3oxMNUHNqJHL5GavMnIMe3iVwKtIcfrcGvaUAUs6hhNygB3wMrjIk4UA6AYuMisiteQM+eh0xexfl2K1bfOYrN7UHYw85/ylANduN8/Soo+yYvNML45eeAzAxj9ZxCDXQR+X0PKtlT4j7Q3/EyNHYElEKmrgc8T7AH3BGAGuoleuQLUDaimB1f3PMHcvga4TP7xsGmkxghsfovTu+lVPhewOHN/4xP1a5nb/FSDV3F7jxO+PR3kwIgputlNBHZ/V/fBWKS++6/jO4D+BdYdNLmP/zOiQAAAABJRU5ErkJggg==";
-	
+
 	TE.ui.mainColor = "#22a7f0";
-	
+
 	/*************************************************************************************
 	* Classes
 	*************************************************************************************/
 
-	
+
 	/*************************************************************************************
 	* Class: Enhancement
 	*************************************************************************************/
@@ -457,9 +460,9 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					throw new Error("Enhancement incompatibilities must be defined as 'false', or an array.");
 				}
-				
+
 				if (typeof fn !== "object") { throw new Error("Enhancement functionality must be defined as an object."); }
-				
+
 				this.name = name;
 				this.shortName = TE.fn.camelize(name);
 				this.description = description;
@@ -512,7 +515,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					{
 						if (typeof name !== "string") { throw new Error("Option name must be defined as a string."); }
 						if (typeof description === "undefined") { description = false; }
-						
+
 						if(type == "toggle") {}
 						if ((type == "dropdown") && (typeof arguments !== "object"))
 						{
@@ -526,7 +529,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						{
 							if (typeof arguments === "undefined") { throw new Error("Option arguments must be defined with type dropdown."); }
 						}
-						
+
 						this.type = type;
 						this.name = name;
 						this.shortName = TE.fn.camelize(name);
@@ -579,7 +582,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					{
 						throw new Error("Range is the only acceptable type right now.");
 					}
-					
+
 					this.type = type;
 					this.arguments = arguments;
 				}
@@ -591,8 +594,8 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			},
 		},
 	};
-	
-	
+
+
 	/*************************************************************************************
 	* User Configuration
 	*************************************************************************************/
@@ -605,10 +608,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			TE.User = JSON.parse(TE_settings);
 		}
 	})();
-	
-	
-	
-	
+
+
+
+
 	/*************************************************************************************
 	* Enhance Page - Core Functionality
 	*  + Creates IDs for important elements.
@@ -625,26 +628,26 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			*************************************************************************************/
 			// The navigation bar at the top.
 			$("nav").attr("id","te_siteNavbar");
-			
+
 			// Replace favicon.
 			$("link[rel='icon']").attr("href",TE.ui.favicon);
-			
+
 			// Apply Tsumino Enhanced CSS.
 			$("head").append("<style>"+TE.ui.css+"</style>");
-			
+
 			// Add Tsumino Enhanced config link to navbar.
 			var navbar = $("ul.nav.navbar-nav")[0];
 			$(navbar).attr("id","te_navbarMain");
 			$("#te_navbarMain").append("<li><a href='javascript:;' style='color:"+TE.ui.mainColor+" !important;' id='te_configNavLink'>ENHANCED</a></li>");
 			$("#te_configNavLink").click(function(){ TE.settings.render(); });
-			
+
 			// ID the primary content area.
 			var pageContent = $("div.container-fluid")[1];
 			$(pageContent).attr("id","te_pageContent");
-			
+
 			var footer = $("div.nav-footer")[0];
 			$(footer).attr("id","te_page_footer");
-			
+
 			/*************************************************************************************
 			* Book & Reader
 			*************************************************************************************/
@@ -652,7 +655,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			{
 				// Create the book object.
 				TE.book = {};
-				
+
 				// Reader only.
 				if(TE.on.reader)
 				{
@@ -662,53 +665,53 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					$(imageBlock).attr("id","te_imageBlock");
 					$(".reader-btn").attr("id","te_readerButtonContainer");
 					$("img.reader-img").attr("id","te_readerCurrentImage");
-					
+
 					var readInfo = TE.myLocation;
 					readInfo = readInfo.replace(TE.site.reader.url,"");
 					readInfo = readInfo.split("/");
-					
+
 					// Book ID.
 					TE.book.id = parseInt(readInfo[0]);
-					
+
 					// Book title.
 					var bookTitle = $("title").text();
 					TE.book.title = bookTitle.replace("Tsumino - Read ","");
-					
+
 					// Pagination setup.
 					var pagination = $("#te_readerButtonContainer").find("h1")[0];
 					$(pagination).attr("id","te_readerPagination");
 					var pagesInfo = $("#te_readerPagination").text();
 					pagesInfo = pagesInfo.split(" Page ")[1];
 					pagesInfo = pagesInfo.split(" of ");
-					
+
 					// Current Page.
 					TE.book.currentPage = parseInt(pagesInfo[0]);
 					TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
-					
+
 					// Origin page.
 					TE.book.originPage = TE.book.currentPage;
-					
+
 					// Total Pages.
 					TE.book.totalPages = parseInt(pagesInfo[1]);
-					
+
 					// Next page.
 					TE.book.nextPage = TE.book.currentPage + 1;
 					if(TE.book.nextPage > TE.book.totalPages) { TE.book.nextPage = false; }
 					else { TE.book.nextPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.nextPage; }
-					
+
 					// Previous page.
 					TE.book.prevPage = TE.book.currentPage - 1;
 					if(TE.book.prevPage == 0) { TE.book.prevPage = false; }
 					else { TE.book.prevPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.prevPage; }
-					
+
 					// Rewrite pagination section.
 					$("#te_readerPagination").html("Page <span id='te_currentPage'></span> of <span id='te_totalPages'></span>");
 					$("#te_currentPage").html(TE.book.currentPage);
 					$("#te_totalPages").html(TE.book.totalPages);
-					
+
 					// Add ID to return button.
 					$("a[href*='"+TE.site.book.prefix+"']:contains('RETURN')").attr("id","te_returnButton");
-					
+
 					// Enhance Previous Page button.
 					if ($("a:contains(' PREV')").length)
 					{
@@ -722,7 +725,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					$("#te_prevButton").attr("href",TE.book.prevPageURL);
 					if(TE.book.currentPage > 1) { $("#te_prevButton").css("display","inline"); }
 					else { $("#te_prevButton").css("display","none"); }
-					
+
 					// Enhance Next Page Button
 					if ($("a:contains('NEXT ')").length)
 					{
@@ -736,12 +739,12 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					$("#te_nextButton").attr("href",TE.book.nextPageURL);
 					if(TE.book.currentPage < TE.book.totalPages) { $("#te_nextButton").css("display","inline"); }
 					else { $("#te_nextButton").css("display","none"); }
-					
+
 					// Enhance Image link.
 					var imageLink = $("#te_readerCurrentImage").parent();
 					$(imageLink).attr("id","te_imageLink");
 					$("#te_imageLink").attr("href",TE.book.nextPageURL);
-					
+
 					TE.vbLog("gname","TE.book",TE.book);
 				}
 				else if(TE.on.book)
@@ -749,14 +752,14 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					var readInfo = TE.myLocation;
 					readInfo = readInfo.replace(TE.site.book.url,"");
 					readInfo = readInfo.split("/");
-					
+
 					// Book ID.
 					TE.book.id = parseInt(readInfo[0]);
-					
+
 					// Fix tag display bug causing unwanted line breaks.
 					$(".book-tag:contains(' ')").css("white-space","nowrap");
 					$(".book-tag:contains('-')").css("white-space","nowrap");
-					
+
 					// Read Online button.
 					$("a.book-read-button:contains(' READ ONLINE')").attr("id","te_readOnlineButton");
 				}
@@ -769,7 +772,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$(bookshelfContainer).attr("id","te_bookshelfContainer");
 				var sidebarContainer = $(ctProper).children()[1];
 				$(sidebarContainer).attr("id","te_sidebarContainer");
-				
+
 				var bookshelf = $(browsePage).find("div.row.row-no-padding");
 				$(bookshelf).attr("id","te_bookshelf");
 				$(bookshelf).children().each(function()
@@ -779,18 +782,18 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					temp = temp.split("/");
 					var thisBookID = temp[0];
 					$(this).attr("id","te_book_" + thisBookID + "_masterContainer");
-					
+
 					$(this).find("div.book-grid-item").attr("id","te_book_" + thisBookID + "_container");
-					
+
 					var thisOverlay = $("#te_book_" + thisBookID + "_container").find("div.overlay");
 					$(thisOverlay).attr("id","te_book_" + thisBookID + "_overlay");
-					
+
 					var thisData = $("#te_book_" + thisBookID + "_overlay").find("div.overlay-data");
 					$(thisData).attr("id","te_book_" + thisBookID + "_data");
-					
+
 					var thisPages = $("#te_book_" + thisBookID + "_data").find("div.overlay-sub");
 					$(thisPages).attr("id","te_book_" + thisBookID + "_pagesContainer");
-					
+
 					var bottomTitle = $(this).find("a.title");
 					$(bottomTitle).attr("id","te_book_" + thisBookID + "_bottomTitle");
 					$("#te_book_" + thisBookID + "_bottomTitle").attr("href","javascript:;");
@@ -800,26 +803,26 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			TE.vbLog("gname","TE.enhancePage","Finished working.");
 			dfd.resolve();
 		});
-		
+
 		return dfd.promise();
 	};
-	
-	
+
+
 	/*************************************************************************************
 	* Enhancement Code
 	* Create all Enhancements within anonymous functions.
 	*************************************************************************************/
 	// Object for storing all Enhancements
 	TE.Enhancements = {};
-	
+
 	/*******************************************************
 	* Hidden Enhancements
 	* Important functionality.
 	* Customization either not yet written or not required.
 	*******************************************************/
-	
-	
-	
+
+
+
 	/*******************************************************
 	* General Enhancements
 	*******************************************************/
@@ -860,9 +863,9 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
-	
-	
-	
+
+
+
 	(function()
 	{
 		/*******************************************************
@@ -875,8 +878,8 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			section = "General",
 			incompatible = false,
 			main = {};
-			
-			
+
+
 		main =
 		{
 			init : function()
@@ -969,7 +972,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				TE.updateSettings();
 			},
 		};
-		
+
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		{
@@ -989,11 +992,11 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		};
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 		//options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
-		
+
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
-	
-		
+
+
 	(function()
 	{
 		/*******************************************************
@@ -1006,7 +1009,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			section = "Browsing",
 			incompatible = false,
 			main = {};
-			
+
 		main =
 		{
 			init : function()
@@ -1026,18 +1029,45 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 							{
 								$("div.overlay").each(function()
 								{
-									$(this).click(function()
+									$(this).on("mousedown",$.proxy(function(e)
 									{
-										if(TE.User[shortName].skipInfo)
+										// Only fire if the div itself is clicked, ignoring children.
+										if(e.target == this)
 										{
-											$(this).find("a.te_browsetweak_readbutton")[0].click();
+											// Left Mouse
+											if((e.which == 1))
+											{
+												TE.vbLog("Left mouse button clicked.");
+												if(TE.User[shortName].skipInfo)
+												{
+													var thisLink = $(this).find("a.te_browsetweak_readbutton").attr("href");
+												}
+												else
+												{
+													var thisLink = $(this).find("a.overlay-button").attr("href");
+												}
+												if(e.ctrlKey) { global.open(thisLink); }
+												else { global.location.href = thisLink; }
+
+											}
+
+											// Middle Mouse
+											if((e.which == 2))
+											{
+												TE.vbLog("Middle mouse button clicked.");
+												if(TE.User[shortName].skipInfo)
+												{
+													var thisLink = $(this).find("a.te_browsetweak_readbutton").attr("href");
+												}
+												else
+												{
+													var thisLink = $(this).find("a.overlay-button").attr("href");
+												}
+												global.open(thisLink);
+											}
 										}
-										else
-										{
-											$(this).find("a.overlay-button")[0].click();
-										}
-										
-									});
+										e.preventDefault();
+									},this));
 								});
 							}
 							if(TE.User[shortName].moreBooks)
@@ -1048,7 +1078,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 							if(TE.User[shortName].skipInfo)
 							{
 								// Apply new CSS.
-								$("style").append(".te_browsetweak_infobutton,.te_browsetweak_readbutton{position:absolute;border:3px solid #fff;bottom:10px;padding:10px;margin-left:5%;margin-right:5%;font-size:17px;color:#fff;width:42.5%;display:inline-block}.te_browsetweak_readbutton{right:0}.te_browsetweak_infobutton:hover,.te_browsetweak_readbutton:hover{background-color:#22a7f0;color:#fff;text-decoration:none}.te_browsetweak_infobutton{left:0}");
+								$("style").append(TE.ui.btcss);
 								$("div.overlay").each(function()
 								{
 									// Get Book ID
@@ -1056,14 +1086,14 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 									bookID = bookID.replace("te_book_","");
 									bookID = bookID.replace("_overlay","");
 									bookID = parseInt(bookID);
-									
+
 									// Replace old class on view button.
 									var viewInfoButton = $(this).find("a.overlay-button");
 									$(viewInfoButton).text("INFO");
 									var viewButtonSrc = $(viewInfoButton)[0]['outerHTML'];
 									$(viewInfoButton).removeClass("overlay-button");
 									$(viewInfoButton).addClass("te_browsetweak_infobutton");
-									
+
 									// Add new read button.
 									var readButtonSrc = viewButtonSrc.replace("INFO","READ");
 									readButtonSrc = readButtonSrc.replace("class=\"overlay-button\"","class=\"te_browsetweak_readbutton\"");
@@ -1071,7 +1101,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 									var readButton = $(this).find("a.te_browsetweak_readbutton");
 									var linkURL = TE.site.reader.prefix + bookID + "/1";
 									$(readButton).attr("href",linkURL);
-									
+
 									if(TE.User.recordKeeper)
 									{
 										if(TE.User.recordKeeper.data[bookID])
@@ -1087,7 +1117,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				}
 			},
 		};
-		
+
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		{
@@ -1128,9 +1158,9 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		options.push(new TE.Enhancement.option.main(opt4.type,opt4.name,opt4.description,opt4.defaultValue,opt4.arguments));
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
-	
-	
-	
+
+
+
 	/*******************************************************
 	* Reader Enhancements
 	*******************************************************/
@@ -1164,7 +1194,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					$('html, body').animate({ scrollTop: imgPos}, 1);
 				},
 			};
-			
+
 		var opt1 =
 		{
 			type : "enable",
@@ -1176,7 +1206,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
-	
+
 	(function()
 	{
 		/*******************************************************
@@ -1189,14 +1219,14 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			section = "Reader",
 			incompatible = ["Infinity Scrolling"],
 			main = {};
-		
+
 		main =
 		{
 			replaceKeybinds : function()
 			{
 				// Disable default Tsumino Reader Keybinds.
 				unsafeWindow.$(document).off("keydown");
-				
+
 				// Use Classic Seamless Viewing keybinds instead.
 				$(document).keydown($.proxy(function(e)
 				{
@@ -1207,10 +1237,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						switch (e.which)
 						{
 							case 87: // w
-								window.scrollBy(0, -100);
+								global.scrollBy(0, -100);
 								break;
 							case 83: // s
-								window.scrollBy(0, 100);
+								global.scrollBy(0, 100);
 								break;
 							case 8: //back
 							case 37: //left
@@ -1242,7 +1272,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					oldPage = splitLocation[0];
 					var urlSplit = oldPage.split("/");
 					var bookID = urlSplit[5];
-					
+
 					// If on the reader, kill the page and redirect ASAP.
 					if(TE.on.reader)
 					{
@@ -1265,7 +1295,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			changePage : function(pageNumber)
 			{
 				var dfd = jQuery.Deferred();
-				
+
 				// Make sure the page is in range first.
 				if((pageNumber <= TE.book.totalPages) && (pageNumber > 0))
 				{
@@ -1281,25 +1311,25 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						if(TE.book.nextPage > TE.book.totalPages) { TE.book.nextPage = false; }
 						if(TE.book.prevPage <= 0) { TE.book.prevPage = false; }
 						TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
-						
+
 						// Get the dataURI from the source of loader's hidden image.
 						var newImageSrc = $("#te_loadImage_"+pageNumber).attr("src");
 						//var newImageSrc = TE.site.image.prefix + TE.book.id + "/" + TE.book.currentPage;
-						
+
 						// Remove the loader's hidden image.
 						$("#te_readerCurrentImage").attr("src",newImageSrc);
-						
+
 						$("#te_loadImage_"+pageNumber).remove();
-						
+
 						// Reposition.
 						TE.Enhancements.automaticRepositioning.fn.run();
-						
+
 						// If Record Keeper is Enabled.
 						if(TE.User.recordKeeper.enable) { TE.Enhancements.recordKeeper.fn.update(); }
-						
+
 						// If Page Jumper is Enabled.
 						if(TE.User.pageJumper.enable) { $("#te_pageJumper").val(pageNumber); }
-						
+
 						// Update links.
 						this.updateLinks();
 						global.location.href = TE.myLocation + "#" + pageNumber;
@@ -1327,7 +1357,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$("#te_prevButton").off("click");
 				$("#te_nextButton").off("click");
 				$("#te_imageLink").off("click");
-				
+
 				// Establish updated click binds.
 				if(TE.book.currentPage <= TE.book.totalPages)
 				{
@@ -1349,7 +1379,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					$("#te_prevButton").css("display","none");
 				}
-				
+
 				$("#te_currentPage").html("<a href='"+TE.book.currentPageURL+"'>"+TE.book.currentPage+"</a>");
 			},
 			init : function()
@@ -1360,21 +1390,21 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					$.when(TE.status.enhancePage).done($.proxy(function()
 					{
 						TE.log("gname",name,"Initializining...");
-						
+
 						// Replace default Tsumino reader keybinds with Enhanced Seamless Viewing keybinds.
 						this.replaceKeybinds();
-						
+
 						// Automatic Repositioning.
 						TE.Enhancements.automaticRepositioning.fn.run();
-						
+
 						// Unstickied Header.
 						TE.Enhancements.unstickiedHeader.fn.run();
-						
+
 						// Remove default Tsumino doujin navigation links.
 						$("#te_prevButton").attr("href","javascript:;");
 						$("#te_nextButton").attr("href","javascript:;");
 						$("#te_imageLink").attr("href","javascript:;");
-						
+
 						// Update doujin navigation links.
 						this.updateLinks();
 					},this));
@@ -1385,7 +1415,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				}
 			},
 		};
-		
+
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		{
@@ -1403,14 +1433,14 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			defaultValue : true,
 			arguments : false,
 		};
-		
+
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 		//options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
-		
+
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
-	
-	
+
+
 	(function()
 	{
 		/*******************************************************
@@ -1423,7 +1453,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			section = "Reader",
 			incompatible = false,
 			main = {};
-			
+
 		main =
 		{
 			init : function()
@@ -1438,7 +1468,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 							$("#te_pageJumper").append("<option value='"+i+"'>"+i+"</option>");
 						}
 						$("#te_pageJumper").val(TE.book.currentPage);
-						
+
 						$("#te_pageJumper").change(function()
 						{
 							// Seamless Viewing Compatibility
@@ -1455,9 +1485,9 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					});
 				}
 			},
-			
+
 		};
-		
+
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		{
@@ -1468,13 +1498,13 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			arguments : false,
 		};
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
-		
+
 		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
-	
 
 
-	
+
+
 	/*************************************************************************************
 	* Tsumino Enhanced Settings Page
 	*************************************************************************************/
@@ -1490,16 +1520,16 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			$("#te_settingsTop").css("margin-bottom","2px");
 			$("#te_pageContent").html("<div id='te_settings'></div>");
 			$("#te_page_footer").html("<a href='http://forum.tsumino.com/viewtopic.php?f=6&t=141' target='_blank'>Tsumino Enhanced</a> was written by Toby.");
-			
+
 			// Settings page navigation structure.
 			$("#te_settings").prepend("<div id='te_tabContainer' class='te_configTab'><nav><ul><li id='tab_generalEnhancements'><a href='javascript:;'>General</a></li><li id='tab_browsingEnhancements'><a href='javascript:;'>Browsing</a></li><li id='tab_readerEnhancements'><a href='javascript:;'>Reader</a></li><li id='tab_searchEnhancements'><a href='javascript:;'>Search</a></li><li id='tab_forumEnhancements'><a href='javascript:;'>Forum</a></li></ul></nav></div>");
-			
+
 			// Create sections.
 			$("#te_settings").append("<div id='te_settingsBody'></div>");
 			$("#te_settingsBody").append("<div id='generalEnhancements' class='te_options'></div>");
 			$("#te_settingsBody").append("<div id='browsingEnhancements' class='te_options'></div>");
 			$("#te_settingsBody").append("<div id='readerEnhancements' class='te_options'></div>");
-			
+
 			// Populate Sections.
 			for (var key in TE.Enhancements)
 			{
@@ -1514,19 +1544,19 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						if (obj["section"] == "General") { sectionID = "#generalEnhancements"; }
 						else if (obj["section"] == "Browsing") { sectionID = "#browsingEnhancements"; }
 						else if (obj["section"] == "Reader") { sectionID = "#readerEnhancements"; }
-						
+
 						// Append the Enhancement's options group to the section.
 						$(sectionID).append("<div id='"+obj["shortName"]+"_group' class='te_optionGroup'></div>");
-						
+
 						// Add the description.
 						if(obj["description"] != false)
 						{
 							$("#"+obj["shortName"]+"_group").append("<div class='te_optionDescription'>"+obj["description"]+"</div>");
 						}
-						
+
 						// Add the primary options area.
 						$("#"+obj["shortName"]+"_group").append("<div id='te_options_"+obj["shortName"]+"'></div>");
-						
+
 						var noEnable = true;
 						if(obj["options"] != false)
 						{
@@ -1540,7 +1570,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 									if(option["type"] == "enable")
 									{
 										$("#"+obj["shortName"]+"_group").prepend("<div class='te_fauxRow'><div class='te_fauxCell te_switchContainer'><input id='tes_"+obj["shortName"]+"_enable' name='tes_"+obj["shortName"]+"_enable' type='checkbox' class='te_switch te_switch-style' /><label for='tes_"+obj["shortName"]+"_enable'></label></div><div class='te_fauxCell'><a href='javascript:;' class='te_enhancementName' id='enhancement_header_"+obj["shortName"]+"'>"+obj["name"]+"</a></div></div>");
-										
+
 										$("#enhancement_header_"+obj["shortName"]).click({ obj : obj },function(event)
 										{
 											TE.log($("#tes_"+event.data.obj["shortName"]+"_enable"));
@@ -1568,13 +1598,13 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 								}
 							}
 						}
-						
+
 						// If there was no "enable" option found:
 						if(noEnable)
 						{
 							// Display the title without a switch.
 							$("#"+obj["shortName"]+"_group").prepend("<h2 class='te_enhancementName'>"+obj["name"]+"</h2>");
-							
+
 							// Apply user settings.
 							if(typeof TE.User[obj["shortName"]] !== "undefined")
 							{
@@ -1639,7 +1669,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 									}
 								}
 							}
-							
+
 							// Apply default values to options when enabling an Enhancement.
 							$("#tes_"+obj["shortName"]+"_enable").change({ obj : obj },function(event)
 							{
@@ -1695,12 +1725,12 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					}
 				}
 			}
-			
-			
-			
+
+
+
 			$("#te_settingsBody").append("<div id='searchEnhancements' class='te_options'></div>");
 			$("#te_settings").append("<div id='forumEnhancements' class='te_options'></div>");
-			
+
 			// Create Buttons
 			$("#te_settings").append("<br /><br /><div id='te_buttonContainer'></div><br /><br />");
 			$("#te_buttonContainer").append("<a id='te_saveAndCloseButton' class='book-read-button'>Save &amp; Reload</a>&nbsp;&nbsp;");
@@ -1709,7 +1739,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			$("#te_applySettingsButton").click($.proxy(function(){ this.save(); },this));
 			$("#te_buttonContainer").append("<a id='te_cancelSettingsButton' class='book-read-button'>Cancel</a>");
 			$("#te_cancelSettingsButton").click($.proxy(function(){ this.remove(); },this));
-			
+
 			// Activate settings page navigation.
 			(function ()
 			{
@@ -1724,7 +1754,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					$(newActiveTab).removeClass("te_hiddenTabContent");
 					$(newActiveTab).addClass("te_currentTabContent");
 				});
-				
+
 				// Temporarily deactivate Search and Forum tabs.
 				$("#te_tabContainer").find("a").each(function()
 				{
@@ -1734,7 +1764,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						$(this).css("display","none");
 					}
 				});
-				
+
 				$(".te_options").addClass("te_hiddenTabContent");
 				$("#generalEnhancements").removeClass("te_hiddenTabContent");
 				$("#tab_generalEnhancements").addClass("te_tab-current");
@@ -1752,7 +1782,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			// Find all enhancement groups within the main settings area.
 			var enhancementGroups = $("#te_settingsBody").find("div[id*='_group']"),
 				enhancementSettings = {};
-			
+
 			// Loop through the groups to get all the individual settings.
 			for(i=0 ; i < enhancementGroups.length; i++)
 			{
@@ -1779,7 +1809,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			TE.updateSettings();
 		},
 	};
-	
+
 	/*************************************************************************************
 	* Tsumino Enhanced Initialization Code
 	*************************************************************************************/
@@ -1793,7 +1823,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			if(TE.config.verboseDebug) { debugState = "Verbose"; }
 			else { debugState = "Standard"; }
 		}
-		
+
 		// Check which Enhancements the user has enabled.
 		var enabledEnhancements = [],
 			eeLongNames = "",
@@ -1844,7 +1874,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 									if((opt == "type") && (obj['options'][optNum][opt] == "enable"))
 									{
 										var thisIndex = autoOn.indexOf(obj['shortName']);
-										if (thisIndex > -1) 
+										if (thisIndex > -1)
 										{
 											autoOn.splice(thisIndex, 1);
 										}
@@ -1862,17 +1892,17 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			enabledEnhancements.push(autoOn[i]);
 			eeLongNames = eeLongNames + "[X] " + TE.Enhancements[autoOn[i]].name + "\r\n";
 		}
-		
+
 		// Output initialization messages.
 		TE.log("gname",TE.name,"Version:	" + TE.version,"Debugging:	" + debugState,"Enhancements:",eeLongNames);
 		TE.vbLog("gname",TE.name,"Current Settings:",TE.User);
 		TE.vbLog("gname","TE.site",TE.site);
 		TE.vbLog("gname","TE.on",TE.on);
 		TE.vbLog("gname","TE.Enhancements",TE.Enhancements);
-		
+
 		// Set up TE.status.enhancePage for Enhancements that require it to run.
 		TE.status.enhancePage = TE.enhancePage();
-				
+
 		// Initialize all enabled Enhancements.
 		for(i = 0; i < enabledEnhancements.length; i++)
 		{
@@ -1882,7 +1912,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			}
 		}
 	};
-	
+
 	// Export Tsumino Enhanced to the window.
 	if (global.TE) { throw new Error(TE.name + " has already been defined"); }
 	else { global.TE = TE; }
