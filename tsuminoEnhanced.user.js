@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.9
+// @version			2.0.0.10
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -316,7 +316,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						}
 						else
 						{
-							TE.vbLog("gname","TE.fn.load","Content Type: " + responseHeader["Content-Type"]);
+							TE.vbLog("gname","TE.load","Content Type: " + responseHeader["Content-Type"]);
 							
 							// If we're dealing with a JPEG image.
 							// (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
@@ -325,8 +325,13 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 								// Use Uint8Array to view the arrayBuffer response data.
 								var typedArray = new Uint8Array(data);
 								
+								// Determine number of bytes for the assembly loop.
+								var numBytes = typedArray.length;
+								var binaryString = "";
+								TE.vbLog("gname","TE.load","This image has " + typedArray.length + " bytes.");
+								
 								// Convert it into a useable binary string.
-								var binaryString = String.fromCharCode.apply(null,typedArray);
+								for(i = 0; i < numBytes; i++) { binaryString = binaryString + String.fromCharCode(typedArray[i]); }
 								
 								// And finally encode the binary string as base64.
 								var encodedBS = btoa(binaryString);
