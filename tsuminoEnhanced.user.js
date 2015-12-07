@@ -1949,7 +1949,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		}
 
 		// Output initialization messages.
-		TE.log("gname",TE.name,"Version:	" + TE.version,"Session ID:	" + global.name,"Debugging:	" + debugState,"Enhancements:",eeLongNames);
+		TE.log("gname",TE.name,"Version:	" + TE.version,"Debugging:	" + debugState,"Enhancements:",eeLongNames);
 		TE.vbLog("gname",TE.name,"Current Settings:",TE.User);
 		TE.vbLog("gname","TE.site",TE.site);
 		TE.vbLog("gname","TE.on",TE.on);
