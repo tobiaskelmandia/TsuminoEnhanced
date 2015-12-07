@@ -410,7 +410,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				TE.User.tsuminoEnhanced.upToDate = true;
 				this.updateSettings();
 			}
-			if(now >= (TE.User.tsuminoEnhanced.lastUpdateCheck + oneMinute))
+			if(now >= (TE.User.tsuminoEnhanced.lastUpdateCheck + oneHour))
 			{
 				TE.User.tsuminoEnhanced.lastUpdateCheck = new Date().getTime();
 				this.updateSettings();
