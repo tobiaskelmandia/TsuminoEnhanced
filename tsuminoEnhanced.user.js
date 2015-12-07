@@ -410,7 +410,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				TE.User.tsuminoEnhanced.upToDate = true;
 				this.updateSettings();
 			}
-			if(now >= (TE.User.tsuminoEnhanced.lastUpdateCheck + oneHour))
+			if(now >= (TE.User.tsuminoEnhanced.lastUpdateCheck + oneMinute))
 			{
 				TE.User.tsuminoEnhanced.lastUpdateCheck = new Date().getTime();
 				this.updateSettings();
@@ -2032,7 +2032,11 @@ else if((window.self !== window.top) && (window.location.href == TE.updateLocati
 			TE.User.tsuminoEnhanced.upToDate = false;
 			TE.updateSettings();
 		}
-		else { TE.log("gname",TE.name,TE.name + " is up to date!"); }
+		else 
+		{ 
+			TE.log("gname",TE.name,TE.name + " is up to date!"); 
+			TE.User.tsuminoEnhanced.upToDate = true;
+		}
 	});
 }
 
