@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.13
+// @version			2.0.0.14
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -166,12 +166,11 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	// * On the homepage.
 	// * Using sorting on the homepage.
 	// * Looking at search results
-	var onBrowse = RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation), onHome = false;
+	var onHome = false;
 	if((TE.site.baseURL == TE.myLocation) ||
 		(TE.site.baseURL + "/" == TE.myLocation) ||
 		(RegExp(TE.site.baseURL + "/\\?sort=*").exec(TE.myLocation))) { onHome = true; }
-	if((onBrowse) || (onHome) || (TE.on.query)) { TE.on.browse = true; }
-	else { TE.on.browse = false; }
+	if((onHome) || (TE.on.query)) { TE.on.browse = true; }
 
 	/*************************************************************************************
 	* Utility Functions
@@ -270,7 +269,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 
 			// If no page number was defined, try to load the next page.
 			pageNumber = pageNumber || TE.book.nextPage;
-
+			
 			// Make sure the page exists first.
 			if((pageNumber <= TE.book.totalPages) && (pageNumber > 0))
 			{
@@ -278,7 +277,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				nifs = nifs + pageNumber;
 
 				this.vbLog("gname","TE.load","Loading Image: " + pageNumber + "...");
-
+				var downloadStart = new Date();
 				// Make an ajax request expecting a binary (arraybuffer) datatype.
 				var loadImage = $.ajax(
 				{
@@ -316,34 +315,33 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						}
 						else
 						{
+							var downloadComplete = new Date();
 							TE.vbLog("gname","TE.load","Content Type: " + responseHeader["Content-Type"]);
 
 							// If we're dealing with a JPEG image.
 							// (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
 							if(responseHeader["Content-Type"] == "images/jpeg")
 							{
-								TE.vbLog("gname","TE.load","Running data conversions...");
+								TE.vbLog("gname","TE.load","Image data loaded.","Running conversions...");
 								var startTime = new Date();
 								
 								// Use Uint8Array to view the arrayBuffer response data.
 								var typedArray = new Uint8Array(data);
-								TE.vbLog("gname","TE.load","Response data typed to Uint8Array.");
 
 								// Determine number of bytes for the assembly loop.
 								var numBytes = typedArray.length;
 								var binaryString = "";
-								TE.vbLog("gname","TE.load","This image has " + typedArray.length + " bytes.","Converting to binary string...");
 
 								// Convert it into a useable binary string.
 								for(i = 0; i < numBytes; i++) { binaryString = binaryString + String.fromCharCode(typedArray[i]); }
-								TE.vbLog("gname","TE.load","Conversion complete.","Encoding to base64...");
 
 								// And finally encode the binary string as base64.
 								var encodedBS = btoa(binaryString);
 								
 								var endTime = new Date();
+								var dlTime = downloadComplete - downloadStart;
 								var runTime = endTime - startTime;
-								TE.vbLog("gname","TE.load","Encoding complete.","Total time spent on conversion: " + runTime + "ms.");
+								TE.vbLog("gname","TE.load","Conversions completed.","Image downloaded in: " + dlTime + "ms.","Total time spent on conversion: " + runTime + "ms.");
 
 								// Take the base64 string and prepend it so it can be used as a dataURI.
 								var dataURI="data:image/jpeg;base64,"+encodedBS;
@@ -397,17 +395,24 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	*************************************************************************************/
 	// User Interface object.
 	TE.ui = {};
-
+	
 	/* Tsumino Enhanced CSS.
 	** Minified so it's easier to include in the script.
 	**
 	** Beautify here:	http://www.cleancss.com/css-beautify/
 	** Minify here:		http://cssminifier.com/
 	*/
-	TE.ui.css = ".te_switch+label,select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{width:100%;max-width:100%;height:100%;min-height:100%;overflow-y:scroll}#te_brand,.te_enhancementColor{color:#22a7f0}#te_version{font-size:.5em}.te_en_incompatible{background-color:rgba(255,0,0,.1);border:2px solid rgba(255,0,0,0);border-radius:5px;padding:.5em}.te_switch+label,select.te_switch{cursor:pointer;outline:0}a.te_link,a.te_link:visited{color:#23a7f0;text-decoration:none}a.te_link:hover{color:#23a7f0;text-decoration:underline}.te_options{padding-left:1em}.te_optionDescription{margin-top:10px}.te_optionGroup{margin-bottom:20px;border:2px solid #fff;border-radius:5px;background-color:#222;padding:15px;margin-left:1em}.te_enhancementName,.te_enhancementName:active,.te_enhancementName:focus,.te_enhancementName:hover,.te_enhancementName:visited{color:#22a7f0;font-size:2em;text-decoration:none;margin:0;padding:0}.te_switch{position:absolute;margin-left:-9999px;visibility:hidden}.te_switch+label{display:block;position:relative;user-select:none;margin-bottom:0}input.te_switch-style+label{padding:2px;width:40px;height:20px;background-color:#ddd;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after,input.te_switch-style+label:before{display:block;position:absolute;content:''}input.te_switch-style+label:before{top:2px;left:2px;bottom:2px;right:2px;background-color:#1a1a1a;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after{top:4px;left:4px;bottom:4px;width:16px;background-color:#ddd;-webkit-border-radius:16px;-moz-border-radius:16px;-ms-border-radius:16px;-o-border-radius:16px;border-radius:16px;-webkit-transition:margin .4s,background .4s;-moz-transition:margin .4s,background .4s;-o-transition:margin .4s,background .4s;transition:margin .4s,background .4s}input.te_switch-style:checked+label{background-color:#22a7f0}input.te_switch-style:checked+label:after{margin-left:16px;background-color:#22a7f0}select,select option{background-color:#1a1a1a;color:#fff}select{border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;user-select:none}.te_fauxRow{display:table-row}.te_fauxCell{display:table-cell;vertical-align:middle}.te_switchContainer{padding-right:10px}.te_Button{background-color:#23a8f0;-moz-border-radius:28px;-webkit-border-radius:28px;border-radius:30px;border:2px solid #ddd;display:inline-block;cursor:pointer;color:#fff;font-size:1.2em;font-weight:700;padding:5px 15px;text-decoration:none;text-shadow:0 1px 0 #12587d;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}input.te_subOption[type=checkbox]:not(old),input.te_subOption[type=radio]:not(old){width:2em;margin:0;padding:0;font-size:1em;opacity:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label,input.te_subOption[type=radio]:not(old)+label{display:inline-block;margin-left:-2em;line-height:1.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label>span,input.te_subOption[type=radio]:not(old)+label>span{display:inline-block;width:1em;height:1em;padding:.2em;margin:.25em .5em .25em .25em;border:1px solid #FFF;border-radius:5px;background-color:#000;vertical-align:bottom;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span,input.te_subOption[type=radio]:not(old):checked+label>span{background-color:#000;border:1px solid #23a7f0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span:before{content:'x';display:block;color:#23a7f0;font-size:1em;line-height:1em;margin-top:-.35em;text-align:center;font-weight:700;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=radio]:not(old):checked+label>span>span{display:block;width:.5em;height:.5em;margin:.125em;border:.0625em solid #626262;border-radius:.125em;background-color:#626262;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}#te_tabContainer{padding-bottom:1em}.te_configTab,.te_configTab nav ul{position:relative;margin:0 auto}.te_configTab nav,.te_configTab nav ul li{text-align:center}.te_configTab{overflow:hidden;width:100%;font-weight:300;font-size:2em}.te_configTab nav ul{display:-ms-flexbox;display:-webkit-flex;display:-moz-flex;display:-ms-flex;display:flex;padding:0;max-width:1200px;list-style:none;-ms-box-orient:horizontal;-ms-box-pack:center;-webkit-flex-flow:row wrap;-moz-flex-flow:row wrap;-ms-flex-flow:row wrap;flex-flow:row wrap;-webkit-justify-content:center;-moz-justify-content:center;-ms-justify-content:center;justify-content:center}.te_configTab nav a,.te_configTab nav ul li{display:block;position:relative;text-decoration:none}.te_configTab nav ul li{z-index:1;margin:0;-webkit-flex:1;-moz-flex:1;-ms-flex:1;flex:1}.te_configTab nav a:focus{outline:0}.te_configTab nav a:hover{text-decoration:none}.no-flexbox nav ul li{min-width:15%;display:inline-block}.te_configTab nav li:last-child::before{position:absolute;bottom:0;left:0;width:100%;height:4px;background:#22a7f0;content:'';-webkit-transition:-webkit-transform .3s;transition:transform .3s}.te_configTab nav li:first-child.te_tab-current~li:last-child::before{-webkit-transform:translate3d(-400%,0,0);transform:translate3d(-400%,0,0)}.te_configTab nav li:nth-child(2).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-300%,0,0);transform:translate3d(-300%,0,0)}.te_configTab nav li:nth-child(3).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-200%,0,0);transform:translate3d(-200%,0,0)}.te_configTab nav li:nth-child(4).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}.te_configTab nav a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-size:.75em;padding:.5em;color:#74777b;line-height:1;-webkit-transition:color .3s,-webkit-transform .3s;transition:color .3s,transform .3s;font-weight:700}.te_configTab nav li.te_tab-current a{color:#22a7f0}.te_currentTabContent{display:block}.te_hiddenTabContent{display:none}.te_recordKeeper_browseData{font-size:.5em}";
+	TE.ui.css = {};
+	TE.ui.css.master = ".te_switch+label,select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{width:100%;max-width:100%;height:100%;min-height:100%;overflow-y:scroll}#te_brand,.te_enhancementColor{color:#22a7f0}#te_version{font-size:.5em}.te_en_incompatible{background-color:rgba(255,0,0,.1);border:2px solid rgba(255,0,0,0);border-radius:5px;padding:.5em}.te_switch+label,select.te_switch{cursor:pointer;outline:0}a.te_link,a.te_link:visited{color:#23a7f0;text-decoration:none}a.te_link:hover{color:#23a7f0;text-decoration:underline}.te_options{padding-left:1em}.te_optionDescription{margin-top:10px}.te_optionGroup{margin-bottom:20px;border:2px solid #fff;border-radius:5px;background-color:#222;padding:15px;margin-left:1em}.te_enhancementName,.te_enhancementName:active,.te_enhancementName:focus,.te_enhancementName:hover,.te_enhancementName:visited{color:#22a7f0;font-size:2em;text-decoration:none;margin:0;padding:0}.te_switch{position:absolute;margin-left:-9999px;visibility:hidden}.te_switch+label{display:block;position:relative;user-select:none;margin-bottom:0}input.te_switch-style+label{padding:2px;width:40px;height:20px;background-color:#ddd;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after,input.te_switch-style+label:before{display:block;position:absolute;content:''}input.te_switch-style+label:before{top:2px;left:2px;bottom:2px;right:2px;background-color:#1a1a1a;-webkit-border-radius:20px;-moz-border-radius:20px;-ms-border-radius:20px;-o-border-radius:20px;border-radius:20px;-webkit-transition:background .4s;-moz-transition:background .4s;-o-transition:background .4s;transition:background .4s}input.te_switch-style+label:after{top:4px;left:4px;bottom:4px;width:16px;background-color:#ddd;-webkit-border-radius:16px;-moz-border-radius:16px;-ms-border-radius:16px;-o-border-radius:16px;border-radius:16px;-webkit-transition:margin .4s,background .4s;-moz-transition:margin .4s,background .4s;-o-transition:margin .4s,background .4s;transition:margin .4s,background .4s}input.te_switch-style:checked+label{background-color:#22a7f0}input.te_switch-style:checked+label:after{margin-left:16px;background-color:#22a7f0}select,select option{background-color:#1a1a1a;color:#fff}select{border:2px solid #ddd;border-radius:5px;padding:5px;font-size:1.2em;user-select:none}.te_fauxRow{display:table-row}.te_fauxCell{display:table-cell;vertical-align:middle}.te_switchContainer{padding-right:10px}.te_Button{background-color:#23a8f0;-moz-border-radius:28px;-webkit-border-radius:28px;border-radius:30px;border:2px solid #ddd;display:inline-block;cursor:pointer;color:#fff;font-size:1.2em;font-weight:700;padding:5px 15px;text-decoration:none;text-shadow:0 1px 0 #12587d;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}input.te_subOption[type=checkbox]:not(old),input.te_subOption[type=radio]:not(old){width:2em;margin:0;padding:0;font-size:1em;opacity:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label,input.te_subOption[type=radio]:not(old)+label{display:inline-block;margin-left:-2em;line-height:1.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old)+label>span,input.te_subOption[type=radio]:not(old)+label>span{display:inline-block;width:1em;height:1em;padding:.2em;margin:.25em .5em .25em .25em;border:1px solid #FFF;border-radius:5px;background-color:#000;vertical-align:bottom;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span,input.te_subOption[type=radio]:not(old):checked+label>span{background-color:#000;border:1px solid #23a7f0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=checkbox]:not(old):checked+label>span:before{content:'x';display:block;color:#23a7f0;font-size:1em;line-height:1em;margin-top:-.35em;text-align:center;font-weight:700;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}input.te_subOption[type=radio]:not(old):checked+label>span>span{display:block;width:.5em;height:.5em;margin:.125em;border:.0625em solid #626262;border-radius:.125em;background-color:#626262;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer}#te_tabContainer{padding-bottom:1em}.te_configTab,.te_configTab nav ul{position:relative;margin:0 auto}.te_configTab nav,.te_configTab nav ul li{text-align:center}.te_configTab{overflow:hidden;width:100%;font-weight:300;font-size:2em}.te_configTab nav ul{display:-ms-flexbox;display:-webkit-flex;display:-moz-flex;display:-ms-flex;display:flex;padding:0;max-width:1200px;list-style:none;-ms-box-orient:horizontal;-ms-box-pack:center;-webkit-flex-flow:row wrap;-moz-flex-flow:row wrap;-ms-flex-flow:row wrap;flex-flow:row wrap;-webkit-justify-content:center;-moz-justify-content:center;-ms-justify-content:center;justify-content:center}.te_configTab nav a,.te_configTab nav ul li{display:block;position:relative;text-decoration:none}.te_configTab nav ul li{z-index:1;margin:0;-webkit-flex:1;-moz-flex:1;-ms-flex:1;flex:1}.te_configTab nav a:focus{outline:0}.te_configTab nav a:hover{text-decoration:none}.no-flexbox nav ul li{min-width:15%;display:inline-block}.te_configTab nav li:last-child::before{position:absolute;bottom:0;left:0;width:100%;height:4px;background:#22a7f0;content:'';-webkit-transition:-webkit-transform .3s;transition:transform .3s}.te_configTab nav li:first-child.te_tab-current~li:last-child::before{-webkit-transform:translate3d(-400%,0,0);transform:translate3d(-400%,0,0)}.te_configTab nav li:nth-child(2).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-300%,0,0);transform:translate3d(-300%,0,0)}.te_configTab nav li:nth-child(3).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-200%,0,0);transform:translate3d(-200%,0,0)}.te_configTab nav li:nth-child(4).te_tab-current~li:last-child::before{-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}.te_configTab nav a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-size:.75em;padding:.5em;color:#74777b;line-height:1;-webkit-transition:color .3s,-webkit-transform .3s;transition:color .3s,transform .3s;font-weight:700}.te_configTab nav li.te_tab-current a{color:#22a7f0}.te_currentTabContent{display:block}.te_hiddenTabContent{display:none}.te_recordKeeper_browseData{font-size:.5em}";
 
 	// Browsing Tweaks CSS.
-	TE.ui.btcss = ".te_browsetweak_infobutton,.te_browsetweak_readbutton{position:absolute;border:3px solid #fff;bottom:10px;padding:10px;margin-left:5%;margin-right:5%;font-size:17px;color:#fff;width:42.5%;display:inline-block;text-decoration:none}.te_browsetweak_readbutton{right:0}.te_browsetweak_infobutton:focus,.te_browsetweak_readbutton:focus{text-decoration:none}.te_browsetweak_infobutton:hover,.te_browsetweak_infobutton:visited,.te_browsetweak_readbutton:hover,.te_browsetweak_readbutton:visited{background-color:#22a7f0;color:#fff;text-decoration:none}.te_browsetweak_infobutton{left:0}";
+	TE.ui.css.browsingTweaks = {};
+	
+	// Browsing tweaks - Master CSS.
+	TE.ui.css.browsingTweaks.master = ".te_browsetweak_infobutton,.te_browsetweak_readbutton{position:absolute;border:3px solid #fff;bottom:10px;padding:10px;margin-left:5%;margin-right:5%;font-size:17px;color:#fff;width:42.5%;display:inline-block;text-decoration:none}.te_browsetweak_readbutton{right:0}.te_browsetweak_infobutton:focus,.te_browsetweak_readbutton:focus{text-decoration:none}.te_browsetweak_infobutton:hover,.te_browsetweak_infobutton:visited,.te_browsetweak_readbutton:hover,.te_browsetweak_readbutton:visited{background-color:#22a7f0;color:#fff;text-decoration:none}.te_browsetweak_infobutton{left:0}";
+	
+	// More Books CSS.
+	TE.ui.css.browsingTweaks.moreBooks = "@media(min-width:768px) { .overlay-title { font-size:.8em; } .col-sm-4 { width: 25% } } @media(min-width:992px) { .col-md-3 { width: 20% } }";
 
 	// Tsumino Enhanced Favicon Data URI
 	TE.ui.favicon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wsRDAY5sIzTWwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAEaUlEQVRYw+2XW2xVRRSGv5nZ+1x6di/QUjinLdVUArVISIoJgRcEAoEQY4LxwUB8Ml4evEQTJGhQQ/SVGI2aaAzyohiDCMREEpUol4ACRROubSkl1tKeXjhnn+uePT7s5hRigJ62hhfmbe+ZWfOv9a/1rxmxZMkSwz0ckns87gOwpsOIERKUBcaAtDB2GF33IDI9iBrqnRwAY0XQNXGswe7gW9n4lbPwEm14TYvRtc2YaBVGWmCHMSqEKLiokT58pxa/JgFA7OB72Od/RmDKA6Brm0ht+piKQzsJnz2Au34rxYeWg1TI0T7UQBem4OI1txP68weiv32OzIwAUJi/AnfDmwC467ZQc/kIePnyckDk3cBY6yp8pw5n/7vEvn8HgOhPH+Hs20747EHwCnhzFyNy6QB41Rwyj704FkaDfeUk+Lr8JBT5NFbPKfyIg7EjAIQ6j4JXIP/oU4H9aDVYIcKn9yF8DwCvYSEmNhMAu+s4sf07SnNlUSCzNwhd+pXM6pcxoVjpvxrqRVfHybeuJt+2JojSghUUW5aC1vjVcwLDvR1ED3+K8HKTrwKRTgY8btgG2sOEohinDrw8hYVrsXtOEzm5B5lOggAMpJ7+AKu3g9iBHcjM8NTKULpJRGoAvyaBut5J9PCXqIFO5I1+MAahi+Tan0QUcwHXQPWHTyC8PEIXpy5EcrQfNXiFyLHdVO1+Dqv3DH5lPcIrlA7QM5tIb3yfwoKVpdzBmEAbJjBUIpF4+7YUeDlCncdQfecRukC+bS2ZDdtACOzeDgD82rl4jYvQ8Vbs7hN4DW3klm5CGO+uInRXCoy0AlGprMezQvgzGgAotiwjenRX4EHfBUQ+jV85C3fdFkTeDajT3jRIsRB4jYvIrHoJpEJdvzwW5tT4El0ABHL0Hyq/egVxU80bgtycfBXoIvaFX3BG/kbkXfTMuWTWvwFe4VbBMgaZGkD4mkLLMorzlhP660fsax1Tb0Yi7yKyNygsWImOz79FJUt++hov3srI899gQhXI9CDW1TNTp8CLt5J+fDvGqUOkk9hdx6BpMX5NHD9ajcyOBh1QBKCcvdtQY83rTvI7YQBW3zmqP9uMiVYj04Nklz0zFhYZHA6YUAWoEHb3Caz+ixhlgxCgLAwSjAZdvG0u3P0+oGz8qtm4a17Dr6oHY1D9l0rTfmU9SInX+Aju2tfRs1rwYzMCYKEKVP9FnL1vIdxkeQB8pxZd+wC59o3oxMNUHNqJHL5GavMnIMe3iVwKtIcfrcGvaUAUs6hhNygB3wMrjIk4UA6AYuMisiteQM+eh0xexfl2K1bfOYrN7UHYw85/ylANduN8/Soo+yYvNML45eeAzAxj9ZxCDXQR+X0PKtlT4j7Q3/EyNHYElEKmrgc8T7AH3BGAGuoleuQLUDaimB1f3PMHcvga4TP7xsGmkxghsfovTu+lVPhewOHN/4xP1a5nb/FSDV3F7jxO+PR3kwIgputlNBHZ/V/fBWKS++6/jO4D+BdYdNLmP/zOiQAAAABJRU5ErkJggg==";
@@ -555,7 +560,6 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						this.defaultValue = false;
 						this.arguments = false;
 					}
-
 				}
 				catch(error)
 				{
@@ -642,7 +646,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			$("link[rel='icon']").attr("href",TE.ui.favicon);
 
 			// Apply Tsumino Enhanced CSS.
-			$("head").append("<style>"+TE.ui.css+"</style>");
+			$("head").append("<style>"+TE.ui.css.master+"</style>");
 
 			// Add Tsumino Enhanced config link to navbar.
 			var navbar = $("ul.nav.navbar-nav")[0];
@@ -718,8 +722,17 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					$("#te_currentPage").html(TE.book.currentPage);
 					$("#te_totalPages").html(TE.book.totalPages);
 
-					// Add ID to return button.
-					$("a[href*='"+TE.site.book.prefix+"']:contains('RETURN')").attr("id","te_returnButton");
+					// Rename Return button to 'book info' and give it an ID.
+					var bookInfoButton = $("a[href*='"+TE.site.book.prefix+"']:contains('RETURN')");
+					$(bookInfoButton).attr("id","te_bookInfoButton");
+					$("#te_bookInfoButton").text("BOOK INFO");
+					
+					// Add a return button that takes you to the index.
+					$("#te_bookInfoButton").after(" <a class='book-read-button button-stack' id='te_returnToIndexButton'><i class='fa fa-home'></i> BACK TO INDEX</a>");
+					var returnToIndexLink = sessionStorage.getItem('te_returnLink');
+					if(typeof returnToIndexLink === "object") { $("#te_returnToIndexButton").attr("href",TE.site.baseURL); }
+					else { $("#te_returnToIndexButton").attr("href",returnToIndexLink); }
+					
 
 					// Enhance Previous Page button.
 					if ($("a:contains(' PREV')").length)
@@ -728,7 +741,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					}
 					else
 					{
-						$("#te_returnButton").before("<a id=\"te_prevButton\" class=\"book-read-button\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a>");
+						$("#jump-page").before("<a id=\"te_prevButton\" class=\"book-read-button button-stack\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a> ");
 						$("#te_prevButton").css("display","none");
 					}
 					$("#te_prevButton").attr("href",TE.book.prevPageURL);
@@ -742,7 +755,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					}
 					else
 					{
-						$("#te_returnButton").after(" <a id=\"te_nextButton\" class=\"book-read-button\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
+						$("#jump-page").after(" <a id=\"te_nextButton\" class=\"book-read-button button-stack\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
 						$("#te_nextButton").css("display","none");
 					}
 					$("#te_nextButton").attr("href",TE.book.nextPageURL);
@@ -771,10 +784,17 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 
 					// Read Online button.
 					$("a.book-read-button:contains(' READ ONLINE')").attr("id","te_readOnlineButton");
+					
+					var indexButton = $("a:contains(' BACK TO INDEX')");
+					$(indexButton).attr("id","te_backToIndexButton");
+					var returnToIndexLink = sessionStorage.getItem('te_returnLink');
+					if(typeof returnToIndexLink !== "object") { $("#te_backToIndexButton").attr("href",returnToIndexLink); }
 				}
 			}
 			if(TE.on.browse)
 			{
+				sessionStorage.setItem('te_returnLink', TE.myLocation);
+				
 				var browsePage = $("div.browse-page");
 				var ctProper = $("div.row.push-in");
 				var bookshelfContainer = $(ctProper).children()[0];
@@ -1089,7 +1109,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 							if(TE.User[shortName].skipInfo)
 							{
 								// Apply new CSS.
-								$("style").append(TE.ui.btcss);
+								$("style").append(TE.ui.css.browsingTweaks.master);
 								$("div.overlay").each(function()
 								{
 									// Get Book ID
@@ -1350,7 +1370,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					else
 					{
 						TE.status.load = TE.load(pageNumber);
-						// Once the requested page is preloaded, continue.
+						// Once the requested page is loaded, continue.
 						$.when(TE.status.load).then($.proxy(function()
 						{
 							cpc(pageNumber);
@@ -1929,7 +1949,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		}
 
 		// Output initialization messages.
-		TE.log("gname",TE.name,"Version:	" + TE.version,"Debugging:	" + debugState,"Enhancements:",eeLongNames);
+		TE.log("gname",TE.name,"Version:	" + TE.version,"Session ID:	" + global.name,"Debugging:	" + debugState,"Enhancements:",eeLongNames);
 		TE.vbLog("gname",TE.name,"Current Settings:",TE.User);
 		TE.vbLog("gname","TE.site",TE.site);
 		TE.vbLog("gname","TE.on",TE.on);
