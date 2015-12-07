@@ -2036,6 +2036,7 @@ else if((window.self !== window.top) && (window.location.href == TE.updateLocati
 		{ 
 			TE.log("gname",TE.name,TE.name + " is up to date!"); 
 			TE.User.tsuminoEnhanced.upToDate = true;
+			TE.updateSettings();
 		}
 	});
 }
