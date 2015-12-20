@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.0.15
+// @version			2.0.1.0
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -16,6 +16,7 @@
 // @grant			unsafeWindow
 // @run-at			document-start
 // ==/UserScript==
+
 
 /*************************************************************************************
 * Open source libraries.
@@ -130,18 +131,19 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	TE.site =
 	{
 		account			: { prefix : "/Account/Home" },
-		auth			: { prefix : "/Read/Auth/" },
+		auth				: { prefix : "/Read/Auth/" },
 		baseURL			: TE.myLocation.split(".com")[0] + ".com",
-		book			: { prefix : "/Book/Info/" },
+		book				: { prefix : "/Book/Info/" },
 		browse			: { prefix : "/Browse/Index/" },
 		browseTags		: { prefix : "/Browse/Tags" },
 		error			: { prefix : "/Error/Index/" },
-		image			: { prefix : "/Image/Page/" },
+		image			: { prefix : "/Image/Object/?data=" },
 		login			: { prefix : "/Account/Login" },
 		manageTags		: { prefix : "/Account/ManageTags" },
 		query			: { prefix : "/Browse/Query" },
 		reader			: { prefix : "/Read/View/" },
 		search			: { prefix : "/Search" },
+		forum			: { prefix : "/Forum" },
 	};
 
 	// Location Checking object.
@@ -677,7 +679,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			$("head").append("<style>"+TE.ui.css.master+"</style>");
 
 			// Add Tsumino Enhanced config link to navbar.
-			var navbar = $("ul.nav.navbar-nav")[0];
+			var navbar = $(".tsumino-nav-left")[0];
 			$(navbar).attr("id","te_navbarMain");
 			$("#te_navbarMain").append("<li><a href='javascript:;' style='color:"+TE.ui.mainColor+" !important;' id='te_configNavLink'>ENHANCED</a></li>");
 			$("#te_configNavLink").click(function(){ TE.settings.render(); });
@@ -685,7 +687,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			if(!TE.User.tsuminoEnhanced.upToDate) { $("#te_configNavLink").append(" <span style='color:#ff0000'>(!)</span>"); }
 
 			// ID the primary content area.
-			var pageContent = $("div.container-fluid")[1];
+			var pageContent = $("div.container-fluid")[0];
 			$(pageContent).attr("id","te_pageContent");
 
 			var footer = $("div.nav-footer")[0];
@@ -1522,7 +1524,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 		//options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
 
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
+		//TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 
 
@@ -1584,9 +1586,51 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		};
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
+		//TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 
+
+	(function()
+	{
+		/*******************************************************
+		* Infinity Scrolling - Reader Enhancement
+		*******************************************************/
+		var name = "Infinity Scrolling",
+			shortName = TE.fn.camelize(name),
+			description = "Scroll down to load images.",
+			options = [],
+			section = "Reader",
+			incompatible = ["Seamless Viewing"],
+			main = {};
+
+		main =
+		{
+			init : function()
+			{
+				if(TE.on.reader)
+				{
+					$.when(TE.status.enhancePage).done(function()
+					{
+						
+					});
+				}
+			},
+
+		};
+
+		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
+		var opt1 =
+		{
+			type : "enable",
+			name : false,
+			description : false,
+			defaultValue : false,
+			arguments : false,
+		};
+		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
+
+		//TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
+	})();
 
 
 
@@ -2010,7 +2054,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	// Export Tsumino Enhanced to the window.
 	if (global.TE) { throw new Error(TE.name + " has already been defined"); }
 	else { global.TE = TE; }
-	// Nothing below here.
+	
 })(typeof window === "undefined" ? this : window);
 
 // Initialize Tsumino Enhanced.
@@ -2040,4 +2084,3 @@ else if((window.self !== window.top) && (window.location.href == TE.updateLocati
 		}
 	});
 }
-
