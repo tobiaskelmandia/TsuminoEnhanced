@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.3
+// @version			2.0.1.4
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -402,6 +402,24 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		},
 		checkForUpdates : function()
 		{
+			if(typeof TE.status.latestVersion !== "string")
+			{
+				TE.status.latestVersion = TE.version;
+				TE.updateSettings();
+			}
+			if(TE.status.latestVersion != TE.version) 
+			{
+				TE.log("gname",TE.name,"An update is available!");
+				TE.User.tsuminoEnhanced.upToDate = false;
+				TE.updateSettings();
+			}
+			else 
+			{ 
+				TE.log("gname",TE.name,TE.name + " is up to date!"); 
+				TE.User.tsuminoEnhanced.upToDate = true;
+				TE.updateSettings();
+			}
+			
 			var now = new Date().getTime();
 			var oneHour = 3600000;
 			var oneMinute = 60000;
@@ -2072,17 +2090,5 @@ else if((window.self !== window.top) && (window.location.href == TE.updateLocati
 		var latestVersion = $("code")[0];
 		latestVersion = $(latestVersion).text();
 		TE.status.latestVersion = latestVersion;
-		if(TE.status.latestVersion != TE.version) 
-		{
-			TE.log("gname",TE.name,"An update is available!");
-			TE.User.tsuminoEnhanced.upToDate = false;
-			TE.updateSettings();
-		}
-		else 
-		{ 
-			TE.log("gname",TE.name,TE.name + " is up to date!"); 
-			TE.User.tsuminoEnhanced.upToDate = true;
-			TE.updateSettings();
-		}
 	});
 }
