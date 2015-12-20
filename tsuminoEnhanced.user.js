@@ -668,7 +668,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			* All pages.
 			*************************************************************************************/
 
-			if(!on.forum)
+			if(!TE.on.forum)
 			{
 				// The navigation bar at the top.
 				$("nav").attr("id","te_siteNavbar");
