@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.0
+// @version			2.0.1.1
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -668,30 +668,32 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			* All pages.
 			*************************************************************************************/
 
+			if(!on.forum)
+			{
+				// The navigation bar at the top.
+				$("nav").attr("id","te_siteNavbar");
 
-			// The navigation bar at the top.
-			$("nav").attr("id","te_siteNavbar");
+				// Replace favicon.
+				$("link[rel='icon']").attr("href",TE.ui.favicon);
 
-			// Replace favicon.
-			$("link[rel='icon']").attr("href",TE.ui.favicon);
+				// Apply Tsumino Enhanced CSS.
+				$("head").append("<style>"+TE.ui.css.master+"</style>");
 
-			// Apply Tsumino Enhanced CSS.
-			$("head").append("<style>"+TE.ui.css.master+"</style>");
+				// Add Tsumino Enhanced config link to navbar.
+				var navbar = $(".tsumino-nav-left")[0];
+				$(navbar).attr("id","te_navbarMain");
+				$("#te_navbarMain").append("<li><a href='javascript:;' style='color:"+TE.ui.mainColor+" !important;' id='te_configNavLink'>ENHANCED</a></li>");
+				$("#te_configNavLink").click(function(){ TE.settings.render(); });
+				
+				if(!TE.User.tsuminoEnhanced.upToDate) { $("#te_configNavLink").append(" <span style='color:#ff0000'>(!)</span>"); }
 
-			// Add Tsumino Enhanced config link to navbar.
-			var navbar = $(".tsumino-nav-left")[0];
-			$(navbar).attr("id","te_navbarMain");
-			$("#te_navbarMain").append("<li><a href='javascript:;' style='color:"+TE.ui.mainColor+" !important;' id='te_configNavLink'>ENHANCED</a></li>");
-			$("#te_configNavLink").click(function(){ TE.settings.render(); });
-			
-			if(!TE.User.tsuminoEnhanced.upToDate) { $("#te_configNavLink").append(" <span style='color:#ff0000'>(!)</span>"); }
+				// ID the primary content area.
+				var pageContent = $("div.container-fluid")[0];
+				$(pageContent).attr("id","te_pageContent");
 
-			// ID the primary content area.
-			var pageContent = $("div.container-fluid")[0];
-			$(pageContent).attr("id","te_pageContent");
-
-			var footer = $("div.nav-footer")[0];
-			$(footer).attr("id","te_page_footer");
+				var footer = $("div.nav-footer")[0];
+				$(footer).attr("id","te_page_footer");	
+			}
 
 			/*************************************************************************************
 			* Book & Reader
