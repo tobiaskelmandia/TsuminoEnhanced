@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.4
+// @version			2.0.1.6
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -405,6 +405,8 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			if(typeof TE.status.latestVersion !== "string")
 			{
 				TE.status.latestVersion = TE.version;
+				TE.User.tsuminoEnhanced = {};
+				TE.User.tsuminoEnhanced.upToDate = true;
 				TE.updateSettings();
 			}
 			if(TE.status.latestVersion != TE.version) 
@@ -1664,7 +1666,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			this.navContent = $("#te_siteNavbar").html();
 			this.pageContent = $("#te_pageContent").html();
 			this.footerContent = $("#te_page_footer").html();
-			$("#te_siteNavbar").html("<div class='container-fluid'><div id='te_settingsTop' class='navbar-header navbar-brand'>TSUMINO <span id='te_brand'>ENHANCED</span>&nbsp;&nbsp;</div></div>");
+			$("#te_siteNavbar").html("<div class='container-fluid'><div id='te_settingsTop' class='tsumino-nav-title'>TSUMINO <span id='te_brand'>ENHANCED</span>&nbsp;&nbsp;</div></div>");
 			$("#te_settingsTop").append("<span id='te_version'>"+TE.version+"</span>");
 			if(!TE.User.tsuminoEnhanced.upToDate) 
 			{ 
@@ -1675,7 +1677,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			}
 			$("#te_settingsTop").css("margin-bottom","2px");
 			$("#te_pageContent").html("<div id='te_settings'></div>");
-			$("#te_page_footer").html("<a href='http://forum.tsumino.com/viewtopic.php?f=6&t=141' target='_blank'>Tsumino Enhanced</a> was written by Toby.");
+			$("#te_page_footer").html("<a href='http://www.tsumino.com/Forum/viewtopic.php?f=6&t=24' target='_blank'>Tsumino Enhanced</a> was written by Toby.");
 
 			// Settings page navigation structure.
 			$("#te_settings").prepend("<div id='te_tabContainer' class='te_configTab'><nav><ul><li id='tab_generalEnhancements'><a href='javascript:;'>General</a></li><li id='tab_browsingEnhancements'><a href='javascript:;'>Browsing</a></li><li id='tab_readerEnhancements'><a href='javascript:;'>Reader</a></li><li id='tab_searchEnhancements'><a href='javascript:;'>Search</a></li><li id='tab_forumEnhancements'><a href='javascript:;'>Forum</a></li></ul></nav></div>");
