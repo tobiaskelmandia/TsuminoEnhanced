@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.10
+// @version			2.0.1.11
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -288,8 +288,8 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		},
 		load : function(pageNumber,imageUrl)
 		{
-			var dfd = jQuery.Deferred();
-
+			var dfd = jQuery.Deferred(),
+				authUrl = TE.site.baseURL + TE.site.auth.prefix + TE.book.id + "/" + pageNumber;
 			this.vbLog("gname","TE.load","Loading Image: " + pageNumber + "...",imageUrl);
 			var downloadStart = new Date();
 			// Make an ajax request expecting a binary (arraybuffer) datatype.
@@ -369,9 +369,11 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						}
 					}
 				},this),
-				error: function() { TE.log("Error retrieving image."); }
+				error: $.proxy(function(request, status, error) 
+				{ 
+					this.log("gname","TE.load","Error retrieving image.",request,status,error);
+				},this)
 			});
-			
 			return dfd.promise();
 		},
 		prefetch : 
@@ -1770,6 +1772,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			
 			// Changes this version.
 			$("#teNews").append("<div id='teNews_changes' class='te_optionGroup'></div>");
+			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.11</h1><br />");
+			$("#teNews_changes").append("Fixed a bug with Seamless Viewing not redirecting properly to captcha auth when it should.<br />");
+			$("#teNews_changes").append("<br />");
+			$("#teNews_changes").append("<br />");
 			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.10</h1><br />");
 			$("#teNews_changes").append("Fixed an update checking display bug.<br />");
 			$("#teNews_changes").append("<br />");
@@ -2058,7 +2064,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$(".te_options").addClass("te_hiddenTabContent");
 				
 				// Default to current news if it hasn't been read, otherwise default to general.
-				if(TE.User.readNews.d12252015a)
+				if(TE.User.readNews.d12252015b)
 				{
 					$("#generalEnhancements").removeClass("te_hiddenTabContent");
 					$("#tab_generalEnhancements").addClass("te_tab-current");
@@ -2067,7 +2073,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					$("#teNews").removeClass("te_hiddenTabContent");
 					$("#tab_teNews").addClass("te_tab-current");
-					TE.User.readNews.d12252015a = true;
+					TE.User.readNews.d12252015b = true;
 					TE.updateSettings();
 				}
 				
