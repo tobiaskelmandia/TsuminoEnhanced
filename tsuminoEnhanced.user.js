@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.11
+// @version			2.0.1.12
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -457,6 +457,17 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			if(!TE.User.tsuminoEnhanced.latestVersion)
 			{ 
 				TE.User.tsuminoEnhanced.latestVersion = TE.version;
+				TE.User.tsuminoEnhanced.upToDate = true;
+				this.updateSettings();
+			}
+			
+			if(TE.User.tsuminoEnhanced.latestVersion != TE.version)
+			{
+				TE.User.tsuminoEnhanced.upToDate = false;
+				this.updateSettings();
+			}
+			else 
+			{ 
 				TE.User.tsuminoEnhanced.upToDate = true;
 				this.updateSettings();
 			}
@@ -1772,6 +1783,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			
 			// Changes this version.
 			$("#teNews").append("<div id='teNews_changes' class='te_optionGroup'></div>");
+			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.12</h1><br />");
+			$("#teNews_changes").append("AKA: The &quot;I swear that update checking should be working in this version&quot; update.<br />");
+			$("#teNews_changes").append("<br />");
+			$("#teNews_changes").append("<br />");
 			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.11</h1><br />");
 			$("#teNews_changes").append("Fixed a bug with Seamless Viewing not redirecting properly to captcha auth when it should.<br />");
 			$("#teNews_changes").append("<br />");
@@ -2064,7 +2079,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$(".te_options").addClass("te_hiddenTabContent");
 				
 				// Default to current news if it hasn't been read, otherwise default to general.
-				if(TE.User.readNews.d12252015b)
+				if(TE.User.readNews.d12252015c)
 				{
 					$("#generalEnhancements").removeClass("te_hiddenTabContent");
 					$("#tab_generalEnhancements").addClass("te_tab-current");
@@ -2073,7 +2088,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					$("#teNews").removeClass("te_hiddenTabContent");
 					$("#tab_teNews").addClass("te_tab-current");
-					TE.User.readNews.d12252015b = true;
+					TE.User.readNews.d12252015c = true;
 					TE.updateSettings();
 				}
 				
@@ -2250,14 +2265,10 @@ else if((window.self !== window.top) && (window.location.href == TE.updateLocati
 		if(TE.User.tsuminoEnhanced.latestVersion != TE.version)
 		{
 			TE.log("gname",TE.name,"An update is available!");
-			TE.User.tsuminoEnhanced.upToDate = false;
-			TE.updateSettings();
 		}
 		else 
 		{ 
 			TE.log("gname",TE.name,TE.name + " is up to date!"); 
-			TE.User.tsuminoEnhanced.upToDate = true;
-			TE.updateSettings();
 		}
 	});
 }
