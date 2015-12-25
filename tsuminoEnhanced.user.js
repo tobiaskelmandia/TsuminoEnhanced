@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.13
+// @version			2.0.1.14
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -1784,8 +1784,9 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			
 			// Changes this version.
 			$("#teNews").append("<div id='teNews_changes' class='te_optionGroup'></div>");
-			$("#teNews_changes").append("<h1 class='te_enhancementName'>Updates 2.0.1.9 through 2.0.1.13</h1><br />");
+			$("#teNews_changes").append("<h1 class='te_enhancementName'>Updates 2.0.1.9 through 2.0.1.14</h1><br />");
 			$("#teNews_changes").append("<strong>Bugfixes</strong><br />");
+			$("#teNews_changes").append(" + Fixed a Seamless Viewing bug that broke reader links after leaving TE config without reloading.<br />");
 			$("#teNews_changes").append(" + Fixed a Page Jumper bug that caused it to fail when jumping to the first or last page.<br />");
 			$("#teNews_changes").append(" + Update Checking should now work.<br />");
 			$("#teNews_changes").append(" + Fixed a bug with Seamless Viewing not redirecting properly to captcha auth when it should.<br />");
@@ -2094,6 +2095,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			$("#te_page_footer").html(this.footerContent);
 			$("#te_configNavLink").click($.proxy(function(){ this.render(); },this));
 			TE.fixNavbar();
+			if(TE.on.reader && TE.User.seamlessViewing.enable) { TE.Enhancements.seamlessViewing.fn.updateLinks(); }
 		},
 		save : function ()
 		{
