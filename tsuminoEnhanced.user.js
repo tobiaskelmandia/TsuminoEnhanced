@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.8
+// @version			2.0.1.9
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -730,7 +730,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			var thisLink = $(this).find("a:first")[0];
 			
 			if($(thisLink).text() == "Browse ") { $("#te_navMenu").toggleClass("tsumino-nav-visible"); }
-			else if($(thisLink).text() == "ENHANCED") { TE.settings.render(); }
+			else if($(thisLink).prop("id") == "te_configNavLink") { TE.settings.render(); }
 			else { window.location.href = $(thisLink).prop("href"); }
 		});
 	};
@@ -1780,6 +1780,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			
 			// Changes this version.
 			$("#teNews").append("<div id='teNews_changes_2-0-1-8' class='te_optionGroup'></div>");
+			$("#teNews_changes_2-0-1-8").append("<h1 class='te_enhancementName'>Update 2.0.1.9</h1><br />");
+			$("#teNews_changes_2-0-1-8").append("Fixed the top navbar bug for real.<br />");
+			$("#teNews_changes_2-0-1-8").append("<br />");
+			$("#teNews_changes_2-0-1-8").append("<br />");
 			$("#teNews_changes_2-0-1-8").append("<h1 class='te_enhancementName'>Update 2.0.1.8</h1><br />");
 			$("#teNews_changes_2-0-1-8").append("<strong>General Updates</strong><br />");
 			$("#teNews_changes_2-0-1-8").append(" + There's a section for TE News on the Tsumino Enhanced Config page now. *gasp*<br />");
