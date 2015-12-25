@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.9
+// @version			2.0.1.10
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -458,16 +458,6 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				TE.User.tsuminoEnhanced.upToDate = true;
 				this.updateSettings();
 			}
-			if(TE.User.tsuminoEnhanced.latestVersion != TE.version)
-			{
-				TE.User.tsuminoEnhanced.upToDate = false;
-				this.updateSettings();
-			}
-			else 
-			{ 
-				TE.User.tsuminoEnhanced.upToDate = true;
-				this.updateSettings();
-			}
 			
 			var now = parseInt(new Date().getTime());
 			var oneMinute = 60000;
@@ -482,7 +472,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				this.updateSettings();
 			}
 			
-			if(now >= (parseInt(TE.User.tsuminoEnhanced.lastUpdateCheck) + oneHour))
+			if(now >= (parseInt(TE.User.tsuminoEnhanced.lastUpdateCheck) + oneMinute))
 			{
 				$(document).ready(function()
 				{
@@ -1779,26 +1769,30 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			$("#te_settingsBody").append("<div id='teNews' class='te_options'></div>");
 			
 			// Changes this version.
-			$("#teNews").append("<div id='teNews_changes_2-0-1-8' class='te_optionGroup'></div>");
-			$("#teNews_changes_2-0-1-8").append("<h1 class='te_enhancementName'>Update 2.0.1.9</h1><br />");
-			$("#teNews_changes_2-0-1-8").append("Fixed the top navbar bug for real.<br />");
-			$("#teNews_changes_2-0-1-8").append("<br />");
-			$("#teNews_changes_2-0-1-8").append("<br />");
-			$("#teNews_changes_2-0-1-8").append("<h1 class='te_enhancementName'>Update 2.0.1.8</h1><br />");
-			$("#teNews_changes_2-0-1-8").append("<strong>General Updates</strong><br />");
-			$("#teNews_changes_2-0-1-8").append(" + There's a section for TE News on the Tsumino Enhanced Config page now. *gasp*<br />");
-			$("#teNews_changes_2-0-1-8").append(" + Fixed a small UX bug with the top navbar. (After leaving the TE Config page.)<br />");
-			$("#teNews_changes_2-0-1-8").append(" + The current page number is now displayed in the title while reading doujin.<br />");
-			$("#teNews_changes_2-0-1-8").append(" + New core functionality: Prefetching. (Not to be confused with preloading.)<br />");
-			$("#teNews_changes_2-0-1-8").append(" + Fixed update checking.<br />");
-			$("#teNews_changes_2-0-1-8").append("<br />");
-			$("#teNews_changes_2-0-1-8").append("<strong><span style='color:"+TE.ui.mainColor+"'>Seamless Viewing</span> has been updated and re-enabled.</strong><br />");
-			$("#teNews_changes_2-0-1-8").append(" + Modified to work with the new prefetching functionality.<br />");
-			$("#teNews_changes_2-0-1-8").append(" + Browser location bar URLs are now more semantic.<br />");
-			$("#teNews_changes_2-0-1-8").append(" + Now updates your browser history when you change pages.<br />");
-			$("#teNews_changes_2-0-1-8").append("<br />");
-			$("#teNews_changes_2-0-1-8").append("<strong><span style='color:"+TE.ui.mainColor+"'>Page Jumper</span> has been updated and re-enabled.</strong><br />");
-			$("#teNews_changes_2-0-1-8").append(" + Modified to work with the new prefetching functionality.<br />");
+			$("#teNews").append("<div id='teNews_changes' class='te_optionGroup'></div>");
+			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.10</h1><br />");
+			$("#teNews_changes").append("Fixed an update checking display bug.<br />");
+			$("#teNews_changes").append("<br />");
+			$("#teNews_changes").append("<br />");
+			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.9</h1><br />");
+			$("#teNews_changes").append("Fixed the top navbar bug for real.<br />");
+			$("#teNews_changes").append("<br />");
+			$("#teNews_changes").append("<br />");
+			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.8</h1><br />");
+			$("#teNews_changes").append("<strong>General Updates</strong><br />");
+			$("#teNews_changes").append(" + There's a section for TE News on the Tsumino Enhanced Config page now. *gasp*<br />");
+			$("#teNews_changes").append(" + Fixed a small UX bug with the top navbar. (After leaving the TE Config page.)<br />");
+			$("#teNews_changes").append(" + The current page number is now displayed in the title while reading doujin.<br />");
+			$("#teNews_changes").append(" + New core functionality: Prefetching. (Not to be confused with preloading.)<br />");
+			$("#teNews_changes").append(" + Fixed update checking.<br />");
+			$("#teNews_changes").append("<br />");
+			$("#teNews_changes").append("<strong><span style='color:"+TE.ui.mainColor+"'>Seamless Viewing</span> has been updated and re-enabled.</strong><br />");
+			$("#teNews_changes").append(" + Modified to work with the new prefetching functionality.<br />");
+			$("#teNews_changes").append(" + Browser location bar URLs are now more semantic.<br />");
+			$("#teNews_changes").append(" + Now updates your browser history when you change pages.<br />");
+			$("#teNews_changes").append("<br />");
+			$("#teNews_changes").append("<strong><span style='color:"+TE.ui.mainColor+"'>Page Jumper</span> has been updated and re-enabled.</strong><br />");
+			$("#teNews_changes").append(" + Modified to work with the new prefetching functionality.<br />");
 			
 			// Important Notice
 			$("#teNews").append("<div id='teNews_container_d12252015' class='te_optionGroup'></div>");
@@ -2064,7 +2058,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$(".te_options").addClass("te_hiddenTabContent");
 				
 				// Default to current news if it hasn't been read, otherwise default to general.
-				if(TE.User.readNews.d12252015)
+				if(TE.User.readNews.d12252015a)
 				{
 					$("#generalEnhancements").removeClass("te_hiddenTabContent");
 					$("#tab_generalEnhancements").addClass("te_tab-current");
@@ -2073,7 +2067,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					$("#teNews").removeClass("te_hiddenTabContent");
 					$("#tab_teNews").addClass("te_tab-current");
-					TE.User.readNews.d12252015 = true;
+					TE.User.readNews.d12252015a = true;
 					TE.updateSettings();
 				}
 				
