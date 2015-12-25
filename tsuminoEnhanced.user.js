@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.12
+// @version			2.0.1.13
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -388,6 +388,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				if(pfStart < 1) { pfStart = 1; }
 				if(pfEnd > TE.book.totalPages) { pfEnd = TE.book.totalPages; }
 				var thisRange = pfEnd - pfStart;
+				if(thisRange == 1) { thisRange++; }
 				
 				var timestamp = new Date().getTime();
 				TE.status.prefetch[timestamp] = 0;
@@ -420,7 +421,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					var pfImg = $(data).find("img.reader-img");
 					var pfImgSrc = $(pfImg).prop("src");
 					TE.status.prefetch[TE.book.id][pageNumber] = pfImgSrc;
-					//TE.log("gname","Prefetch","Prefetched image src for page " + pageNumber);
+					TE.vbLog("gname","Prefetch","Prefetched image src for page " + pageNumber,pfImgSrc);
 					dfd.resolve();
 				});
 				return dfd.promise();
@@ -1783,20 +1784,13 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			
 			// Changes this version.
 			$("#teNews").append("<div id='teNews_changes' class='te_optionGroup'></div>");
-			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.12</h1><br />");
-			$("#teNews_changes").append("AKA: The &quot;I swear that update checking should be working in this version&quot; update.<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.11</h1><br />");
-			$("#teNews_changes").append("Fixed a bug with Seamless Viewing not redirecting properly to captcha auth when it should.<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.10</h1><br />");
-			$("#teNews_changes").append("Fixed an update checking display bug.<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.9</h1><br />");
-			$("#teNews_changes").append("Fixed the top navbar bug for real.<br />");
+			$("#teNews_changes").append("<h1 class='te_enhancementName'>Updates 2.0.1.9 through 2.0.1.13</h1><br />");
+			$("#teNews_changes").append("<strong>Bugfixes</strong><br />");
+			$("#teNews_changes").append(" + Fixed a Page Jumper bug that caused it to fail when jumping to the first or last page.<br />");
+			$("#teNews_changes").append(" + Update Checking should now work.<br />");
+			$("#teNews_changes").append(" + Fixed a bug with Seamless Viewing not redirecting properly to captcha auth when it should.<br />");
+			$("#teNews_changes").append(" + Fixed an update checking display bug.<br />");
+			$("#teNews_changes").append(" + Fixed the top navbar bug for real.<br />");
 			$("#teNews_changes").append("<br />");
 			$("#teNews_changes").append("<br />");
 			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.8</h1><br />");
@@ -2038,7 +2032,6 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			}
 
 
-
 			$("#te_settingsBody").append("<div id='searchEnhancements' class='te_options'></div>");
 			$("#te_settings").append("<div id='forumEnhancements' class='te_options'></div>");
 
@@ -2079,7 +2072,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$(".te_options").addClass("te_hiddenTabContent");
 				
 				// Default to current news if it hasn't been read, otherwise default to general.
-				if(TE.User.readNews.d12252015c)
+				if(TE.User.readNews.d12252015d)
 				{
 					$("#generalEnhancements").removeClass("te_hiddenTabContent");
 					$("#tab_generalEnhancements").addClass("te_tab-current");
@@ -2088,7 +2081,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					$("#teNews").removeClass("te_hiddenTabContent");
 					$("#tab_teNews").addClass("te_tab-current");
-					TE.User.readNews.d12252015c = true;
+					TE.User.readNews.d12252015d = true;
 					TE.updateSettings();
 				}
 				
