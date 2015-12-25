@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.7
+// @version			2.0.1.8
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -442,43 +442,51 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		},
 		checkForUpdates : function()
 		{
-			if(typeof TE.status.latestVersion !== "string")
-			{
-				TE.status.latestVersion = TE.version;
+			if(!TE.User.tsuminoEnhanced) 
+			{ 
 				TE.User.tsuminoEnhanced = {};
-				TE.User.tsuminoEnhanced.upToDate = true;
 				TE.updateSettings();
 			}
-			if(TE.status.latestVersion != TE.version) 
+			if(!TE.User.tsuminoEnhanced.lastUpdateCheck)
 			{
-				TE.log("gname",TE.name,"An update is available!");
-				TE.User.tsuminoEnhanced.upToDate = false;
+				TE.User.tsuminoEnhanced.lastUpdateCheck = 0;
 				TE.updateSettings();
+			}
+			if(!TE.User.tsuminoEnhanced.latestVersion)
+			{ 
+				TE.User.tsuminoEnhanced.latestVersion = TE.version;
+				TE.User.tsuminoEnhanced.upToDate = true;
+				this.updateSettings();
+			}
+			if(TE.User.tsuminoEnhanced.latestVersion != TE.version)
+			{
+				TE.User.tsuminoEnhanced.upToDate = false;
+				this.updateSettings();
 			}
 			else 
 			{ 
-				TE.log("gname",TE.name,TE.name + " is up to date!"); 
 				TE.User.tsuminoEnhanced.upToDate = true;
-				TE.updateSettings();
+				this.updateSettings();
 			}
 			
-			var now = new Date().getTime();
-			var oneHour = 3600000;
+			var now = parseInt(new Date().getTime());
 			var oneMinute = 60000;
+			var oneHour = oneMinute * 60;
+			var oneDay = oneHour * 24;
+			
 			if(typeof TE.User.tsuminoEnhanced === "undefined") 
 			{ 
 				TE.User.tsuminoEnhanced = {};
-				TE.User.tsuminoEnhanced.lastUpdateCheck = new Date().getTime();
+				TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt(new Date().getTime());
 				TE.User.tsuminoEnhanced.upToDate = true;
 				this.updateSettings();
 			}
-			if(now >= (TE.User.tsuminoEnhanced.lastUpdateCheck + oneHour))
+			
+			if(now >= (parseInt(TE.User.tsuminoEnhanced.lastUpdateCheck) + oneHour))
 			{
-				TE.User.tsuminoEnhanced.lastUpdateCheck = new Date().getTime();
-				this.updateSettings();
 				$(document).ready(function()
 				{
-					$("body").append("<iframe height='0' width='0' src='"+TE.updateLocation+"' id='te_updateCheckFrame'></iframe>");
+					$("body").append("<iframe height='0' width='0' src='"+TE.updateLocation+"' id='te_updateCheckFrame' style='display:none;'></iframe>");
 				});
 			}
 		},
@@ -713,6 +721,19 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		},
 	};
 
+	
+	//Fix the navbar.
+	TE.fixNavbar = function()
+	{
+		$("nav .tsumino-nav-items li").click(function()
+		{
+			var thisLink = $(this).find("a:first")[0];
+			
+			if($(thisLink).text() == "Browse ") { $("#te_navMenu").toggleClass("tsumino-nav-visible"); }
+			else if($(thisLink).text() == "ENHANCED") { TE.settings.render(); }
+			else { window.location.href = $(thisLink).prop("href"); }
+		});
+	};
 
 	/*************************************************************************************
 	* Enhance Page - Core Functionality
@@ -728,7 +749,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			/*************************************************************************************
 			* All pages.
 			*************************************************************************************/
-
+			
 			if(!TE.on.forum)
 			{
 				// The navigation bar at the top.
@@ -745,6 +766,17 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$(navbar).attr("id","te_navbarMain");
 				$("#te_navbarMain").append("<li><a href='javascript:;' style='color:"+TE.ui.mainColor+" !important;' id='te_configNavLink'>ENHANCED</a></li>");
 				$("#te_configNavLink").click(function(){ TE.settings.render(); });
+				
+				// Add ID to browse button link and swap href from # to javascript:;.
+				var browseButton = $("#te_navbarMain").find("a[href=#]")[0];
+				$(browseButton).prop("id","te_navBrowse");
+				$("#te_navBrowse").prop("href","javascript:;");
+				
+				// Add ID to nav menu.
+				var navMenu = $("#te_navBrowse").siblings()[0];
+				$(navMenu).prop("id","te_navMenu");
+				TE.fixNavbar();
+				
 				
 				if(!TE.User.tsuminoEnhanced.upToDate) { $("#te_configNavLink").append(" <span style='color:#ff0000'>(!)</span>"); }
 
@@ -1716,6 +1748,8 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	{
 		render : function()
 		{
+			if(!TE.User.readNews) { TE.User.readNews = {}; }
+			
 			this.navContent = $("#te_siteNavbar").html();
 			this.pageContent = $("#te_pageContent").html();
 			this.footerContent = $("#te_page_footer").html();
@@ -1730,16 +1764,63 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			}
 			$("#te_settingsTop").css("margin-bottom","2px");
 			$("#te_pageContent").html("<div id='te_settings'></div>");
-			$("#te_page_footer").html("<a href='http://www.tsumino.com/Forum/viewtopic.php?f=6&t=24' target='_blank'>Tsumino Enhanced</a> was written by Toby.");
+			$("#te_page_footer").html("Tsumino Enhanced was written by <a href='http://www.tsumino.com/Forum/memberlist.php?mode=viewprofile&u=191' target='_blank'>Toby</a>.");
 
 			// Settings page navigation structure.
-			$("#te_settings").prepend("<div id='te_tabContainer' class='te_configTab'><nav><ul><li id='tab_generalEnhancements'><a href='javascript:;'>General</a></li><li id='tab_browsingEnhancements'><a href='javascript:;'>Browsing</a></li><li id='tab_readerEnhancements'><a href='javascript:;'>Reader</a></li><li id='tab_searchEnhancements'><a href='javascript:;'>Search</a></li><li id='tab_forumEnhancements'><a href='javascript:;'>Forum</a></li></ul></nav></div>");
+			$("#te_settings").prepend("<div id='te_tabContainer' class='te_configTab'><nav><ul><li id='tab_generalEnhancements'><a href='javascript:;'>General</a></li><li id='tab_browsingEnhancements'><a href='javascript:;'>Browsing</a></li><li id='tab_readerEnhancements'><a href='javascript:;'>Reader</a></li><li id='tab_teNews'><a href='javascript:;'>TE News</a></li><li id='tab_searchEnhancements'><a href='javascript:;'>Search</a></li></ul></nav></div>");
 
 			// Create sections.
 			$("#te_settings").append("<div id='te_settingsBody'></div>");
 			$("#te_settingsBody").append("<div id='generalEnhancements' class='te_options'></div>");
 			$("#te_settingsBody").append("<div id='browsingEnhancements' class='te_options'></div>");
 			$("#te_settingsBody").append("<div id='readerEnhancements' class='te_options'></div>");
+			
+			// TE News.
+			$("#te_settingsBody").append("<div id='teNews' class='te_options'></div>");
+			
+			// Changes this version.
+			$("#teNews").append("<div id='teNews_changes_2-0-1-8' class='te_optionGroup'></div>");
+			$("#teNews_changes_2-0-1-8").append("<h1 class='te_enhancementName'>Update 2.0.1.8</h1><br />");
+			$("#teNews_changes_2-0-1-8").append("<strong>General Updates</strong><br />");
+			$("#teNews_changes_2-0-1-8").append(" + There's a section for TE News on the Tsumino Enhanced Config page now. *gasp*<br />");
+			$("#teNews_changes_2-0-1-8").append(" + Fixed a small UX bug with the top navbar. (After leaving the TE Config page.)<br />");
+			$("#teNews_changes_2-0-1-8").append(" + The current page number is now displayed in the title while reading doujin.<br />");
+			$("#teNews_changes_2-0-1-8").append(" + New core functionality: Prefetching. (Not to be confused with preloading.)<br />");
+			$("#teNews_changes_2-0-1-8").append(" + Fixed update checking.<br />");
+			$("#teNews_changes_2-0-1-8").append("<br />");
+			$("#teNews_changes_2-0-1-8").append("<strong><span style='color:"+TE.ui.mainColor+"'>Seamless Viewing</span> has been updated and re-enabled.</strong><br />");
+			$("#teNews_changes_2-0-1-8").append(" + Modified to work with the new prefetching functionality.<br />");
+			$("#teNews_changes_2-0-1-8").append(" + Browser location bar URLs are now more semantic.<br />");
+			$("#teNews_changes_2-0-1-8").append(" + Now updates your browser history when you change pages.<br />");
+			$("#teNews_changes_2-0-1-8").append("<br />");
+			$("#teNews_changes_2-0-1-8").append("<strong><span style='color:"+TE.ui.mainColor+"'>Page Jumper</span> has been updated and re-enabled.</strong><br />");
+			$("#teNews_changes_2-0-1-8").append(" + Modified to work with the new prefetching functionality.<br />");
+			
+			// Important Notice
+			$("#teNews").append("<div id='teNews_container_d12252015' class='te_optionGroup'></div>");
+			$("#teNews_container_d12252015").append("<h1 class='te_enhancementName'>NOTICE - 12/25/2015</h1><br />");
+			$("#teNews_container_d12252015").append("Tsumino Enhanced can no longer be advertised on the Tsumino Forums.<br />");
+			$("#teNews_container_d12252015").append("Tsumino Staff have deleted my topic for it, and that's why you can't find it any more.<br />");
+			$("#teNews_container_d12252015").append("I'm sorry for the inconvenience, but it is what it is.<br />");
+			$("#teNews_container_d12252015").append("However, this <strong><em>does not</em></strong> mean that Tsumino Enhanced is dead!<br />");
+			$("#teNews_container_d12252015").append("<br />");
+			$("#teNews_container_d12252015").append("I still plan to continue working on TE, and I will publish updates whenever possible.<br />");
+			$("#teNews_container_d12252015").append("My philosophy of improving Tsumino in ways that do not adversely affect the site / server still holds.<br />");
+			$("#teNews_container_d12252015").append("The only thing that has changed is that I can't post about TE on the forums any more.<br />");
+			$("#teNews_container_d12252015").append("<br />");
+			$("#teNews_container_d12252015").append("If you feel the need to disagree with the Staff's decision, please be courteous when doing so.<br />");
+			$("#teNews_container_d12252015").append("Keep in mind that Tsumino is still a free service, and that the staff deserve some respect.<br />");
+			$("#teNews_container_d12252015").append("If you see another topic regarding the removal of TE, try and reply to it.<br />");
+			$("#teNews_container_d12252015").append("There's no need to spam the forums with multiple separate topics.<br />");
+			$("#teNews_container_d12252015").append("If I see a post asking about where TE has gone, I'll try to reply to it with more details.<br />");
+			$("#teNews_container_d12252015").append("<br />");
+			$("#teNews_container_d12252015").append("<br />");
+			$("#teNews_container_d12252015").append("That said, I hope you all have a very Merry Christmas, and a Happy Holiday.<br />");
+			$("#teNews_container_d12252015").append("Stay safe out there, folks.<br />");
+			$("#teNews_container_d12252015").append("<br />");
+			$("#teNews_container_d12252015").append("- Toby");
+			
+			
 
 			// Populate Sections.
 			for (var key in TE.Enhancements)
@@ -1977,8 +2058,21 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				});
 
 				$(".te_options").addClass("te_hiddenTabContent");
-				$("#generalEnhancements").removeClass("te_hiddenTabContent");
-				$("#tab_generalEnhancements").addClass("te_tab-current");
+				
+				// Default to current news if it hasn't been read, otherwise default to general.
+				if(TE.User.readNews.d12252015)
+				{
+					$("#generalEnhancements").removeClass("te_hiddenTabContent");
+					$("#tab_generalEnhancements").addClass("te_tab-current");
+				}
+				else
+				{
+					$("#teNews").removeClass("te_hiddenTabContent");
+					$("#tab_teNews").addClass("te_tab-current");
+					TE.User.readNews.d12252015 = true;
+					TE.updateSettings();
+				}
+				
 			})();
 		},
 		remove : function()
@@ -1987,6 +2081,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			$("#te_pageContent").html(this.pageContent);
 			$("#te_page_footer").html(this.footerContent);
 			$("#te_configNavLink").click($.proxy(function(){ this.render(); },this));
+			TE.fixNavbar();
 		},
 		save : function ()
 		{
@@ -2107,7 +2202,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		}
 
 		// Output initialization messages.
-		TE.log("gname",TE.name,"Version:	" + TE.version,"Debugging:	" + debugState,"Enhancements:",eeLongNames);
+		TE.log("gname",TE.name,"Version:	" + TE.version,"Latest:		"+TE.User.tsuminoEnhanced.latestVersion,"Debugging:	" + debugState,"Enhancements:",eeLongNames);
 		TE.vbLog("gname",TE.name,"Current Settings:",TE.User);
 		TE.vbLog("gname","TE.site",TE.site);
 		TE.vbLog("gname","TE.on",TE.on);
@@ -2139,11 +2234,26 @@ if(TE.on.tsumino)
 }
 // Check for updates. (Iframe)
 else if((window.self !== window.top) && (window.location.href == TE.updateLocation))
-{
+{	
 	$(document).ready(function()
 	{
+		TE.log("gname",TE.name,"Checking for updates...");
+		TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt(new Date().getTime());
 		var latestVersion = $("code")[0];
 		latestVersion = $(latestVersion).text();
-		TE.status.latestVersion = latestVersion;
+		TE.User.tsuminoEnhanced.latestVersion = latestVersion;
+		TE.updateSettings();
+		if(TE.User.tsuminoEnhanced.latestVersion != TE.version)
+		{
+			TE.log("gname",TE.name,"An update is available!");
+			TE.User.tsuminoEnhanced.upToDate = false;
+			TE.updateSettings();
+		}
+		else 
+		{ 
+			TE.log("gname",TE.name,TE.name + " is up to date!"); 
+			TE.User.tsuminoEnhanced.upToDate = true;
+			TE.updateSettings();
+		}
 	});
 }
