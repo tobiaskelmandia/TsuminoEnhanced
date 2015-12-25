@@ -2073,7 +2073,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$(".te_options").addClass("te_hiddenTabContent");
 				
 				// Default to current news if it hasn't been read, otherwise default to general.
-				if(TE.User.readNews.d12252015d)
+				if(TE.User.readNews.d1225201505)
 				{
 					$("#generalEnhancements").removeClass("te_hiddenTabContent");
 					$("#tab_generalEnhancements").addClass("te_tab-current");
@@ -2082,7 +2082,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					$("#teNews").removeClass("te_hiddenTabContent");
 					$("#tab_teNews").addClass("te_tab-current");
-					TE.User.readNews.d12252015d = true;
+					TE.User.readNews.d1225201505 = true;
 					TE.updateSettings();
 				}
 				
