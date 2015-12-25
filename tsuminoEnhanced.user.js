@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.6
+// @version			2.0.1.7
 // @description		Adds a selection of configurable new features to Tsumino.com
 // @author			Toby
 // @include			http://www.tsumino.com/*
@@ -97,6 +97,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	{
 		debug : true,
 		verboseDebug : true,
+		pfRange : 1,
 	};
 
 	// User's current location.
@@ -131,9 +132,9 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	TE.site =
 	{
 		account			: { prefix : "/Account/Home" },
-		auth				: { prefix : "/Read/Auth/" },
+		auth			: { prefix : "/Read/Auth/" },
 		baseURL			: TE.myLocation.split(".com")[0] + ".com",
-		book				: { prefix : "/Book/Info/" },
+		book			: { prefix : "/Book/Info/" },
 		browse			: { prefix : "/Browse/Index/" },
 		browseTags		: { prefix : "/Browse/Tags" },
 		error			: { prefix : "/Error/Index/" },
@@ -192,6 +193,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 
 	if(RegExp("tsumino.com*").exec(TE.myLocation)) { TE.on.tsumino = true; }
 	else { TE.on.tsumino = false; }
+	
+	
+	// Prepare prefetch.
+	TE.status.prefetch = {};
 
 	/*************************************************************************************
 	* Utility Functions
@@ -281,109 +286,144 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			document.head.innerHTML = '<style>body{background-color:#1a1a1a;}</style>';
 			global.stop();
 		},
-		load : function(pageNumber)
+		load : function(pageNumber,imageUrl)
 		{
-			var dfd = jQuery.Deferred(),
-				newImageSrc = TE.site.image.prefix + TE.book.id + "/",
-				nifs = TE.site.baseURL + newImageSrc,
-				authUrl = TE.site.baseURL + TE.site.auth.prefix + TE.book.id + "/" + pageNumber;
+			var dfd = jQuery.Deferred();
 
-			// If no page number was defined, try to load the next page.
-			pageNumber = pageNumber || TE.book.nextPage;
-
-			// Make sure the page exists first.
-			if((pageNumber <= TE.book.totalPages) && (pageNumber > 0))
+			this.vbLog("gname","TE.load","Loading Image: " + pageNumber + "...",imageUrl);
+			var downloadStart = new Date();
+			// Make an ajax request expecting a binary (arraybuffer) datatype.
+			var loadImage = $.ajax(
 			{
-				newImageSrc = newImageSrc + pageNumber;
-				nifs = nifs + pageNumber;
-
-				this.vbLog("gname","TE.load","Loading Image: " + pageNumber + "...");
-				var downloadStart = new Date();
-				// Make an ajax request expecting a binary (arraybuffer) datatype.
-				var loadImage = $.ajax(
+				method: "GET",
+				url: imageUrl,
+				dataType: "binary",
+				processData: false,
+				responseType:'arraybuffer',
+				success: $.proxy(function(data, textStatus, request)
 				{
-					method: "GET",
-					url: nifs,
-					dataType: "binary",
-					processData: false,
-					responseType:'arraybuffer',
-					success: $.proxy(function(data, textStatus, request)
+					// Put the response headers into an array.
+					var rh = loadImage.getAllResponseHeaders();
+					rha = rh.split("\r\n");
+
+					// Create a proper object from the response header array.
+					var responseHeader = {};
+					for (var i=0; i < rha.length; i++)
 					{
-						// Put the response headers into an array.
-						var rh = loadImage.getAllResponseHeaders();
-						rha = rh.split("\r\n");
-
-						// Create a proper object from the response header array.
-						var responseHeader = {};
-						for (var i=0; i < rha.length; i++)
+						var thisRH = rha[i];
+						thisRH = thisRH.split(": ");
+						if(thisRH[0] != "")
 						{
-							var thisRH = rha[i];
-							thisRH = thisRH.split(": ");
-							if(thisRH[0] != "")
-							{
-								responseHeader[thisRH[0]] = thisRH[1];
-							}
+							responseHeader[thisRH[0]] = thisRH[1];
 						}
+					}
 
-						// Local logging to examine response headers.
-						//TE.vbLog("gname","TE.fn.load","Response Headers",responseHeader);
+					// Local logging to examine response headers.
+					//TE.vbLog("gname","TE.fn.load","Response Headers",responseHeader);
 
-						// Content-Type is undefined if Tsumino requires us to solve a captcha.
-						if(typeof responseHeader["Content-Type"] === "undefined")
+					// Content-Type is undefined if Tsumino requires us to solve a captcha.
+					if(typeof responseHeader["Content-Type"] === "undefined")
+					{
+						// Redirect to the auth page.
+						global.location.href = authUrl;
+					}
+					else
+					{
+						var downloadComplete = new Date();
+						TE.vbLog("gname","TE.load","Content Type: " + responseHeader["Content-Type"]);
+
+						// If we're dealing with a JPEG image.
+						// (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
+						if(responseHeader["Content-Type"] == "images/jpeg")
 						{
-							// Redirect to the auth page.
-							global.location.href = authUrl;
+							TE.vbLog("gname","TE.load","Image data loaded.","Running conversions...");
+							var startTime = new Date();
+
+							// Use Uint8Array to view the arrayBuffer response data.
+							var typedArray = new Uint8Array(data);
+
+							// Determine number of bytes for the assembly loop.
+							var numBytes = typedArray.length;
+							var binaryString = "";
+
+							// Convert it into a useable binary string.
+							for(i = 0; i < numBytes; i++) { binaryString = binaryString + String.fromCharCode(typedArray[i]); }
+
+							// And finally encode the binary string as base64.
+							var encodedBS = btoa(binaryString);
+
+							var endTime = new Date();
+							var dlTime = downloadComplete - downloadStart;
+							var runTime = endTime - startTime;
+							TE.vbLog("gname","TE.load","Conversions completed.","Image downloaded in: " + dlTime + "ms.","Total time spent on conversion: " + runTime + "ms.");
+
+							// Take the base64 string and prepend it so it can be used as a dataURI.
+							var dataURI="data:image/jpeg;base64,"+encodedBS;
+
+							// Add a hidden image to the page so the dataURI can be harvested from its source later.
+							$("body").append("<img id='te_loadImage_"+pageNumber+"' src='"+dataURI+"' style='display:none;'>");
+
+							// And we're done.
+							this.vbLog("gname","TE.load","Image "+pageNumber+" loaded.");
+							dfd.resolve();
 						}
-						else
+					}
+				},this),
+				error: function() { TE.log("Error retrieving image."); }
+			});
+			
+			return dfd.promise();
+		},
+		prefetch : 
+		{
+			init : function(pageNumber)
+			{
+				var dfd = jQuery.Deferred();
+				TE.vbLog("gname","Prefetch Init","Initializing...");
+				var pfRange = TE.config.pfRange,
+					pfStart = (pageNumber - pfRange),
+					pfEnd = (pageNumber + pfRange);
+				if(pfStart < 1) { pfStart = 1; }
+				if(pfEnd > TE.book.totalPages) { pfEnd = TE.book.totalPages; }
+				var thisRange = pfEnd - pfStart;
+				
+				var timestamp = new Date().getTime();
+				TE.status.prefetch[timestamp] = 0;
+				
+				TE.vbLog("gname","Prefetch Init","Base: " + pageNumber,"Start: " + pfStart,"End: " + pfEnd);
+				for(i = pfStart; i <= pfEnd; i++)
+				{
+					if(TE.status.prefetch[TE.book.id][i] == "")
+					{
+						$.when(this.get(i)).then(function()
 						{
-							var downloadComplete = new Date();
-							TE.vbLog("gname","TE.load","Content Type: " + responseHeader["Content-Type"]);
-
-							// If we're dealing with a JPEG image.
-							// (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
-							if(responseHeader["Content-Type"] == "images/jpeg")
+							TE.status.prefetch[timestamp]++;
+							if(TE.status.prefetch[timestamp] == thisRange)
 							{
-								TE.vbLog("gname","TE.load","Image data loaded.","Running conversions...");
-								var startTime = new Date();
-
-								// Use Uint8Array to view the arrayBuffer response data.
-								var typedArray = new Uint8Array(data);
-
-								// Determine number of bytes for the assembly loop.
-								var numBytes = typedArray.length;
-								var binaryString = "";
-
-								// Convert it into a useable binary string.
-								for(i = 0; i < numBytes; i++) { binaryString = binaryString + String.fromCharCode(typedArray[i]); }
-
-								// And finally encode the binary string as base64.
-								var encodedBS = btoa(binaryString);
-
-								var endTime = new Date();
-								var dlTime = downloadComplete - downloadStart;
-								var runTime = endTime - startTime;
-								TE.vbLog("gname","TE.load","Conversions completed.","Image downloaded in: " + dlTime + "ms.","Total time spent on conversion: " + runTime + "ms.");
-
-								// Take the base64 string and prepend it so it can be used as a dataURI.
-								var dataURI="data:image/jpeg;base64,"+encodedBS;
-
-								// Add a hidden image to the page so the dataURI can be harvested from its source later.
-								$("body").append("<img id='te_loadImage_"+pageNumber+"' src='"+dataURI+"' style='display:none;'>");
-
-								// And we're done.
-								this.vbLog("gname","TE.load","Image "+pageNumber+" loaded.");
 								dfd.resolve();
 							}
-						}
-					},this),
-					error: function() { TE.log("Error retrieving image."); }
-				});
-			}
-			else
+						});
+					}
+				}
+				return dfd.promise();
+			},
+			get : function(pageNumber) 
 			{
-				dfd.resolve();
-			}
-			return dfd.promise();
+				//TE.log("gname","Prefetch Init","Prefetching image src for page " + pageNumber + "...");
+				var dfd = jQuery.Deferred();
+				var url = TE.site.baseURL + TE.site.reader.prefix + TE.book.id + "/" + pageNumber;
+				TE.vbLog("gname","Prefetch",url);
+				$.get(url).done(function(data)
+				{
+					var pfImg = $(data).find("img.reader-img");
+					var pfImgSrc = $(pfImg).prop("src");
+					TE.status.prefetch[TE.book.id][pageNumber] = pfImgSrc;
+					//TE.log("gname","Prefetch","Prefetched image src for page " + pageNumber);
+					dfd.resolve();
+				});
+				return dfd.promise();
+			},
+			
 		},
 		camelize : function(str)
 		{			
@@ -450,6 +490,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	TE.vbLog = TE.fn.vbLog;
 	TE.errorMsg = TE.fn.errorMsg;
 	TE.replaceAll = TE.fn.replaceAll;
+	TE.prefetch = TE.fn.prefetch;
 	TE.load = TE.fn.load;
 	TE.updateSettings = TE.fn.updateSettings;
 
@@ -754,6 +795,8 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					// Current Page.
 					TE.book.currentPage = parseInt(pagesInfo[0]);
 					TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
+					
+					$("title").text("Tsumino - " + TE.book.title + " - Page " + TE.book.currentPage);
 
 					// Origin page.
 					TE.book.originPage = TE.book.currentPage;
@@ -1345,38 +1388,6 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					}
 				},this));
 			},
-			redirection : function()
-			{
-				var temp = TE.myLocation;
-				splitLocation = temp.split("#");
-				// If there is a # in the URL. (Used to identify the actual page number.)
-				if(splitLocation.length > 1)
-				{
-					// Determine book and page information.
-					newPage = splitLocation[1];
-					oldPage = splitLocation[0];
-					var urlSplit = oldPage.split("/");
-					var bookID = urlSplit[5];
-
-					// If on the reader, kill the page and redirect ASAP.
-					if(TE.on.reader)
-					{
-						TE.log("gname",name,"Redirecting you to the real page.");
-						// Kill the page before it can load.
-						TE.fn.killPage();
-						var newLocation = TE.site.reader.url + bookID + "/" + newPage;
-						global.location.href = newLocation;
-					}
-					// If on the auth page, wait for DOM and update form info to redirect to the appropriate page.
-					if(TE.on.auth)
-					{
-						$.when(TE.status.enhancePage).done($.proxy(function()
-						{
-							$("input#Page").val(newPage);
-						},this));
-					}
-				}
-			},
 			changePage : function(pageNumber)
 			{
 				var dfd = jQuery.Deferred();
@@ -1406,10 +1417,23 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 
 					// If Page Jumper is Enabled.
 					if(TE.User.pageJumper.enable) { $("#te_pageJumper").val(pageNumber); }
+					
+					// Prefetch new pages.
+					TE.fn.prefetch.init(TE.book.currentPage);
+					
+					// Update title.
+					$("title").text("Tsumino - " + TE.book.title + " - Page " + TE.book.currentPage);
 
 					// Update links.
 					this.updateLinks();
-					global.location.href = TE.myLocation + "#" + pageNumber;
+					
+					// Update history and window location.
+					if((!history.state) || (history.state && history.state.pageNumber != TE.book.currentPage))
+					{
+						global.history.pushState({ pageNumber : TE.book.currentPage }, $("title").text(), TE.book.currentPageURL);
+						TE.log(global.history);
+					}
+					
 					TE.log("gname",name,"Image " + pageNumber + " has been placed in the reader.");
 					dfd.resolve();
 				}
@@ -1423,12 +1447,19 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					}
 					else
 					{
-						TE.status.load = TE.load(pageNumber);
-						// Once the requested page is loaded, continue.
-						$.when(TE.status.load).then($.proxy(function()
+						if(TE.status.prefetch[TE.book.id][pageNumber] != "")
 						{
-							cpc(pageNumber);
-						},this));
+							TE.status.load = TE.load(pageNumber,TE.status.prefetch[TE.book.id][pageNumber]);
+							// Once the requested page is loaded, continue.
+							$.when(TE.status.load).then($.proxy(function()
+							{
+								cpc(pageNumber);
+							},this));
+						}
+						else
+						{
+							TE.log("gname",name,"Prefetch is still initializing...")
+						}
 					}
 				}
 				// If the user requested a page that was less than 1 or greater than the total number of pages, stop.
@@ -1446,7 +1477,6 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			updateLinks : function()
 			{
 				TE.vbLog("gname",name,"Updating links... ");
-				scope = this;
 				// Remove old click binds from links.
 				$("#te_prevButton").off("click");
 				$("#te_nextButton").off("click");
@@ -1464,10 +1494,12 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 					$("#te_nextButton").css("display","none");
 					$("#te_imageLink").click($.proxy(function(){ this.changePage(TE.book.nextPage); },this) );
 				}
+				
 				if(TE.book.currentPage > 1)
 				{
 					$("#te_prevButton").css("display","inline");
 					$("#te_prevButton").click($.proxy(function(){ this.changePage(TE.book.prevPage); },this) );
+					
 				}
 				else
 				{
@@ -1480,9 +1512,19 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			{
 				if(TE.on.reader)
 				{
-					this.redirection();
 					$.when(TE.status.enhancePage).done($.proxy(function()
 					{
+						global.history.replaceState({ pageNumber : TE.book.currentPage }, $("title").text(), TE.book.currentPageURL);
+						
+						// Allow history navigation to work with Seamless Viewing.
+						$(global).on("popstate", $.proxy(function () 
+						{
+							if (history.state) 
+							{
+								this.changePage(history.state.pageNumber);
+							}
+						},this));
+						
 						TE.log("gname",name,"Initializining...");
 
 						// Replace default Tsumino reader keybinds with Enhanced Seamless Viewing keybinds.
@@ -1499,6 +1541,14 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						$("#te_nextButton").attr("href","javascript:;");
 						$("#te_imageLink").attr("href","javascript:;");
 
+						// Prepare Prefetch
+						TE.status.prefetch[TE.book.id] = {};
+						for(i = 1; i <= TE.book.totalPages; i++)
+						{
+							TE.status.prefetch[TE.book.id][i] = "";
+						}
+						TE.fn.prefetch.init(TE.book.currentPage);
+						
 						// Update doujin navigation links.
 						this.updateLinks();
 						$("body").append("<img id='te_loadImage_"+TE.book.currentPage+"' style='display:none;'>");
@@ -1520,7 +1570,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				}
 				else if (TE.on.auth)
 				{
-					this.redirection();
+					// Reserved
 				}
 			},
 		};
@@ -1546,7 +1596,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 		//options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
 
-		//TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
+		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 
 
@@ -1569,7 +1619,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			{
 				if(TE.on.reader)
 				{
-					$.when(TE.status.enhancePage).done(function()
+					$.when(TE.status.enhancePage).done($.proxy(function()
 					{
 						$("#te_readerPagination").after("<h1 style='display:inline;'>Jump to page: </h1><select class='te_select' id='te_pageJumper'></select><br />");
 						for(i = 1; i <= TE.book.totalPages; i++)
@@ -1578,23 +1628,26 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 						}
 						$("#te_pageJumper").val(TE.book.currentPage);
 
-						$("#te_pageJumper").change(function()
+						$("#te_pageJumper").change($.proxy(function()
 						{
 							// Seamless Viewing Compatibility
 							if(TE.User.seamlessViewing.enable)
 							{
-								TE.Enhancements.seamlessViewing.fn.changePage($("#te_pageJumper").val());
+								var pageNumber = parseInt($("#te_pageJumper").val());
+								$.when(TE.fn.prefetch.init(pageNumber)).then(function()
+								{
+									TE.Enhancements.seamlessViewing.fn.changePage(pageNumber);
+								});
 							}
 							// Vanilla Tsumino
 							else
 							{
-								global.location.href = TE.site.reader.url + TE.book.id + "/" + $("#te_pageJumper").val();
+								global.location.href = TE.site.reader.url + TE.book.id + "/" + pageNumber;
 							}
-						});
-					});
+						},this));
+					},this));
 				}
-			},
-
+			}
 		};
 
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
@@ -1608,7 +1661,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		};
 		options.push(new TE.Enhancement.option.main(opt1.type,opt1.name,opt1.description,opt1.defaultValue,opt1.arguments));
 
-		//TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
+		TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 
 
