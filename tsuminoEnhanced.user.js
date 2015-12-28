@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name			Tsumino Enhanced
 // @namespace		tobias.kelmandia@gmail.com
-// @version			2.0.1.14
-// @description		Adds a selection of configurable new features to Tsumino.com
+// @version			2.0.1.15
+// @description		Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author			Toby
 // @include			http://www.tsumino.com/*
 // @include			http://tsumino.com/*
@@ -137,6 +137,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		book			: { prefix : "/Book/Info/" },
 		browse			: { prefix : "/Browse/Index/" },
 		browseTags		: { prefix : "/Browse/Tags" },
+		favorites		: { prefix : "/Browse/Favorites" },
 		error			: { prefix : "/Error/Index/" },
 		image			: { prefix : "/Image/Object/?data=" },
 		login			: { prefix : "/Account/Login" },
@@ -189,7 +190,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 	if((TE.site.baseURL == TE.myLocation) ||
 		(TE.site.baseURL + "/" == TE.myLocation) ||
 		(RegExp(TE.site.baseURL + "/\\?sort=*").exec(TE.myLocation))) { onHome = true; }
-	if((onHome) || (TE.on.query)) { TE.on.browse = true; }
+	if((onHome) || (TE.on.query) || (TE.on.favorites)) { TE.on.browse = true; }
 
 	if(RegExp("tsumino.com*").exec(TE.myLocation)) { TE.on.tsumino = true; }
 	else { TE.on.tsumino = false; }
@@ -1757,6 +1758,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			this.navContent = $("#te_siteNavbar").html();
 			this.pageContent = $("#te_pageContent").html();
 			this.footerContent = $("#te_page_footer").html();
+			
 			$("#te_siteNavbar").html("<div class='container-fluid'><div id='te_settingsTop' class='tsumino-nav-title'>TSUMINO <span id='te_brand'>ENHANCED</span>&nbsp;&nbsp;</div></div>");
 			$("#te_settingsTop").append("<span id='te_version'>"+TE.version+"</span>");
 			if(!TE.User.tsuminoEnhanced.upToDate) 
@@ -1768,7 +1770,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			}
 			$("#te_settingsTop").css("margin-bottom","2px");
 			$("#te_pageContent").html("<div id='te_settings'></div>");
-			$("#te_page_footer").html("Tsumino Enhanced was written by <a href='http://www.tsumino.com/Forum/memberlist.php?mode=viewprofile&u=191' target='_blank'>Toby</a>.");
+			$("#te_page_footer").html("<a href='http://codingtoby.com/userscripts/tsumino-enhanced/te-updates/' target='_blank'>Tsumino Enhanced</a> was written by <a href='http://www.tsumino.com/Forum/memberlist.php?mode=viewprofile&u=191' target='_blank'>Toby</a>.");
 
 			// Settings page navigation structure.
 			$("#te_settings").prepend("<div id='te_tabContainer' class='te_configTab'><nav><ul><li id='tab_generalEnhancements'><a href='javascript:;'>General</a></li><li id='tab_browsingEnhancements'><a href='javascript:;'>Browsing</a></li><li id='tab_readerEnhancements'><a href='javascript:;'>Reader</a></li><li id='tab_teNews'><a href='javascript:;'>TE News</a></li><li id='tab_searchEnhancements'><a href='javascript:;'>Search</a></li></ul></nav></div>");
@@ -1783,32 +1785,10 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 			$("#te_settingsBody").append("<div id='teNews' class='te_options'></div>");
 			
 			// Changes this version.
-			$("#teNews").append("<div id='teNews_changes' class='te_optionGroup'></div>");
-			$("#teNews_changes").append("<h1 class='te_enhancementName'>Updates 2.0.1.9 through 2.0.1.14</h1><br />");
-			$("#teNews_changes").append("<strong>Bugfixes</strong><br />");
-			$("#teNews_changes").append(" + Fixed a Seamless Viewing bug that broke reader links after leaving TE config without reloading.<br />");
-			$("#teNews_changes").append(" + Fixed a Page Jumper bug that caused it to fail when jumping to the first or last page.<br />");
-			$("#teNews_changes").append(" + Update Checking should now work.<br />");
-			$("#teNews_changes").append(" + Fixed a bug with Seamless Viewing not redirecting properly to captcha auth when it should.<br />");
-			$("#teNews_changes").append(" + Fixed an update checking display bug.<br />");
-			$("#teNews_changes").append(" + Fixed the top navbar bug for real.<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<h1 class='te_enhancementName'>Update 2.0.1.8</h1><br />");
-			$("#teNews_changes").append("<strong>General Updates</strong><br />");
-			$("#teNews_changes").append(" + There's a section for TE News on the Tsumino Enhanced Config page now. *gasp*<br />");
-			$("#teNews_changes").append(" + Fixed a small UX bug with the top navbar. (After leaving the TE Config page.)<br />");
-			$("#teNews_changes").append(" + The current page number is now displayed in the title while reading doujin.<br />");
-			$("#teNews_changes").append(" + New core functionality: Prefetching. (Not to be confused with preloading.)<br />");
-			$("#teNews_changes").append(" + Fixed update checking.<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<strong><span style='color:"+TE.ui.mainColor+"'>Seamless Viewing</span> has been updated and re-enabled.</strong><br />");
-			$("#teNews_changes").append(" + Modified to work with the new prefetching functionality.<br />");
-			$("#teNews_changes").append(" + Browser location bar URLs are now more semantic.<br />");
-			$("#teNews_changes").append(" + Now updates your browser history when you change pages.<br />");
-			$("#teNews_changes").append("<br />");
-			$("#teNews_changes").append("<strong><span style='color:"+TE.ui.mainColor+"'>Page Jumper</span> has been updated and re-enabled.</strong><br />");
-			$("#teNews_changes").append(" + Modified to work with the new prefetching functionality.<br />");
+			$("#teNews").append("<div id='teNews_container_d12282015' class='te_optionGroup'></div>");
+			$("#teNews_container_d12282015").append("<h1 class='te_enhancementName'>NOTICE - 12/28/2015</h1><br />");
+			$("#teNews_container_d12282015").append("The changelog for Tsumino Enhanced can now be found <a href='http://codingtoby.com/category/userscripts/tsumino-enhanced/' target='_blank'>here</a>.<br />");
+			
 			
 			// Important Notice
 			$("#teNews").append("<div id='teNews_container_d12252015' class='te_optionGroup'></div>");
@@ -2073,7 +2053,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				$(".te_options").addClass("te_hiddenTabContent");
 				
 				// Default to current news if it hasn't been read, otherwise default to general.
-				if(TE.User.readNews.d1225201505)
+				if(TE.User.readNews.d12282015)
 				{
 					$("#generalEnhancements").removeClass("te_hiddenTabContent");
 					$("#tab_generalEnhancements").addClass("te_tab-current");
@@ -2082,7 +2062,7 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 				{
 					$("#teNews").removeClass("te_hiddenTabContent");
 					$("#tab_teNews").addClass("te_tab-current");
-					TE.User.readNews.d1225201505 = true;
+					TE.User.readNews.d12282015 = true;
 					TE.updateSettings();
 				}
 				
@@ -2090,12 +2070,19 @@ $.ajaxTransport("+binary", function(options, originalOptions, jqXHR){
 		},
 		remove : function()
 		{
-			$("#te_siteNavbar").html(this.navContent);
-			$("#te_pageContent").html(this.pageContent);
-			$("#te_page_footer").html(this.footerContent);
-			$("#te_configNavLink").click($.proxy(function(){ this.render(); },this));
-			TE.fixNavbar();
-			if(TE.on.reader && TE.User.seamlessViewing.enable) { TE.Enhancements.seamlessViewing.fn.updateLinks(); }
+			if(TE.on.reader && TE.User.seamlessViewing.enable) 
+			{ 
+				TE.Enhancements.seamlessViewing.fn.updateLinks();
+				$("#te_siteNavbar").html(this.navContent);
+				$("#te_pageContent").html(this.pageContent);
+				$("#te_page_footer").html(this.footerContent);
+				$("#te_configNavLink").click($.proxy(function(){ this.render(); },this));
+				TE.fixNavbar();
+			}
+			else
+			{
+				location.reload();
+			}
 		},
 		save : function ()
 		{
