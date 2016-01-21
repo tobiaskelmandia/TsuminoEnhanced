@@ -34,14 +34,14 @@
  *************************************************************************************/
 
 // use this transport for "binary" data type
-$.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
+$.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 {
 	// check for conditions and support for blob / arraybuffer response type
-	if (window.FormData && ((options.dataType && (options.dataType == 'binary')) || (options.data && ((window.ArrayBuffer && options.data instanceof ArrayBuffer) || (window.Blob && options.data instanceof Blob)))))
+	if ( window.FormData && ((options.dataType && (options.dataType == 'binary')) || (options.data && ((window.ArrayBuffer && options.data instanceof ArrayBuffer) || (window.Blob && options.data instanceof Blob)))) )
 	{
 		return {
 			// create new XMLHttpRequest
-			send : function (headers, callback)
+			send  : function (headers, callback)
 			{
 				// setup all variables
 				var xhr      = new XMLHttpRequest(),
@@ -54,32 +54,32 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 				    username = options.username || null,
 				    password = options.password || null;
 
-				xhr.addEventListener('load', function ()
+				xhr.addEventListener( 'load', function ()
 				{
-					var data               = {};
-					data[options.dataType] = xhr.response;
+					var data                 = {};
+					data[ options.dataType ] = xhr.response;
 					// make callback and send data
-					callback(xhr.status, xhr.statusText, data, xhr.getAllResponseHeaders());
-				});
+					callback( xhr.status, xhr.statusText, data, xhr.getAllResponseHeaders() );
+				} );
 
-				xhr.open(type, url, async, username, password);
+				xhr.open( type, url, async, username, password );
 
 				// setup custom headers
 				for (var i in headers)
 				{
-					xhr.setRequestHeader(i, headers[i]);
+					xhr.setRequestHeader( i, headers[ i ] );
 				}
 
 				xhr.responseType = dataType;
-				xhr.send(data);
+				xhr.send( data );
 			},
-			abort: function ()
+			abort : function ()
 			{
 				jqXHR.abort();
 			}
 		};
 	}
-});
+} );
 
 
 /*************************************************************************************
@@ -87,28 +87,28 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
  *************************************************************************************/
 
 // Establish Tsumino Enhanced
-(function (global)
+(function (w, $)
 {
 	// Main object - Metadata
 	var TE                =
 	    {
-		    name          : GM_info["script"]["name"],
-		    version       : GM_info["script"]["version"],
-		    status        : {},
-		    updateLocation: "https://openuserjs.org/scripts/Tobias.Kelmandia/Tsumino_Enhanced",
+		    name           : GM_info[ "script" ][ "name" ],
+		    version        : GM_info[ "script" ][ "version" ],
+		    status         : {},
+		    updateLocation : "https://openuserjs.org/scripts/Tobias.Kelmandia/Tsumino_Enhanced",
 	    };
 	TE.status.pagesLoaded = {};
 
 	// Tsumino Enhanced Configuration
 	TE.config =
 	{
-		debug       : true,
-		verboseDebug: true,
-		pfRange     : 1,
+		debug        : true,
+		verboseDebug : true,
+		pfRange      : 1,
 	};
 
 	// User's current location.
-	TE.myLocation = global.location.href;
+	TE.myLocation = w.location.href;
 
 
 	/*************************************************************************************
@@ -117,10 +117,10 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 	TE.User = {};
 	(function ()
 	{
-		if (GM_getValue("TE_settings"))
+		if ( GM_getValue( "TE_settings" ) )
 		{
-			var TE_settings = GM_getValue("TE_settings");
-			TE.User         = JSON.parse(TE_settings);
+			var TE_settings = GM_getValue( "TE_settings" );
+			TE.User         = JSON.parse( TE_settings );
 		}
 	})();
 
@@ -128,7 +128,7 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 	 * Detect which features the user's browser has.
 	 *************************************************************************************/
 	TE.ft = {};
-	if (typeof global.console.group === 'function')
+	if ( typeof w.console.group === 'function' )
 	{
 		TE.ft.logGroups = true;
 	}
@@ -145,21 +145,21 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		// Define prefixes for all major site pages.
 	TE.site =
 	{
-		account   : {prefix: "/Account/Home"},
-		auth      : {prefix: "/Read/Auth/"},
-		baseURL   : TE.myLocation.split(".com")[0] + ".com",
-		book      : {prefix: "/Book/Info/"},
-		browse    : {prefix: "/Browse/Index/"},
-		browseTags: {prefix: "/Browse/Tags"},
-		favorites : {prefix: "/Browse/Favorites"},
-		error     : {prefix: "/Error/Index/"},
-		image     : {prefix: "/Image/Object/?data="},
-		login     : {prefix: "/Account/Login"},
-		manageTags: {prefix: "/Account/ManageTags"},
-		query     : {prefix: "/Browse/Query"},
-		reader    : {prefix: "/Read/View/"},
-		search    : {prefix: "/Search"},
-		forum     : {prefix: "/Forum"},
+		account    : {prefix : "/Account/Home"},
+		auth       : {prefix : "/Read/Auth/"},
+		baseURL    : TE.myLocation.split( ".com" )[ 0 ] + ".com",
+		book       : {prefix : "/Book/Info/"},
+		browse     : {prefix : "/Browse/Index/"},
+		browseTags : {prefix : "/Browse/Tags"},
+		favorites  : {prefix : "/Browse/Favorites"},
+		error      : {prefix : "/Error/Index/"},
+		image      : {prefix : "/Image/Object/?data="},
+		login      : {prefix : "/Account/Login"},
+		manageTags : {prefix : "/Account/ManageTags"},
+		query      : {prefix : "/Browse/Query"},
+		reader     : {prefix : "/Read/View/"},
+		search     : {prefix : "/Search"},
+		forum      : {prefix : "/Forum"},
 	};
 
 	// Location Checking object.
@@ -168,27 +168,27 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 	// Create full URLs and do location checking.
 	for (var key in TE.site)
 	{
-		if (TE.site.hasOwnProperty(key))
+		if ( TE.site.hasOwnProperty( key ) )
 		{
-			var obj = TE.site[key];
+			var obj = TE.site[ key ];
 			for (var prop in obj)
 			{
-				if (obj.hasOwnProperty(prop))
+				if ( obj.hasOwnProperty( prop ) )
 				{
 					// Create Full URLs.
-					obj["url"] = TE.site.baseURL + obj[prop];
+					obj[ "url" ] = TE.site.baseURL + obj[ prop ];
 
 					// Perform location checking.
-					if (obj["prefix"])
+					if ( obj[ "prefix" ] )
 					{
 
-						if (RegExp(TE.site.baseURL + obj["prefix"] + "*").exec(TE.myLocation))
+						if ( RegExp( TE.site.baseURL + obj[ "prefix" ] + "*" ).exec( TE.myLocation ) )
 						{
-							TE.on[key] = true;
+							TE.on[ key ] = true;
 						}
 						else
 						{
-							TE.on[key] = false;
+							TE.on[ key ] = false;
 						}
 					}
 				}
@@ -201,18 +201,18 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 	// * Using sorting on the homepage.
 	// * Looking at search results
 	var onHome = false;
-	if ((TE.site.baseURL == TE.myLocation) ||
+	if ( (TE.site.baseURL == TE.myLocation) ||
 		(TE.site.baseURL + "/" == TE.myLocation) ||
-		(RegExp(TE.site.baseURL + "/\\?sort=*").exec(TE.myLocation)))
+		(RegExp( TE.site.baseURL + "/\\?sort=*" ).exec( TE.myLocation )) )
 	{
 		onHome = true;
 	}
-	if ((onHome) || (TE.on.query) || (TE.on.favorites))
+	if ( (onHome) || (TE.on.query) || (TE.on.favorites) )
 	{
 		TE.on.browse = true;
 	}
 
-	if (RegExp("tsumino.com*").exec(TE.myLocation))
+	if ( RegExp( "tsumino.com*" ).exec( TE.myLocation ) )
 	{
 		TE.on.tsumino = true;
 	}
@@ -231,9 +231,9 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 	TE.fn = TE.prototype =
 	{
 		// Logging to console with Timestamps.
-		log            : function ()
+		log             : function ()
 		{
-			if ((arguments.length > 0) && (TE.config.debug))
+			if ( (arguments.length > 0) && (TE.config.debug) )
 			{
 				var date  = new Date(), hr, min, sec, mil, timeStamp;
 				hr        = date.getHours();
@@ -241,311 +241,311 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 				sec       = date.getSeconds();
 				mil       = date.getMilliseconds();
 				timeStamp = hr + ":" + min + ":" + sec + ":" + mil;
-				if (TE.ft.logGroups)
+				if ( TE.ft.logGroups )
 				{
-					if (arguments[0] == "gname")
+					if ( arguments[ 0 ] == "gname" )
 					{
-						console.group(arguments[1] + " - [" + timeStamp + "]");
-						for (var i = 2; i < arguments.length; ++i)
+						console.group( arguments[ 1 ] + " - [" + timeStamp + "]" );
+						for (var i = 2 ; i < arguments.length ; ++i)
 						{
-							console.log(arguments[i]);
+							console.log( arguments[ i ] );
 						}
 					}
 					else
 					{
-						console.group(timeStamp);
-						for (var i = 0; i < arguments.length; ++i)
+						console.group( timeStamp );
+						for (var i = 0 ; i < arguments.length ; ++i)
 						{
-							console.log(arguments[i]);
+							console.log( arguments[ i ] );
 						}
 					}
 					console.groupEnd();
 				}
 				else
 				{
-					if (arguments[0] == "gname")
+					if ( arguments[ 0 ] == "gname" )
 					{
-						console.log("----- " + arguments[1] + " -----");
-						for (var i = 0; i < arguments.length; ++i)
+						console.log( "----- " + arguments[ 1 ] + " -----" );
+						for (var i = 0 ; i < arguments.length ; ++i)
 						{
-							console.log(arguments[i]);
+							console.log( arguments[ i ] );
 						}
 					}
 					else
 					{
-						console.log("[" + timeStamp + "]");
-						for (var i = 0; i < arguments.length; ++i)
+						console.log( "[" + timeStamp + "]" );
+						for (var i = 0 ; i < arguments.length ; ++i)
 						{
-							console.log(arguments[i]);
+							console.log( arguments[ i ] );
 						}
 					}
 					console.log();
 				}
 			}
 		},
-		vbLog          : function ()
+		vbLog           : function ()
 		{
-			if (TE.config.verboseDebug)
+			if ( TE.config.verboseDebug )
 			{
-				if (arguments.length > 0)
+				if ( arguments.length > 0 )
 				{
-					this.log.apply(this.log, arguments);
+					this.log.apply( this.log, arguments );
 				}
 			}
 		},
-		errorMsg       : function (code, situation, error)
+		errorMsg        : function (code, situation, error)
 		{
-			this.log("gname", TE.name, "An error was detected while:", situation, "Error Code: " + code, error);
+			this.log( "gname", TE.name, "An error was detected while:", situation, "Error Code: " + code, error );
 		},
-		replaceAll     : function (str, find, replace)
+		replaceAll      : function (str, find, replace)
 		{
 			// Escape regex.
-			find = find.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-			return str.replace(new RegExp(find, 'g'), replace);
+			find = find.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
+			return str.replace( new RegExp( find, 'g' ), replace );
 		},
-		killPage       : function ()
+		killPage        : function ()
 		{
 			// Kill the page early.
 			document.replaceChild
 				   (
-					   document.importNode(document.implementation.createHTMLDocument("").documentElement, true),
+					   document.importNode( document.implementation.createHTMLDocument( "" ).documentElement, true ),
 					   document.documentElement
 				   );
 
 			// Apply preliminary background color for smooth rendering appearance.
 			document.head.innerHTML = '<style>body{background-color:#1a1a1a;}</style>';
-			global.stop();
+			w.stop();
 		},
-		load           : function (pageNumber, imageUrl)
+		load            : function (pageNumber, imageUrl)
 		{
 			var dfd     = jQuery.Deferred(),
 			    authUrl = TE.site.baseURL + TE.site.auth.prefix + TE.book.id + "/" + pageNumber;
 
-			if ((TE.status.pagesLoaded[pageNumber] != "working") && (TE.status.pagesLoaded[pageNumber] != "done"))
+			if ( (TE.status.pagesLoaded[ pageNumber ] != "working") && (TE.status.pagesLoaded[ pageNumber ] != "done") )
 			{
-				TE.status.pagesLoaded[pageNumber] = "working";
-				$("#te_readerMessageDisplay").append('<div id="te_loading_message" class="ui segment"><br /><div class="ui active dimmer"><div class="ui text loader">Loading...</div></div><br /></div>');
-				this.vbLog("gname", "TE.load", "Loading Image: " + pageNumber + "...", imageUrl);
+				TE.status.pagesLoaded[ pageNumber ] = "working";
+				$( "#te_readerMessageDisplay" ).append( '<div id="te_loading_message" class="ui segment"><br /><div class="ui active dimmer"><div class="ui text loader">Loading...</div></div><br /></div>' );
+				this.vbLog( "gname", "TE.load", "Loading Image: " + pageNumber + "...", imageUrl );
 				var downloadStart = new Date();
 				// Make an ajax request expecting a binary (arraybuffer) datatype.
 				var loadImage = $.ajax(
 					{
-						method      : "GET",
-						url         : imageUrl,
-						dataType    : "binary",
-						processData : false,
-						responseType: 'arraybuffer',
-						success     : $.proxy(function (data, textStatus, request)
-						{
-							// Put the response headers into an array.
-							var rh = loadImage.getAllResponseHeaders();
-							rha    = rh.split("\r\n");
+						method       : "GET",
+						url          : imageUrl,
+						dataType     : "binary",
+						processData  : false,
+						responseType : 'arraybuffer',
+						success      : $.proxy( function (data, textStatus, request)
+										    {
+											    // Put the response headers into an array.
+											    var rh = loadImage.getAllResponseHeaders();
+											    rha    = rh.split( "\r\n" );
 
-							// Create a proper object from the response header array.
-							var responseHeader = {};
-							for (var i = 0; i < rha.length; i++)
-							{
-								var thisRH = rha[i];
-								thisRH     = thisRH.split(": ");
-								if (thisRH[0] != "")
-								{
-									responseHeader[thisRH[0]] = thisRH[1];
-								}
-							}
+											    // Create a proper object from the response header array.
+											    var responseHeader = {};
+											    for (var i = 0 ; i < rha.length ; i++)
+											    {
+												    var thisRH = rha[ i ];
+												    thisRH     = thisRH.split( ": " );
+												    if ( thisRH[ 0 ] != "" )
+												    {
+													    responseHeader[ thisRH[ 0 ] ] = thisRH[ 1 ];
+												    }
+											    }
 
-							// Local logging to examine response headers.
-							//TE.vbLog("gname","TE.fn.load","Response Headers",responseHeader);
+											    // Local logging to examine response headers.
+											    //TE.vbLog("gname","TE.fn.load","Response Headers",responseHeader);
 
-							// Content-Type is undefined if Tsumino requires us to solve a captcha.
-							if (typeof responseHeader["Content-Type"] === "undefined")
-							{
-								// Redirect to the auth page.
-								global.location.href = authUrl;
-							}
-							else
-							{
-								var downloadComplete = new Date();
-								TE.vbLog("gname", "TE.load", "Content Type: " + responseHeader["Content-Type"]);
+											    // Content-Type is undefined if Tsumino requires us to solve a captcha.
+											    if ( typeof responseHeader[ "Content-Type" ] === "undefined" )
+											    {
+												    // Redirect to the auth page.
+												    w.location.href = authUrl;
+											    }
+											    else
+											    {
+												    var downloadComplete = new Date();
+												    TE.vbLog( "gname", "TE.load", "Content Type: " + responseHeader[ "Content-Type" ] );
 
-								// If we're dealing with a JPEG image.
-								// (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
-								if (responseHeader["Content-Type"] == "images/jpeg")
-								{
-									TE.vbLog("gname", "TE.load", "Image data loaded.", "Running conversions...");
-									var startTime = new Date();
+												    // If we're dealing with a JPEG image.
+												    // (Why is it 'images/jpeg' instead of 'image/jpeg'? Typo by Tsumino devs?)
+												    if ( responseHeader[ "Content-Type" ] == "images/jpeg" )
+												    {
+													    TE.vbLog( "gname", "TE.load", "Image data loaded.", "Running conversions..." );
+													    var startTime = new Date();
 
-									// Use Uint8Array to view the arrayBuffer response data.
-									var typedArray = new Uint8Array(data);
+													    // Use Uint8Array to view the arrayBuffer response data.
+													    var typedArray = new Uint8Array( data );
 
-									// Determine number of bytes for the assembly loop.
-									var numBytes     = typedArray.length;
-									var binaryString = "";
+													    // Determine number of bytes for the assembly loop.
+													    var numBytes     = typedArray.length;
+													    var binaryString = "";
 
-									// Convert it into a useable binary string.
-									for (i = 0; i < numBytes; i++)
-									{
-										binaryString = binaryString + String.fromCharCode(typedArray[i]);
-									}
+													    // Convert it into a useable binary string.
+													    for (i = 0 ; i < numBytes ; i++)
+													    {
+														    binaryString = binaryString + String.fromCharCode( typedArray[ i ] );
+													    }
 
-									// And finally encode the binary string as base64.
-									var encodedBS = btoa(binaryString);
+													    // And finally encode the binary string as base64.
+													    var encodedBS = btoa( binaryString );
 
-									var endTime = new Date();
-									var dlTime  = downloadComplete - downloadStart;
-									var runTime = endTime - startTime;
-									TE.vbLog("gname", "TE.load", "Conversions completed.", "Image downloaded in: " + dlTime + "ms.", "Total time spent on conversion: " + runTime + "ms.");
+													    var endTime = new Date();
+													    var dlTime  = downloadComplete - downloadStart;
+													    var runTime = endTime - startTime;
+													    TE.vbLog( "gname", "TE.load", "Conversions completed.", "Image downloaded in: " + dlTime + "ms.", "Total time spent on conversion: " + runTime + "ms." );
 
-									// Take the base64 string and prepend it so it can be used as a dataURI.
-									var dataURI = "data:image/jpeg;base64," + encodedBS;
+													    // Take the base64 string and prepend it so it can be used as a dataURI.
+													    var dataURI = "data:image/jpeg;base64," + encodedBS;
 
-									// Add a hidden image to the page so the dataURI can be harvested from its source later.
-									$("body").append("<img id='te_loadImage_" + pageNumber + "' src='" + dataURI + "' style='display:none;'>");
+													    // Add a hidden image to the page so the dataURI can be harvested from its source later.
+													    $( "body" ).append( "<img id='te_loadImage_" + pageNumber + "' src='" + dataURI + "' style='display:none;'>" );
 
-									// And we're done.
-									this.vbLog("gname", "TE.load", "Image " + pageNumber + " loaded.");
-									$("#te_loading_message").remove();
-									TE.status.pagesLoaded[pageNumber] = "done";
-									dfd.resolve();
-								}
-							}
-						}, this),
-						error       : $.proxy(function (request, status, error)
-						{
-							this.log("gname", "TE.load", "Error retrieving image.", request, status, error);
-						}, this)
-					});
+													    // And we're done.
+													    this.vbLog( "gname", "TE.load", "Image " + pageNumber + " loaded." );
+													    $( "#te_loading_message" ).remove();
+													    TE.status.pagesLoaded[ pageNumber ] = "done";
+													    dfd.resolve();
+												    }
+											    }
+										    }, this ),
+						error        : $.proxy( function (request, status, error)
+										    {
+											    this.log( "gname", "TE.load", "Error retrieving image.", request, status, error );
+										    }, this )
+					} );
 			}
-			else if (TE.status.pagesLoaded[pageNumber] == "working")
+			else if ( TE.status.pagesLoaded[ pageNumber ] == "working" )
 			{
 				function checkAgain()
 				{
-					setTimeout(function ()
-					{
-						if (TE.status.pagesLoaded[pageNumber] == "done")
-						{
-							dfd.resolve();
-						}
-						else
-						{
-							checkAgain();
-						}
-					}, 500);
+					setTimeout( function ()
+							  {
+								  if ( TE.status.pagesLoaded[ pageNumber ] == "done" )
+								  {
+									  dfd.resolve();
+								  }
+								  else
+								  {
+									  checkAgain();
+								  }
+							  }, 500 );
 				}
 
 				checkAgain();
 			}
-			else if (TE.status.pagesLoaded[pageNumber] == "done")
+			else if ( TE.status.pagesLoaded[ pageNumber ] == "done" )
 			{
 				dfd.resolve();
 			}
 			return dfd.promise();
 		},
-		prefetch       : {
-			init: function (pageNumber)
+		prefetch        : {
+			init : function (pageNumber)
 			{
 				var dfd = jQuery.Deferred();
-				TE.vbLog("gname", "Prefetch Init", "Initializing...");
+				TE.vbLog( "gname", "Prefetch Init", "Initializing..." );
 				var pfRange = TE.config.pfRange,
 				    pfStart = (pageNumber - pfRange),
 				    pfEnd   = (pageNumber + pfRange);
-				if (pfStart < 1)
+				if ( pfStart < 1 )
 				{
 					pfStart = 1;
 				}
-				if (pfEnd > TE.book.totalPages)
+				if ( pfEnd > TE.book.totalPages )
 				{
 					pfEnd = TE.book.totalPages;
 				}
 				var thisRange = pfEnd - pfStart;
-				if (thisRange == 1)
+				if ( thisRange == 1 )
 				{
 					thisRange++;
 				}
 
-				var timestamp                 = new Date().getTime();
-				TE.status.prefetch[timestamp] = 0;
+				var timestamp                   = new Date().getTime();
+				TE.status.prefetch[ timestamp ] = 0;
 
-				TE.vbLog("gname", "Prefetch Init", "Base: " + pageNumber, "Start: " + pfStart, "End: " + pfEnd);
-				for (i = pfStart; i <= pfEnd; i++)
+				TE.vbLog( "gname", "Prefetch Init", "Base: " + pageNumber, "Start: " + pfStart, "End: " + pfEnd );
+				for (i = pfStart ; i <= pfEnd ; i++)
 				{
-					if (TE.status.prefetch[TE.book.id][i] == "")
+					if ( TE.status.prefetch[ TE.book.id ][ i ] == "" )
 					{
-						$.when(this.get(i)).then(function ()
-						{
-							TE.status.prefetch[timestamp]++;
-							if (TE.status.prefetch[timestamp] == thisRange)
-							{
-								dfd.resolve();
-							}
-						});
+						$.when( this.get( i ) ).then( function ()
+												{
+													TE.status.prefetch[ timestamp ]++;
+													if ( TE.status.prefetch[ timestamp ] == thisRange )
+													{
+														dfd.resolve();
+													}
+												} );
 					}
 				}
 				return dfd.promise();
 			},
-			get : function (pageNumber)
+			get  : function (pageNumber)
 			{
 				//TE.log("gname","Prefetch Init","Prefetching image src for page " + pageNumber + "...");
-				TE.status.prefetch[TE.book.id][pageNumber] = "working";
-				var dfd                                    = jQuery.Deferred();
-				var url                                    = TE.site.baseURL + TE.site.reader.prefix + TE.book.id + "/" + pageNumber;
-				TE.vbLog("gname", "Prefetch", url);
-				$.get(url).done(function (data)
-				{
-					var pfImg                                  = $(data).find("img.reader-img");
-					var pfImgSrc                               = $(pfImg).prop("src");
-					TE.status.prefetch[TE.book.id][pageNumber] = pfImgSrc;
-					TE.vbLog("gname", "Prefetch", "Prefetched image src for page " + pageNumber, pfImgSrc);
-					if (true)
-					{
-						$.when(TE.fn.load(pageNumber, pfImgSrc)).then(function ()
-						{
-							dfd.resolve();
-						});
-						//TE.fn.load(pageNumber, pfImgSrc);
-					}
-					else
-					{
-						dfd.resolve();
-					}
-				});
+				TE.status.prefetch[ TE.book.id ][ pageNumber ] = "working";
+				var dfd                                        = jQuery.Deferred();
+				var url                                        = TE.site.baseURL + TE.site.reader.prefix + TE.book.id + "/" + pageNumber;
+				TE.vbLog( "gname", "Prefetch", url );
+				$.get( url ).done( function (data)
+							    {
+								    var pfImg                                      = $( data ).find( "img.reader-img" );
+								    var pfImgSrc                                   = $( pfImg ).prop( "src" );
+								    TE.status.prefetch[ TE.book.id ][ pageNumber ] = pfImgSrc;
+								    TE.vbLog( "gname", "Prefetch", "Prefetched image src for page " + pageNumber, pfImgSrc );
+								    if ( true )
+								    {
+									    $.when( TE.fn.load( pageNumber, pfImgSrc ) ).then( function ()
+																				{
+																					dfd.resolve();
+																				} );
+									    //TE.fn.load(pageNumber, pfImgSrc);
+								    }
+								    else
+								    {
+									    dfd.resolve();
+								    }
+							    } );
 				return dfd.promise();
 			},
 		},
-		camelize       : function (str)
+		camelize        : function (str)
 		{
-			return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index)
+			return str.replace( /(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index)
 			{
-				if (+match === 0)
+				if ( +match === 0 )
 				{
 					return "";
 				}
 				return index == 0 ? match.toLowerCase() : match.toUpperCase();
-			});
+			} );
 		},
-		updateSettings : function ()
+		updateSettings  : function ()
 		{
-			GM_setValue("TE_settings", JSON.stringify(TE.User));
+			GM_setValue( "TE_settings", JSON.stringify( TE.User ) );
 		},
-		checkForUpdates: function ()
+		checkForUpdates : function ()
 		{
-			if (!TE.User.tsuminoEnhanced)
+			if ( !TE.User.tsuminoEnhanced )
 			{
 				TE.User.tsuminoEnhanced = {};
 				TE.updateSettings();
 			}
-			if (!TE.User.tsuminoEnhanced.lastUpdateCheck)
+			if ( !TE.User.tsuminoEnhanced.lastUpdateCheck )
 			{
 				TE.User.tsuminoEnhanced.lastUpdateCheck = 0;
 				TE.updateSettings();
 			}
-			if (!TE.User.tsuminoEnhanced.latestVersion)
+			if ( !TE.User.tsuminoEnhanced.latestVersion )
 			{
 				TE.User.tsuminoEnhanced.latestVersion = TE.version;
 				TE.User.tsuminoEnhanced.upToDate      = true;
 				this.updateSettings();
 			}
 
-			if (TE.User.tsuminoEnhanced.latestVersion != TE.version)
+			if ( TE.User.tsuminoEnhanced.latestVersion != TE.version )
 			{
 				TE.User.tsuminoEnhanced.upToDate = false;
 				this.updateSettings();
@@ -556,25 +556,26 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 				this.updateSettings();
 			}
 
-			var now       = parseInt(new Date().getTime());
+			var now       = parseInt( new Date().getTime() );
 			var oneMinute = 60000;
 			var oneHour   = oneMinute * 60;
 			var oneDay    = oneHour * 24;
 
-			if (typeof TE.User.tsuminoEnhanced === "undefined")
+			if ( typeof TE.User.tsuminoEnhanced === "undefined" )
 			{
 				TE.User.tsuminoEnhanced                 = {};
-				TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt(new Date().getTime());
+				TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt( new Date().getTime() );
 				TE.User.tsuminoEnhanced.upToDate        = true;
 				this.updateSettings();
 			}
 
-			if (now >= (parseInt(TE.User.tsuminoEnhanced.lastUpdateCheck) + oneMinute))
+			if ( now >= (parseInt( TE.User.tsuminoEnhanced.lastUpdateCheck ) + oneMinute) )
 			{
-				$(document).ready(function ()
-				{
-					$("body").append("<iframe height='0' width='0' src='" + TE.updateLocation + "' id='te_updateCheckFrame' style='display:none;'></iframe>");
-				});
+				$( document ).ready(
+					function ()
+								 {
+									 $( "body" ).append( "<iframe height='0' width='0' src='" + TE.updateLocation + "' id='te_updateCheckFrame' style='display:none;'></iframe>" );
+								 } );
 			}
 		},
 	};
@@ -655,41 +656,41 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		 *
 		 * TE.Enhancement.main(name,displayName,description,options,section,incompatible,fn)
 		 *************************************************************************************/
-		main  : function (name, description, options, section, incompatible, fn)
+		main   : function (name, description, options, section, incompatible, fn)
 		{
 			try
 			{
-				if (typeof name !== "string")
+				if ( typeof name !== "string" )
 				{
-					throw new Error("Enhancement name must be defined as a string.");
+					throw new Error( "Enhancement name must be defined as a string." );
 				}
-				if ((typeof description !== "string") && (description != false))
+				if ( (typeof description !== "string") && (description != false) )
 				{
-					throw new Error("Enhancement description must be defined as a string.");
+					throw new Error( "Enhancement description must be defined as a string." );
 				}
-				if ((typeof options !== "object") && (options != false))
+				if ( (typeof options !== "object") && (options != false) )
 				{
-					throw new Error("Enhancement options must be defined as an object.");
+					throw new Error( "Enhancement options must be defined as an object." );
 				}
-				if ((options != false) || (section != false))
+				if ( (options != false) || (section != false) )
 				{
-					if (typeof section !== "string")
+					if ( typeof section !== "string" )
 					{
-						throw new Error("Enhancement section must be defined as a string.");
+						throw new Error( "Enhancement section must be defined as a string." );
 					}
 				}
-				if ((typeof incompatible !== "object") && (incompatible != false))
+				if ( (typeof incompatible !== "object") && (incompatible != false) )
 				{
-					throw new Error("Enhancement incompatibilities must be defined as 'false', or an array.");
+					throw new Error( "Enhancement incompatibilities must be defined as 'false', or an array." );
 				}
 
-				if (typeof fn !== "object")
+				if ( typeof fn !== "object" )
 				{
-					throw new Error("Enhancement functionality must be defined as an object.");
+					throw new Error( "Enhancement functionality must be defined as an object." );
 				}
 
 				this.name         = name;
-				this.shortName    = TE.fn.camelize(name);
+				this.shortName    = TE.fn.camelize( name );
 				this.description  = description;
 				this.options      = options;
 				this.section      = section;
@@ -698,14 +699,14 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 			}
 			catch (error)
 			{
-				TE.errorMsg("CD01", "Creating an Enhancement class object.", error);
+				TE.errorMsg( "CD01", "Creating an Enhancement class object.", error );
 			}
 		},
 		/*************************************************************************************
 		 * Class:     Enhancment
 		 * Subclass: option
 		 *************************************************************************************/
-		option: {
+		option : {
 			/*************************************************************************************
 			 * Master Class:     Enhancment
 			 * Parent Class:     option
@@ -730,50 +731,50 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 			 *
 			 * TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 			 *************************************************************************************/
-			main     : function (type, name, description, defaultValue, arguments)
+			main      : function (type, name, description, defaultValue, arguments)
 			{
 				try
 				{
-					if (typeof type !== "string")
+					if ( typeof type !== "string" )
 					{
-						throw new Error("Option type must be defined as a string.");
+						throw new Error( "Option type must be defined as a string." );
 					}
-					if (type != "enable")
+					if ( type != "enable" )
 					{
-						if (typeof name !== "string")
+						if ( typeof name !== "string" )
 						{
-							throw new Error("Option name must be defined as a string.");
+							throw new Error( "Option name must be defined as a string." );
 						}
-						if (typeof description === "undefined")
+						if ( typeof description === "undefined" )
 						{
 							description = false;
 						}
 
-						if (type == "toggle")
+						if ( type == "toggle" )
 						{
 						}
-						if ((type == "dropdown") && (typeof arguments !== "object"))
+						if ( (type == "dropdown") && (typeof arguments !== "object") )
 						{
-							throw new Error("You must define arguments for option type dropdown.");
+							throw new Error( "You must define arguments for option type dropdown." );
 						}
-						if ((type == "radio") && (typeof arguments !== "object"))
+						if ( (type == "radio") && (typeof arguments !== "object") )
 						{
-							if (typeof arguments === "undefined")
+							if ( typeof arguments === "undefined" )
 							{
-								throw new Error("You must define arguments for option type radio.");
+								throw new Error( "You must define arguments for option type radio." );
 							}
 						}
-						if (type == "dropdown")
+						if ( type == "dropdown" )
 						{
-							if (typeof arguments === "undefined")
+							if ( typeof arguments === "undefined" )
 							{
-								throw new Error("Option arguments must be defined with type dropdown.");
+								throw new Error( "Option arguments must be defined with type dropdown." );
 							}
 						}
 
 						this.type         = type;
 						this.name         = name;
-						this.shortName    = TE.fn.camelize(name);
+						this.shortName    = TE.fn.camelize( name );
 						this.description  = description;
 						this.defaultValue = defaultValue;
 						this.arguments    = arguments;
@@ -790,7 +791,7 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 				}
 				catch (error)
 				{
-					TE.errorMsg("CD02", "Creating an Enhancement.option.main class object.", error);
+					TE.errorMsg( "CD02", "Creating an Enhancement.option.main class object.", error );
 				}
 			},
 			/*************************************************************************************
@@ -804,35 +805,35 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 			 *                    Must be a string of one of the following:
 			 *                         "range" - For generating a
 			 *************************************************************************************/
-			arguments: function (type, parameters)
+			arguments : function (type, parameters)
 			{
 				try
 				{
-					if (typeof type !== "string")
+					if ( typeof type !== "string" )
 					{
-						throw new Error("Type must be defined as a string.");
+						throw new Error( "Type must be defined as a string." );
 					}
-					if (type == "range")
+					if ( type == "range" )
 					{
-						if (typeof parameters !== "object")
+						if ( typeof parameters !== "object" )
 						{
-							throw new Error("Parameters must be defined as an object.");
+							throw new Error( "Parameters must be defined as an object." );
 						}
 						else
 						{
-							if (typeof parameters.rangeStart !== "number")
+							if ( typeof parameters.rangeStart !== "number" )
 							{
-								throw new Error("Range start must be defined as a number.");
+								throw new Error( "Range start must be defined as a number." );
 							}
-							if (typeof parameters.rangeEnd !== "number")
+							if ( typeof parameters.rangeEnd !== "number" )
 							{
-								throw new Error("Range end must be defined as a number.");
+								throw new Error( "Range end must be defined as a number." );
 							}
 						}
 					}
 					else
 					{
-						throw new Error("Range is the only acceptable type right now.");
+						throw new Error( "Range is the only acceptable type right now." );
 					}
 
 					this.type      = type;
@@ -840,8 +841,8 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 				}
 				catch (error)
 				{
-					TE.log("gname", "ERROR", "Error defining arugments class:", error);
-					TE.errorMsg("CD03", "Creating an Enhancement.option.arugment class object.", error);
+					TE.log( "gname", "ERROR", "Error defining arugments class:", error );
+					TE.errorMsg( "CD03", "Creating an Enhancement.option.arugment class object.", error );
 				}
 			},
 		},
@@ -851,24 +852,24 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 	//Fix the navbar.
 	TE.fixNavbar = function ()
 	{
-		$("nav .tsumino-nav-items li").click(function ()
-		{
-			var thisLink = $(this).find("a:first")[0];
+		$( "nav .tsumino-nav-items li" ).click( function ()
+										{
+											var thisLink = $( this ).find( "a:first" )[ 0 ];
 
-			if ($(thisLink).text() == "Browse ")
-			{
-				$("#te_navMenu").toggleClass("tsumino-nav-visible");
-			}
-			else if ($(thisLink).prop("id") == "te_configNavLink")
-			{
-				$('#te_config_modal').modal('show');
-				$('#te_config_modal').modal('refresh');
-			}
-			else
-			{
-				window.location.href = $(thisLink).prop("href");
-			}
-		});
+											if ( $( thisLink ).text() == "Browse " )
+											{
+												$( "#te_navMenu" ).toggleClass( "tsumino-nav-visible" );
+											}
+											else if ( $( thisLink ).prop( "id" ) == "te_configNavLink" )
+											{
+												$( '#te_config_modal' ).modal( 'show' );
+												$( '#te_config_modal' ).modal( 'refresh' );
+											}
+											else
+											{
+												window.location.href = $( thisLink ).prop( "href" );
+											}
+										} );
 	};
 
 	/*************************************************************************************
@@ -879,272 +880,273 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 	TE.enhancePage = function ()
 	{
 		var dfd = jQuery.Deferred();
-		TE.vbLog("gname", "TE.enhancePage", "Started working...");
-		$(document).ready(function ()
-		{
-			/*************************************************************************************
-			 * All pages.
-			 *************************************************************************************/
+		TE.vbLog( "gname", "TE.enhancePage", "Started working..." );
+		$( document ).ready(
+			function ()
+						 {
+							 /*************************************************************************************
+							  * All pages.
+							  *************************************************************************************/
 
-			if (!TE.on.forum)
-			{
-				// Include Semantic CSS
-				$("head").prepend("<link rel='stylesheet' href='http://js.codingtoby.com/semantic.min.css' />");
+							 if ( !TE.on.forum )
+							 {
+								 // Include Semantic CSS
+								 $( "head" ).prepend( "<link rel='stylesheet' href='http://js.codingtoby.com/semantic.min.css' />" );
 
-				// Prepare config modal
-				$("body").append('<div id="te_config_modal" class="ui basic modal"></div>');
-				TE.settings.render();
+								 // Prepare config modal
+								 $( "body" ).append( '<div id="te_config_modal" class="ui basic modal"></div>' );
+								 TE.settings.render();
 
-				// The navigation bar at the top.
-				$("nav").attr("id", "te_siteNavbar");
+								 // The navigation bar at the top.
+								 $( "nav" ).attr( "id", "te_siteNavbar" );
 
-				// Replace favicon.
-				$("link[rel='icon']").attr("href", TE.ui.favicon);
+								 // Replace favicon.
+								 $( "link[rel='icon']" ).attr( "href", TE.ui.favicon );
 
-				// Apply Tsumino Enhanced CSS.
-				$("head").append("<style>" + TE.ui.css.master + "</style>");
+								 // Apply Tsumino Enhanced CSS.
+								 $( "head" ).append( "<style>" + TE.ui.css.master + "</style>" );
 
-				// Add Tsumino Enhanced config link to navbar.
-				var navbar = $(".tsumino-nav-left")[0];
-				$(navbar).attr("id", "te_navbarMain");
-				$("#te_navbarMain").append("<li><a href='javascript:;' style='color:" + TE.ui.mainColor + " !important;' id='te_configNavLink'>ENHANCED</a></li>");
-				$("#te_configNavLink").click(function ()
-				{
-					$('#te_config_modal').modal('show');
-					$('#te_config_modal').modal('refresh');
-				});
+								 // Add Tsumino Enhanced config link to navbar.
+								 var navbar = $( ".tsumino-nav-left" )[ 0 ];
+								 $( navbar ).attr( "id", "te_navbarMain" );
+								 $( "#te_navbarMain" ).append( "<li><a href='javascript:;' style='color:" + TE.ui.mainColor + " !important;' id='te_configNavLink'>ENHANCED</a></li>" );
+								 $( "#te_configNavLink" ).click( function ()
+														   {
+															   $( '#te_config_modal' ).modal( 'show' );
+															   $( '#te_config_modal' ).modal( 'refresh' );
+														   } );
 
-				// Add ID to browse button link and swap href from # to javascript:;.
-				var browseButton = $("#te_navbarMain").find("a[href=#]")[0];
-				$(browseButton).prop("id", "te_navBrowse");
-				$("#te_navBrowse").prop("href", "javascript:;");
+								 // Add ID to browse button link and swap href from # to javascript:;.
+								 var browseButton = $( "#te_navbarMain" ).find( "a[href=#]" )[ 0 ];
+								 $( browseButton ).prop( "id", "te_navBrowse" );
+								 $( "#te_navBrowse" ).prop( "href", "javascript:;" );
 
-				// Add ID to nav menu.
-				var navMenu = $("#te_navBrowse").siblings()[0];
-				$(navMenu).prop("id", "te_navMenu");
-				TE.fixNavbar();
-
-
-				if (!TE.User.tsuminoEnhanced.upToDate)
-				{
-					$("#te_configNavLink").append(" <span style='color:#ff0000'>(!)</span>");
-				}
-
-				// ID the primary content area.
-				var pageContent = $("div.container-fluid")[0];
-				$(pageContent).attr("id", "te_pageContent");
-
-				var footer = $("div.nav-footer")[0];
-				$(footer).attr("id", "te_page_footer");
-			}
-
-			/*************************************************************************************
-			 * Book & Reader
-			 *************************************************************************************/
-			if (TE.on.reader || TE.on.book)
-			{
-				// Create the book object.
-				TE.book = {};
-
-				// Reader only.
-				if (TE.on.reader)
-				{
-					// Create IDs.
-					$(".reader-page").attr("id", "te_readerPageMain");
-					var imageBlock = $("#te_readerPageMain").children()[0];
-					$(imageBlock).attr("id", "te_imageBlock");
-					$(".reader-btn").attr("id", "te_readerButtonContainer");
-					$("img.reader-img").attr("id", "te_readerCurrentImage");
-
-					var readInfo = TE.myLocation;
-					readInfo     = readInfo.replace(TE.site.reader.url, "");
-					readInfo     = readInfo.split("/");
-
-					// Book ID.
-					TE.book.id = parseInt(readInfo[0]);
-
-					// Book title.
-					var bookTitle = $("title").text();
-					TE.book.title = bookTitle.replace("Tsumino - Read ", "");
-
-					// Pagination setup.
-					var pagination = $("#te_readerButtonContainer").find("h1")[0];
-					$(pagination).attr("id", "te_readerPagination");
-					var pagesInfo = $("#te_readerPagination").text();
-					pagesInfo     = pagesInfo.split(" Page ")[1];
-					pagesInfo     = pagesInfo.split(" of ");
-
-					// Current Page.
-					TE.book.currentPage    = parseInt(pagesInfo[0]);
-					TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
-
-					$("title").text("Tsumino - " + TE.book.title + " - Page " + TE.book.currentPage);
-
-					// Origin page.
-					TE.book.originPage = TE.book.currentPage;
-
-					// Total Pages.
-					TE.book.totalPages = parseInt(pagesInfo[1]);
-
-					// Next page.
-					TE.book.nextPage = TE.book.currentPage + 1;
-					if (TE.book.nextPage > TE.book.totalPages)
-					{
-						TE.book.nextPage = false;
-					}
-					else
-					{
-						TE.book.nextPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.nextPage;
-					}
-
-					// Previous page.
-					TE.book.prevPage = TE.book.currentPage - 1;
-					if (TE.book.prevPage == 0)
-					{
-						TE.book.prevPage = false;
-					}
-					else
-					{
-						TE.book.prevPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.prevPage;
-					}
-
-					// Rewrite pagination section.
-					$("#te_readerPagination").before('<div id="te_readerMessageDisplay" style="margin-bottom: 25px;"></div>');
-					$("#te_readerPagination").html("Page <span id='te_currentPage'></span> of <span id='te_totalPages'></span>");
-					$("#te_currentPage").html(TE.book.currentPage);
-					$("#te_totalPages").html(TE.book.totalPages);
-
-					// Rename Return button to 'book info' and give it an ID.
-					var bookInfoButton = $("a[href*='" + TE.site.book.prefix + "']:contains('RETURN')");
-					$(bookInfoButton).attr("id", "te_bookInfoButton");
-					$("#te_bookInfoButton").text("BOOK INFO");
-
-					// Add a return button that takes you to the index.
-					$("#te_bookInfoButton").after(" <a class='book-read-button button-stack' id='te_returnToIndexButton'><i class='fa fa-home'></i> BACK TO INDEX</a>");
-					var returnToIndexLink = sessionStorage.getItem('te_returnLink');
-					if (typeof returnToIndexLink === "object")
-					{
-						$("#te_returnToIndexButton").attr("href", TE.site.baseURL);
-					}
-					else
-					{
-						$("#te_returnToIndexButton").attr("href", returnToIndexLink);
-					}
+								 // Add ID to nav menu.
+								 var navMenu = $( "#te_navBrowse" ).siblings()[ 0 ];
+								 $( navMenu ).prop( "id", "te_navMenu" );
+								 TE.fixNavbar();
 
 
-					// Enhance Previous Page button.
-					if ($("a:contains(' PREV')").length)
-					{
-						$("a:contains(' PREV')").attr("id", "te_prevButton");
-					}
-					else
-					{
-						$("#jump-page").before("<a id=\"te_prevButton\" class=\"book-read-button button-stack\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a> ");
-						$("#te_prevButton").css("display", "none");
-					}
-					$("#te_prevButton").attr("href", TE.book.prevPageURL);
-					if (TE.book.currentPage > 1)
-					{
-						$("#te_prevButton").css("display", "inline");
-					}
-					else
-					{
-						$("#te_prevButton").css("display", "none");
-					}
+								 if ( !TE.User.tsuminoEnhanced.upToDate )
+								 {
+									 $( "#te_configNavLink" ).append( " <span style='color:#ff0000'>(!)</span>" );
+								 }
 
-					// Enhance Next Page Button
-					if ($("a:contains('NEXT ')").length)
-					{
-						$("a:contains('NEXT ')").attr("id", "te_nextButton");
-					}
-					else
-					{
-						$("#jump-page").after(" <a id=\"te_nextButton\" class=\"book-read-button button-stack\">NEXT <i class=\"fa fa-arrow-right\"></i></a>");
-						$("#te_nextButton").css("display", "none");
-					}
-					$("#te_nextButton").attr("href", TE.book.nextPageURL);
-					if (TE.book.currentPage < TE.book.totalPages)
-					{
-						$("#te_nextButton").css("display", "inline");
-					}
-					else
-					{
-						$("#te_nextButton").css("display", "none");
-					}
+								 // ID the primary content area.
+								 var pageContent = $( "div.container-fluid" )[ 0 ];
+								 $( pageContent ).attr( "id", "te_pageContent" );
 
-					// Enhance Image link.
-					var imageLink = $("#te_readerCurrentImage").parent();
-					$(imageLink).attr("id", "te_imageLink");
-					$("#te_imageLink").attr("href", TE.book.nextPageURL);
+								 var footer = $( "div.nav-footer" )[ 0 ];
+								 $( footer ).attr( "id", "te_page_footer" );
+							 }
 
-					TE.vbLog("gname", "TE.book", TE.book);
-				}
-				else if (TE.on.book)
-				{
-					var readInfo = TE.myLocation;
-					readInfo     = readInfo.replace(TE.site.book.url, "");
-					readInfo     = readInfo.split("/");
+							 /*************************************************************************************
+							  * Book & Reader
+							  *************************************************************************************/
+							 if ( TE.on.reader || TE.on.book )
+							 {
+								 // Create the book object.
+								 TE.book = {};
 
-					// Book ID.
-					TE.book.id = parseInt(readInfo[0]);
+								 // Reader only.
+								 if ( TE.on.reader )
+								 {
+									 // Create IDs.
+									 $( ".reader-page" ).attr( "id", "te_readerPageMain" );
+									 var imageBlock = $( "#te_readerPageMain" ).children()[ 0 ];
+									 $( imageBlock ).attr( "id", "te_imageBlock" );
+									 $( ".reader-btn" ).attr( "id", "te_readerButtonContainer" );
+									 $( "img.reader-img" ).attr( "id", "te_readerCurrentImage" );
 
-					// Fix tag display bug causing unwanted line breaks.
-					$(".book-tag:contains(' ')").css("white-space", "nowrap");
-					$(".book-tag:contains('-')").css("white-space", "nowrap");
+									 var readInfo = TE.myLocation;
+									 readInfo     = readInfo.replace( TE.site.reader.url, "" );
+									 readInfo     = readInfo.split( "/" );
 
-					// Read Online button.
-					$("a.book-read-button:contains(' READ ONLINE')").attr("id", "te_readOnlineButton");
+									 // Book ID.
+									 TE.book.id = parseInt( readInfo[ 0 ] );
 
-					var indexButton = $("a:contains(' BACK TO INDEX')");
-					$(indexButton).attr("id", "te_backToIndexButton");
-					var returnToIndexLink = sessionStorage.getItem('te_returnLink');
-					if (typeof returnToIndexLink !== "object")
-					{
-						$("#te_backToIndexButton").attr("href", returnToIndexLink);
-					}
-				}
-			}
-			if (TE.on.browse)
-			{
-				sessionStorage.setItem('te_returnLink', TE.myLocation);
+									 // Book title.
+									 var bookTitle = $( "title" ).text();
+									 TE.book.title = bookTitle.replace( "Tsumino - Read ", "" );
 
-				var browsePage         = $("div.browse-page");
-				var ctProper           = $("div.row.push-in");
-				var bookshelfContainer = $(ctProper).children()[0];
-				$(bookshelfContainer).attr("id", "te_bookshelfContainer");
-				var sidebarContainer = $(ctProper).children()[1];
-				$(sidebarContainer).attr("id", "te_sidebarContainer");
+									 // Pagination setup.
+									 var pagination = $( "#te_readerButtonContainer" ).find( "h1" )[ 0 ];
+									 $( pagination ).attr( "id", "te_readerPagination" );
+									 var pagesInfo = $( "#te_readerPagination" ).text();
+									 pagesInfo     = pagesInfo.split( " Page " )[ 1 ];
+									 pagesInfo     = pagesInfo.split( " of " );
 
-				var bookshelf = $(browsePage).find("div.row.row-no-padding");
-				$(bookshelf).attr("id", "te_bookshelf");
-				$(bookshelf).children().each(function ()
-				{
-					var thisLinkUrl = $(this).find("a.overlay-button").attr("href");
-					var temp        = thisLinkUrl.replace(TE.site.book.prefix, "");
-					temp            = temp.split("/");
-					var thisBookID  = temp[0];
-					$(this).attr("id", "te_book_" + thisBookID + "_masterContainer");
+									 // Current Page.
+									 TE.book.currentPage    = parseInt( pagesInfo[ 0 ] );
+									 TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
 
-					$(this).find("div.book-grid-item").attr("id", "te_book_" + thisBookID + "_container");
+									 $( "title" ).text( "Tsumino - " + TE.book.title + " - Page " + TE.book.currentPage );
 
-					var thisOverlay = $("#te_book_" + thisBookID + "_container").find("div.overlay");
-					$(thisOverlay).attr("id", "te_book_" + thisBookID + "_overlay");
+									 // Origin page.
+									 TE.book.originPage = TE.book.currentPage;
 
-					var thisData = $("#te_book_" + thisBookID + "_overlay").find("div.overlay-data");
-					$(thisData).attr("id", "te_book_" + thisBookID + "_data");
+									 // Total Pages.
+									 TE.book.totalPages = parseInt( pagesInfo[ 1 ] );
 
-					var thisPages = $("#te_book_" + thisBookID + "_data").find("div.overlay-sub");
-					$(thisPages).attr("id", "te_book_" + thisBookID + "_pagesContainer");
+									 // Next page.
+									 TE.book.nextPage = TE.book.currentPage + 1;
+									 if ( TE.book.nextPage > TE.book.totalPages )
+									 {
+										 TE.book.nextPage = false;
+									 }
+									 else
+									 {
+										 TE.book.nextPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.nextPage;
+									 }
 
-					var bottomTitle = $(this).find("a.title");
-					$(bottomTitle).attr("id", "te_book_" + thisBookID + "_bottomTitle");
-					$("#te_book_" + thisBookID + "_bottomTitle").attr("href", "javascript:;");
-				});
-				TE.vbLog("gname", "TE.enhancePage", bookshelf);
-			}
-			TE.vbLog("gname", "TE.enhancePage", "Finished working.");
-			dfd.resolve();
-		});
+									 // Previous page.
+									 TE.book.prevPage = TE.book.currentPage - 1;
+									 if ( TE.book.prevPage == 0 )
+									 {
+										 TE.book.prevPage = false;
+									 }
+									 else
+									 {
+										 TE.book.prevPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.prevPage;
+									 }
+
+									 // Rewrite pagination section.
+									 $( "#te_readerPagination" ).before( '<div id="te_readerMessageDisplay" style="margin-bottom: 25px;"></div>' );
+									 $( "#te_readerPagination" ).html( "Page <span id='te_currentPage'></span> of <span id='te_totalPages'></span>" );
+									 $( "#te_currentPage" ).html( TE.book.currentPage );
+									 $( "#te_totalPages" ).html( TE.book.totalPages );
+
+									 // Rename Return button to 'book info' and give it an ID.
+									 var bookInfoButton = $( "a[href*='" + TE.site.book.prefix + "']:contains('RETURN')" );
+									 $( bookInfoButton ).attr( "id", "te_bookInfoButton" );
+									 $( "#te_bookInfoButton" ).text( "BOOK INFO" );
+
+									 // Add a return button that takes you to the index.
+									 $( "#te_bookInfoButton" ).after( " <a class='book-read-button button-stack' id='te_returnToIndexButton'><i class='fa fa-home'></i> BACK TO INDEX</a>" );
+									 var returnToIndexLink = sessionStorage.getItem( 'te_returnLink' );
+									 if ( typeof returnToIndexLink === "object" )
+									 {
+										 $( "#te_returnToIndexButton" ).attr( "href", TE.site.baseURL );
+									 }
+									 else
+									 {
+										 $( "#te_returnToIndexButton" ).attr( "href", returnToIndexLink );
+									 }
+
+
+									 // Enhance Previous Page button.
+									 if ( $( "a:contains(' PREV')" ).length )
+									 {
+										 $( "a:contains(' PREV')" ).attr( "id", "te_prevButton" );
+									 }
+									 else
+									 {
+										 $( "#jump-page" ).before( "<a id=\"te_prevButton\" class=\"book-read-button button-stack\" style=\"margin-right: 10px;\"><i class=\"fa fa-arrow-left\"></i> PREV</a> " );
+										 $( "#te_prevButton" ).css( "display", "none" );
+									 }
+									 $( "#te_prevButton" ).attr( "href", TE.book.prevPageURL );
+									 if ( TE.book.currentPage > 1 )
+									 {
+										 $( "#te_prevButton" ).css( "display", "inline" );
+									 }
+									 else
+									 {
+										 $( "#te_prevButton" ).css( "display", "none" );
+									 }
+
+									 // Enhance Next Page Button
+									 if ( $( "a:contains('NEXT ')" ).length )
+									 {
+										 $( "a:contains('NEXT ')" ).attr( "id", "te_nextButton" );
+									 }
+									 else
+									 {
+										 $( "#jump-page" ).after( " <a id=\"te_nextButton\" class=\"book-read-button button-stack\">NEXT <i class=\"fa fa-arrow-right\"></i></a>" );
+										 $( "#te_nextButton" ).css( "display", "none" );
+									 }
+									 $( "#te_nextButton" ).attr( "href", TE.book.nextPageURL );
+									 if ( TE.book.currentPage < TE.book.totalPages )
+									 {
+										 $( "#te_nextButton" ).css( "display", "inline" );
+									 }
+									 else
+									 {
+										 $( "#te_nextButton" ).css( "display", "none" );
+									 }
+
+									 // Enhance Image link.
+									 var imageLink = $( "#te_readerCurrentImage" ).parent();
+									 $( imageLink ).attr( "id", "te_imageLink" );
+									 $( "#te_imageLink" ).attr( "href", TE.book.nextPageURL );
+
+									 TE.vbLog( "gname", "TE.book", TE.book );
+								 }
+								 else if ( TE.on.book )
+								 {
+									 var readInfo = TE.myLocation;
+									 readInfo     = readInfo.replace( TE.site.book.url, "" );
+									 readInfo     = readInfo.split( "/" );
+
+									 // Book ID.
+									 TE.book.id = parseInt( readInfo[ 0 ] );
+
+									 // Fix tag display bug causing unwanted line breaks.
+									 $( ".book-tag:contains(' ')" ).css( "white-space", "nowrap" );
+									 $( ".book-tag:contains('-')" ).css( "white-space", "nowrap" );
+
+									 // Read Online button.
+									 $( "a.book-read-button:contains(' READ ONLINE')" ).attr( "id", "te_readOnlineButton" );
+
+									 var indexButton = $( "a:contains(' BACK TO INDEX')" );
+									 $( indexButton ).attr( "id", "te_backToIndexButton" );
+									 var returnToIndexLink = sessionStorage.getItem( 'te_returnLink' );
+									 if ( typeof returnToIndexLink !== "object" )
+									 {
+										 $( "#te_backToIndexButton" ).attr( "href", returnToIndexLink );
+									 }
+								 }
+							 }
+							 if ( TE.on.browse )
+							 {
+								 sessionStorage.setItem( 'te_returnLink', TE.myLocation );
+
+								 var browsePage         = $( "div.browse-page" );
+								 var ctProper           = $( "div.row.push-in" );
+								 var bookshelfContainer = $( ctProper ).children()[ 0 ];
+								 $( bookshelfContainer ).attr( "id", "te_bookshelfContainer" );
+								 var sidebarContainer = $( ctProper ).children()[ 1 ];
+								 $( sidebarContainer ).attr( "id", "te_sidebarContainer" );
+
+								 var bookshelf = $( browsePage ).find( "div.row.row-no-padding" );
+								 $( bookshelf ).attr( "id", "te_bookshelf" );
+								 $( bookshelf ).children().each( function ()
+														   {
+															   var thisLinkUrl = $( this ).find( "a.overlay-button" ).attr( "href" );
+															   var temp        = thisLinkUrl.replace( TE.site.book.prefix, "" );
+															   temp            = temp.split( "/" );
+															   var thisBookID  = temp[ 0 ];
+															   $( this ).attr( "id", "te_book_" + thisBookID + "_masterContainer" );
+
+															   $( this ).find( "div.book-grid-item" ).attr( "id", "te_book_" + thisBookID + "_container" );
+
+															   var thisOverlay = $( "#te_book_" + thisBookID + "_container" ).find( "div.overlay" );
+															   $( thisOverlay ).attr( "id", "te_book_" + thisBookID + "_overlay" );
+
+															   var thisData = $( "#te_book_" + thisBookID + "_overlay" ).find( "div.overlay-data" );
+															   $( thisData ).attr( "id", "te_book_" + thisBookID + "_data" );
+
+															   var thisPages = $( "#te_book_" + thisBookID + "_data" ).find( "div.overlay-sub" );
+															   $( thisPages ).attr( "id", "te_book_" + thisBookID + "_pagesContainer" );
+
+															   var bottomTitle = $( this ).find( "a.title" );
+															   $( bottomTitle ).attr( "id", "te_book_" + thisBookID + "_bottomTitle" );
+															   $( "#te_book_" + thisBookID + "_bottomTitle" ).attr( "href", "javascript:;" );
+														   } );
+								 TE.vbLog( "gname", "TE.enhancePage", bookshelf );
+							 }
+							 TE.vbLog( "gname", "TE.enhancePage", "Finished working." );
+							 dfd.resolve();
+						 } );
 
 		return dfd.promise();
 	};
@@ -1173,36 +1175,36 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		 * Unstickied Header - General Enhancement
 		 *******************************************************/
 		var name         = "Unstickied Header",
-		    shortName    = TE.fn.camelize(name),
+		    shortName    = TE.fn.camelize( name ),
 		    description  = "The Tsumino navigation bar will no longer follow you as you scroll down.",
 		    options      = [],
 		    section      = "General",
 		    incompatible = false,
 		    main         =
 		    {
-			    init: function ()
+			    init : function ()
 			    {
-				    $.when(TE.status.enhancePage).done($.proxy(function ()
-				    {
-					    this.run();
-				    }, this));
+				    $.when( TE.status.enhancePage ).done( $.proxy( function ()
+														 {
+															 this.run();
+														 }, this ) );
 			    },
-			    run : function ()
+			    run  : function ()
 			    {
-				    $("#te_siteNavbar").css("position", "absolute");
+				    $( "#te_siteNavbar" ).css( "position", "absolute" );
 			    },
 		    };
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		    {
-			    type        : "enable",
-			    name        : false,
-			    description : false,
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "enable",
+			    name         : false,
+			    description  : false,
+			    defaultValue : false,
+			    arguments    : false,
 		    };
-		options.push(new TE.Enhancement.option.main(opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments));
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name, description, options, section, incompatible, main);
+		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
+		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -1212,7 +1214,7 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		 * Record Keeper - General Enhancement
 		 *******************************************************/
 		var name         = "Record Keeper",
-		    shortName    = TE.fn.camelize(name),
+		    shortName    = TE.fn.camelize( name ),
 		    description  = "The aptly named Record Keeper Enhancement keeps a record of what Doujin you've read.<br />This record includes Doujin IDs, the last page you read, and whether or not you finished reading a Doujin.<br />While browsing, unread Doujin will retain the normal blue border.<br />Doujin you have started but haven't finished will have a yellow border.<br />Doujin you've finished reading will have a green border.<br />Additionally, the information overlay will now contain this information.<br />There will also be a 'Continue Reading' button on the book info page if you have previously read a Doujin past the first page.",
 		    options      = [],
 		    section      = "General",
@@ -1222,91 +1224,91 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 
 		main =
 		{
-			init: function ()
+			init : function ()
 			{
-				if (typeof TE.User.recordKeeper.data !== "object")
+				if ( typeof TE.User.recordKeeper.data !== "object" )
 				{
 					TE.User.recordKeeper.data = {};
 					TE.updateSettings();
 				}
-				if (TE.on.browse)
+				if ( TE.on.browse )
 				{
-					$.when(TE.status.enhancePage).done(function ()
-					{
-						TE.log("gname", name, "Initializining...");
-						for (var key in TE.User.recordKeeper.data)
-						{
-							if (TE.User.recordKeeper.data.hasOwnProperty(key))
-							{
-								var obj = TE.User.recordKeeper.data[key];
-								if (obj["finished"])
-								{
-									$("#te_book_" + key + "_pagesContainer").append("<br />Finished!");
-									$("#te_book_" + key + "_overlay").css("border", "3px solid rgba(0,125,0,.8)");
-									$("#te_book_" + key + "_bottomTitle").css("border-top", "3px solid rgba(0,125,0,.8)");
-								}
-								if ((obj["lastSeen"] > 1) && (!obj["finished"]))
-								{
-									$("#te_book_" + key + "_pagesContainer").text("Read " + obj["lastSeen"] + " / " + obj["totalPages"] + " pages.");
-									$("#te_book_" + key + "_overlay").css("border", "3px solid rgba(190,190,90,.8)");
-									$("#te_book_" + key + "_bottomTitle").css("border-top", "3px solid rgba(190,190,90,.8)");
-								}
-							}
-						}
-					});
+					$.when( TE.status.enhancePage ).done( function ()
+												   {
+													   TE.log( "gname", name, "Initializining..." );
+													   for (var key in TE.User.recordKeeper.data)
+													   {
+														   if ( TE.User.recordKeeper.data.hasOwnProperty( key ) )
+														   {
+															   var obj = TE.User.recordKeeper.data[ key ];
+															   if ( obj[ "finished" ] )
+															   {
+																   $( "#te_book_" + key + "_pagesContainer" ).append( "<br />Finished!" );
+																   $( "#te_book_" + key + "_overlay" ).css( "border", "3px solid rgba(0,125,0,.8)" );
+																   $( "#te_book_" + key + "_bottomTitle" ).css( "border-top", "3px solid rgba(0,125,0,.8)" );
+															   }
+															   if ( (obj[ "lastSeen" ] > 1) && (!obj[ "finished" ]) )
+															   {
+																   $( "#te_book_" + key + "_pagesContainer" ).text( "Read " + obj[ "lastSeen" ] + " / " + obj[ "totalPages" ] + " pages." );
+																   $( "#te_book_" + key + "_overlay" ).css( "border", "3px solid rgba(190,190,90,.8)" );
+																   $( "#te_book_" + key + "_bottomTitle" ).css( "border-top", "3px solid rgba(190,190,90,.8)" );
+															   }
+														   }
+													   }
+												   } );
 				}
-				if (TE.on.book)
+				if ( TE.on.book )
 				{
-					$.when(TE.status.enhancePage).done($.proxy(function ()
-					{
-						TE.log("gname", name, "Initializining...");
-						if (typeof TE.User.recordKeeper.data[TE.book.id] === "object")
-						{
-							if (TE.User.recordKeeper.data[TE.book.id]["lastSeen"] > 1)
-							{
-								TE.User.recordKeeper.data[TE.book.id]["lastSeen"];
-								var oldButton       = $("#te_readOnlineButton").html();
-								var starOver        = oldButton.replace(" READ ONLINE", " START OVER");
-								var continueReading = oldButton.replace(" READ ONLINE", " CONTINUE READING");
-								$("#te_readOnlineButton").html(starOver);
-								var resumeUrl = TE.site.reader.url + TE.book.id + "/" + TE.User.recordKeeper.data[TE.book.id]["lastSeen"];
-								$("#te_readOnlineButton").before("<a id='te_resumeButton' class='book-read-button button-stack' href='" + resumeUrl + "'></a>");
-								$("#te_resumeButton").html(continueReading);
-							}
-						}
-					}, this));
+					$.when( TE.status.enhancePage ).done( $.proxy( function ()
+														  {
+															  TE.log( "gname", name, "Initializining..." );
+															  if ( typeof TE.User.recordKeeper.data[ TE.book.id ] === "object" )
+															  {
+																  if ( TE.User.recordKeeper.data[ TE.book.id ][ "lastSeen" ] > 1 )
+																  {
+																	  TE.User.recordKeeper.data[ TE.book.id ][ "lastSeen" ];
+																	  var oldButton       = $( "#te_readOnlineButton" ).html();
+																	  var starOver        = oldButton.replace( " READ ONLINE", " START OVER" );
+																	  var continueReading = oldButton.replace( " READ ONLINE", " CONTINUE READING" );
+																	  $( "#te_readOnlineButton" ).html( starOver );
+																	  var resumeUrl = TE.site.reader.url + TE.book.id + "/" + TE.User.recordKeeper.data[ TE.book.id ][ "lastSeen" ];
+																	  $( "#te_readOnlineButton" ).before( "<a id='te_resumeButton' class='book-read-button button-stack' href='" + resumeUrl + "'></a>" );
+																	  $( "#te_resumeButton" ).html( continueReading );
+																  }
+															  }
+														  }, this ) );
 				}
-				if (TE.on.reader)
+				if ( TE.on.reader )
 				{
-					$.when(TE.status.enhancePage).done($.proxy(function ()
-					{
-						TE.log("gname", name, "Initializining...");
-						if (typeof TE.User[shortName].data !== "object")
-						{
-							TE.User[shortName].data = {};
-						}
-						if (typeof TE.User[shortName].data[TE.book.id] !== "object")
-						{
-							TE.User[shortName].data[TE.book.id] =
-							{
-								totalPages: TE.book.totalPages,
-								lastSeen  : TE.book.currentPage,
-								finished  : false,
-							};
-						}
-						this.update();
-					}, this));
+					$.when( TE.status.enhancePage ).done( $.proxy( function ()
+														  {
+															  TE.log( "gname", name, "Initializining..." );
+															  if ( typeof TE.User[ shortName ].data !== "object" )
+															  {
+																  TE.User[ shortName ].data = {};
+															  }
+															  if ( typeof TE.User[ shortName ].data[ TE.book.id ] !== "object" )
+															  {
+																  TE.User[ shortName ].data[ TE.book.id ] =
+																  {
+																	  totalPages : TE.book.totalPages,
+																	  lastSeen   : TE.book.currentPage,
+																	  finished   : false,
+																  };
+															  }
+															  this.update();
+														  }, this ) );
 				}
 			},
 
-			update: function ()
+			update : function ()
 			{
-				TE.User[shortName].data[TE.book.id].lastSeen = TE.book.currentPage;
-				if (!TE.User[shortName].data[TE.book.id]["finished"])
+				TE.User[ shortName ].data[ TE.book.id ].lastSeen = TE.book.currentPage;
+				if ( !TE.User[ shortName ].data[ TE.book.id ][ "finished" ] )
 				{
-					if (TE.book.totalPages == TE.book.currentPage)
+					if ( TE.book.totalPages == TE.book.currentPage )
 					{
-						TE.User[shortName].data[TE.book.id]["finished"] = true;
+						TE.User[ shortName ].data[ TE.book.id ][ "finished" ] = true;
 					}
 				}
 				TE.updateSettings();
@@ -1316,24 +1318,24 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		    {
-			    type        : "enable",
-			    name        : false,
-			    description : false,
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "enable",
+			    name         : false,
+			    description  : false,
+			    defaultValue : false,
+			    arguments    : false,
 		    };
 		var opt2 =
 		    {
-			    type        : "toggle",
-			    name        : "Show Messages",
-			    description : "Displays loading messages while preparing images for display.",
-			    defaultValue: true,
-			    arguments   : false,
+			    type         : "toggle",
+			    name         : "Show Messages",
+			    description  : "Displays loading messages while preparing images for display.",
+			    defaultValue : true,
+			    arguments    : false,
 		    };
-		options.push(new TE.Enhancement.option.main(opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments));
+		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
 		//options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
 
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name, description, options, section, incompatible, main);
+		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -1343,7 +1345,7 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		 * Browsing Tweaks - Browsing Enhancement
 		 *******************************************************/
 		var name         = "Browsing Tweaks",
-		    shortName    = TE.fn.camelize(name),
+		    shortName    = TE.fn.camelize( name ),
 		    description  = "A collection of customizations to browsing.",
 		    options      = [],
 		    section      = "Browsing",
@@ -1352,116 +1354,116 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 
 		main =
 		{
-			init: function ()
+			init : function ()
 			{
-				if (TE.on.browse)
+				if ( TE.on.browse )
 				{
-					$.when(TE.status.enhancePage).done(function ()
-					{
-						if (typeof TE.User[shortName] !== "undefined")
-						{
-							if (TE.User[shortName].removeSidebar)
-							{
-								$("#te_sidebarContainer").remove();
-								$("#te_bookshelfContainer").css("width", "100%");
-							}
-							if (TE.User[shortName].thumbnailLinks)
-							{
-								$("div.overlay").each(function ()
-								{
-									$(this).on("mousedown", $.proxy(function (e)
-									{
-										// Only fire if the div itself is clicked, ignoring children.
-										if (e.target == this)
-										{
-											// Left Mouse
-											if ((e.which == 1))
-											{
-												TE.vbLog("Left mouse button clicked.");
-												if (TE.User[shortName].skipInfo)
-												{
-													var thisLink = $(this).find("a.te_browsetweak_readbutton").attr("href");
-												}
-												else
-												{
-													var thisLink = $(this).find("a.overlay-button").attr("href");
-												}
-												thisLink = TE.site.baseURL + thisLink;
-												if (e.ctrlKey)
-												{
-													global.open(thisLink);
-												}
-												else
-												{
-													global.location.href = thisLink;
-												}
+					$.when( TE.status.enhancePage ).done( function ()
+												   {
+													   if ( typeof TE.User[ shortName ] !== "undefined" )
+													   {
+														   if ( TE.User[ shortName ].removeSidebar )
+														   {
+															   $( "#te_sidebarContainer" ).remove();
+															   $( "#te_bookshelfContainer" ).css( "width", "100%" );
+														   }
+														   if ( TE.User[ shortName ].thumbnailLinks )
+														   {
+															   $( "div.overlay" ).each( function ()
+																				   {
+																					   $( this ).on( "mousedown", $.proxy( function (e)
+																												    {
+																													    // Only fire if the div itself is clicked, ignoring children.
+																													    if ( e.target == this )
+																													    {
+																														    // Left Mouse
+																														    if ( (e.which == 1) )
+																														    {
+																															    TE.vbLog( "Left mouse button clicked." );
+																															    if ( TE.User[ shortName ].skipInfo )
+																															    {
+																																    var thisLink = $( this ).find( "a.te_browsetweak_readbutton" ).attr( "href" );
+																															    }
+																															    else
+																															    {
+																																    var thisLink = $( this ).find( "a.overlay-button" ).attr( "href" );
+																															    }
+																															    thisLink = TE.site.baseURL + thisLink;
+																															    if ( e.ctrlKey )
+																															    {
+																																    w.open( thisLink );
+																															    }
+																															    else
+																															    {
+																																    w.location.href = thisLink;
+																															    }
 
-											}
+																														    }
 
-											// Middle Mouse
-											if ((e.which == 2))
-											{
-												TE.vbLog("Middle mouse button clicked.");
-												if (TE.User[shortName].skipInfo)
-												{
-													var thisLink = $(this).find("a.te_browsetweak_readbutton").attr("href");
-												}
-												else
-												{
-													var thisLink = $(this).find("a.overlay-button").attr("href");
-												}
-												thisLink = TE.site.baseURL + thisLink;
-												global.open(thisLink);
-											}
-										}
-										e.preventDefault();
-									}, this));
-								});
-							}
-							if (TE.User[shortName].moreBooks)
-							{
-								$("style").append("@media(min-width:768px) { .overlay-title { font-size:.8em; } .col-sm-4 { width: 25% } }");
-								$("style").append("@media(min-width:992px) { .col-md-3 { width: 20% } }");
-							}
-							if (TE.User[shortName].skipInfo)
-							{
-								// Apply new CSS.
-								$("style").append(TE.ui.css.browsingTweaks.master);
-								$("div.overlay").each(function ()
-								{
-									// Get Book ID
-									var bookID = $(this).attr("id");
-									bookID     = bookID.replace("te_book_", "");
-									bookID     = bookID.replace("_overlay", "");
-									bookID     = parseInt(bookID);
+																														    // Middle Mouse
+																														    if ( (e.which == 2) )
+																														    {
+																															    TE.vbLog( "Middle mouse button clicked." );
+																															    if ( TE.User[ shortName ].skipInfo )
+																															    {
+																																    var thisLink = $( this ).find( "a.te_browsetweak_readbutton" ).attr( "href" );
+																															    }
+																															    else
+																															    {
+																																    var thisLink = $( this ).find( "a.overlay-button" ).attr( "href" );
+																															    }
+																															    thisLink = TE.site.baseURL + thisLink;
+																															    w.open( thisLink );
+																														    }
+																													    }
+																													    e.preventDefault();
+																												    }, this ) );
+																				   } );
+														   }
+														   if ( TE.User[ shortName ].moreBooks )
+														   {
+															   $( "style" ).append( "@media(min-width:768px) { .overlay-title { font-size:.8em; } .col-sm-4 { width: 25% } }" );
+															   $( "style" ).append( "@media(min-width:992px) { .col-md-3 { width: 20% } }" );
+														   }
+														   if ( TE.User[ shortName ].skipInfo )
+														   {
+															   // Apply new CSS.
+															   $( "style" ).append( TE.ui.css.browsingTweaks.master );
+															   $( "div.overlay" ).each( function ()
+																				   {
+																					   // Get Book ID
+																					   var bookID = $( this ).attr( "id" );
+																					   bookID     = bookID.replace( "te_book_", "" );
+																					   bookID     = bookID.replace( "_overlay", "" );
+																					   bookID     = parseInt( bookID );
 
-									// Replace old class on view button.
-									var viewInfoButton = $(this).find("a.overlay-button");
-									$(viewInfoButton).text("INFO");
-									var viewButtonSrc = $(viewInfoButton)[0]['outerHTML'];
-									$(viewInfoButton).removeClass("overlay-button");
-									$(viewInfoButton).addClass("te_browsetweak_infobutton");
+																					   // Replace old class on view button.
+																					   var viewInfoButton = $( this ).find( "a.overlay-button" );
+																					   $( viewInfoButton ).text( "INFO" );
+																					   var viewButtonSrc = $( viewInfoButton )[ 0 ][ 'outerHTML' ];
+																					   $( viewInfoButton ).removeClass( "overlay-button" );
+																					   $( viewInfoButton ).addClass( "te_browsetweak_infobutton" );
 
-									// Add new read button.
-									var readButtonSrc = viewButtonSrc.replace("INFO", "READ");
-									readButtonSrc     = readButtonSrc.replace("class=\"overlay-button\"", "class=\"te_browsetweak_readbutton\"");
-									$(this).append(readButtonSrc);
-									var readButton = $(this).find("a.te_browsetweak_readbutton");
-									var linkURL    = TE.site.reader.prefix + bookID + "/1";
-									$(readButton).attr("href", linkURL);
+																					   // Add new read button.
+																					   var readButtonSrc = viewButtonSrc.replace( "INFO", "READ" );
+																					   readButtonSrc     = readButtonSrc.replace( "class=\"overlay-button\"", "class=\"te_browsetweak_readbutton\"" );
+																					   $( this ).append( readButtonSrc );
+																					   var readButton = $( this ).find( "a.te_browsetweak_readbutton" );
+																					   var linkURL    = TE.site.reader.prefix + bookID + "/1";
+																					   $( readButton ).attr( "href", linkURL );
 
-									if (TE.User.recordKeeper)
-									{
-										if (TE.User.recordKeeper.data[bookID])
-										{
-											linkURL = TE.site.reader.prefix + bookID + "/" + TE.User.recordKeeper.data[bookID]['lastSeen'];
-											$(readButton).attr("href", linkURL);
-										}
-									}
-								});
-							}
-						}
-					});
+																					   if ( TE.User.recordKeeper )
+																					   {
+																						   if ( TE.User.recordKeeper.data[ bookID ] )
+																						   {
+																							   linkURL = TE.site.reader.prefix + bookID + "/" + TE.User.recordKeeper.data[ bookID ][ 'lastSeen' ];
+																							   $( readButton ).attr( "href", linkURL );
+																						   }
+																					   }
+																				   } );
+														   }
+													   }
+												   } );
 				}
 			},
 		};
@@ -1469,42 +1471,42 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		    {
-			    type        : "toggle",
-			    name        : "Remove Sidebar",
-			    description : "Removes the &quot;random picks&quot; sidebar.",
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "toggle",
+			    name         : "Remove Sidebar",
+			    description  : "Removes the &quot;random picks&quot; sidebar.",
+			    defaultValue : false,
+			    arguments    : false,
 		    };
 		var opt2 =
 		    {
-			    type        : "toggle",
-			    name        : "More Books",
-			    description : "Displays one extra book per row.",
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "toggle",
+			    name         : "More Books",
+			    description  : "Displays one extra book per row.",
+			    defaultValue : false,
+			    arguments    : false,
 		    };
 		var opt3 =
 		    {
-			    type        : "toggle",
-			    name        : "Thumbnail Links",
-			    description : "Clicking anywhere on the thumbnail image will load the Doujin.",
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "toggle",
+			    name         : "Thumbnail Links",
+			    description  : "Clicking anywhere on the thumbnail image will load the Doujin.",
+			    defaultValue : false,
+			    arguments    : false,
 		    };
 		var opt4 =
 		    {
-			    type        : "toggle",
-			    name        : "Skip Info",
-			    description : "Skips the book info page and takes you directly to the reader.",
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "toggle",
+			    name         : "Skip Info",
+			    description  : "Skips the book info page and takes you directly to the reader.",
+			    defaultValue : false,
+			    arguments    : false,
 		    };
 
-		options.push(new TE.Enhancement.option.main(opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments));
-		options.push(new TE.Enhancement.option.main(opt2.type, opt2.name, opt2.description, opt2.defaultValue, opt2.arguments));
-		options.push(new TE.Enhancement.option.main(opt3.type, opt3.name, opt3.description, opt3.defaultValue, opt3.arguments));
-		options.push(new TE.Enhancement.option.main(opt4.type, opt4.name, opt4.description, opt4.defaultValue, opt4.arguments));
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name, description, options, section, incompatible, main);
+		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
+		options.push( new TE.Enhancement.option.main( opt2.type, opt2.name, opt2.description, opt2.defaultValue, opt2.arguments ) );
+		options.push( new TE.Enhancement.option.main( opt3.type, opt3.name, opt3.description, opt3.defaultValue, opt3.arguments ) );
+		options.push( new TE.Enhancement.option.main( opt4.type, opt4.name, opt4.description, opt4.defaultValue, opt4.arguments ) );
+		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -1517,41 +1519,41 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		 * Automatic Repositioning - Reader Enhancement
 		 *******************************************************/
 		var name         = "Automatic Repositioning",
-		    shortName    = TE.fn.camelize(name),
+		    shortName    = TE.fn.camelize( name ),
 		    description  = "Automatically scrolls you to the top of the image.",
 		    options      = [],
 		    section      = "Reader",
 		    incompatible = false,
 		    main         =
 		    {
-			    init: function ()
+			    init : function ()
 			    {
-				    if (TE.on.reader)
+				    if ( TE.on.reader )
 				    {
-					    $.when(TE.status.enhancePage).done($.proxy(function ()
-					    {
-						    TE.Enhancements.unstickiedHeader.fn.run();
-						    this.run();
-					    }, this));
+					    $.when( TE.status.enhancePage ).done( $.proxy( function ()
+															 {
+																 TE.Enhancements.unstickiedHeader.fn.run();
+																 this.run();
+															 }, this ) );
 				    }
 			    },
-			    run : function ()
+			    run  : function ()
 			    {
-				    var imgPos = $("#te_imageBlock").position().top;
-				    $('html, body').animate({scrollTop: imgPos}, 300);
+				    var imgPos = $( "#te_imageBlock" ).position().top;
+				    $( 'html, body' ).animate( {scrollTop : imgPos}, 300 );
 			    },
 		    };
 
 		var opt1 =
 		    {
-			    type        : "enable",
-			    name        : false,
-			    description : false,
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "enable",
+			    name         : false,
+			    description  : false,
+			    defaultValue : false,
+			    arguments    : false,
 		    };
-		options.push(new TE.Enhancement.option.main(opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments));
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name, description, options, section, incompatible, main);
+		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
+		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -1561,274 +1563,274 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		 * Seamless Viewing - Reader Enhancement
 		 *******************************************************/
 		var name         = "Seamless Viewing",
-		    shortName    = TE.fn.camelize(name),
+		    shortName    = TE.fn.camelize( name ),
 		    description  = "Negates the need to load the entire Tsumino webpage again every time you flip through a Doujin.<br />This means faster load times, and not losing sight of the previous page until the instant the new page is loaded.<br />Seamless Viewing leaves the previous image in place until the new one is ready.<br />Once the new image is ready, you are automatically scrolled up to the top of the image.",
 		    options      = [],
 		    section      = "Reader",
-		    incompatible = ["Infinity Scrolling"],
+		    incompatible = [ "Infinity Scrolling" ],
 		    main         = {};
 
 		main =
 		{
-			replaceKeybinds: function ()
+			replaceKeybinds : function ()
 			{
 				// Disable default Tsumino Reader Keybinds.
-				unsafeWindow.$(document).off("keydown");
+				unsafeWindow.$( document ).off( "keydown" );
 
 				// Use Classic Seamless Viewing keybinds instead.
-				$(document).keydown($.proxy(function (e)
-				{
-					var bk  = $.proxy(function ()
-					{
-						this.changePage(TE.book.prevPage);
-					}, this);
-					var fwd = $.proxy(function ()
-					{
-						this.changePage(TE.book.nextPage);
-					}, this);
-					if ((!e.ctrlKey) && (!e.altKey))
-					{
-						switch (e.which)
-						{
-							case 87: // w
-								global.scrollBy(0, -100);
-								break;
-							case 83: // s
-								global.scrollBy(0, 100);
-								break;
-							case 8: //back
-							case 37: //left
-							case 65: //a
-								bk();
-								break;
-							case 32: //space
-							case 13: //enter
-							case 39: //right
-							case 68: //d
-								fwd();
-								break;
-							default:
-								return;
-						}
-						e.preventDefault();
-					}
-				}, this));
+				$( document ).keydown( $.proxy( function (e)
+										  {
+											  var bk  = $.proxy( function ()
+															 {
+																 this.changePage( TE.book.prevPage );
+															 }, this );
+											  var fwd = $.proxy( function ()
+															 {
+																 this.changePage( TE.book.nextPage );
+															 }, this );
+											  if ( (!e.ctrlKey) && (!e.altKey) )
+											  {
+												  switch (e.which)
+												  {
+													  case 87: // w
+														  w.scrollBy( 0, -100 );
+														  break;
+													  case 83: // s
+														  w.scrollBy( 0, 100 );
+														  break;
+													  case 8: //back
+													  case 37: //left
+													  case 65: //a
+														  bk();
+														  break;
+													  case 32: //space
+													  case 13: //enter
+													  case 39: //right
+													  case 68: //d
+														  fwd();
+														  break;
+													  default:
+														  return;
+												  }
+												  e.preventDefault();
+											  }
+										  }, this ) );
 			},
-			changePage     : function (pageNumber)
+			changePage      : function (pageNumber)
 			{
 				var dfd = jQuery.Deferred();
 
 				function changePageCommon(pageNumber)
 				{
-					pageNumber = parseInt(pageNumber);
+					pageNumber = parseInt( pageNumber );
 					// Update page and location variables.
 					TE.book.currentPage = pageNumber;
 					TE.book.prevPage    = pageNumber - 1;
 					TE.book.nextPage    = pageNumber + 1;
-					if (TE.book.nextPage > TE.book.totalPages)
+					if ( TE.book.nextPage > TE.book.totalPages )
 					{
 						TE.book.nextPage = false;
 					}
-					if (TE.book.prevPage <= 0)
+					if ( TE.book.prevPage <= 0 )
 					{
 						TE.book.prevPage = false;
 					}
 					TE.book.currentPageURL = TE.site.reader.prefix + TE.book.id + "/" + TE.book.currentPage;
 
 					// Get the dataURI from the source of loader's hidden image.
-					var newImageSrc = $("#te_loadImage_" + pageNumber).attr("src");
+					var newImageSrc = $( "#te_loadImage_" + pageNumber ).attr( "src" );
 					//var newImageSrc = TE.site.image.prefix + TE.book.id + "/" + TE.book.currentPage;
 
 					// Remove the loader's hidden image.
-					$("#te_readerCurrentImage").attr("src", newImageSrc);
+					$( "#te_readerCurrentImage" ).attr( "src", newImageSrc );
 
 					// Reposition.
 					TE.Enhancements.automaticRepositioning.fn.run();
 
 					// If Record Keeper is Enabled.
-					if (TE.User.recordKeeper.enable)
+					if ( TE.User.recordKeeper.enable )
 					{
 						TE.Enhancements.recordKeeper.fn.update();
 					}
 
 					// If Page Jumper is Enabled.
-					if (TE.User.pageJumper.enable)
+					if ( TE.User.pageJumper.enable )
 					{
-						$("#te_pageJumper").val(pageNumber);
-						$('#te_pageJumper').dropdown('set selected', pageNumber);
+						$( "#te_pageJumper" ).val( pageNumber );
+						$( '#te_pageJumper' ).dropdown( 'set selected', pageNumber );
 					}
 
 					// Prefetch new pages.
-					TE.fn.prefetch.init(TE.book.currentPage);
+					TE.fn.prefetch.init( TE.book.currentPage );
 
 					// Update title.
-					$("title").text("Tsumino - " + TE.book.title + " - Page " + TE.book.currentPage);
+					$( "title" ).text( "Tsumino - " + TE.book.title + " - Page " + TE.book.currentPage );
 
 					// Update links.
 					this.updateLinks();
 
 					// Update history and window location.
-					if ((!history.state) || (history.state && history.state.pageNumber != TE.book.currentPage))
+					if ( (!history.state) || (history.state && history.state.pageNumber != TE.book.currentPage) )
 					{
-						global.history.pushState({pageNumber: TE.book.currentPage}, $("title").text(), TE.book.currentPageURL);
-						TE.log(global.history);
+						w.history.pushState( {pageNumber : TE.book.currentPage}, $( "title" ).text(), TE.book.currentPageURL );
+						TE.log( w.history );
 					}
-					TE.log("gname", name, "Image " + pageNumber + " has been placed in the reader.");
+					TE.log( "gname", name, "Image " + pageNumber + " has been placed in the reader." );
 					dfd.resolve();
 				}
 
-				var cpc = changePageCommon.bind(this);
+				var cpc = changePageCommon.bind( this );
 				// Make sure the page is in range first.
-				if ((pageNumber <= TE.book.totalPages) && (pageNumber > 0))
+				if ( (pageNumber <= TE.book.totalPages) && (pageNumber > 0) )
 				{
-					if (TE.status.pagesLoaded[pageNumber] == "done")
+					if ( TE.status.pagesLoaded[ pageNumber ] == "done" )
 					{
-						cpc(pageNumber);
+						cpc( pageNumber );
 					}
 					else
 					{
-						if ((TE.status.prefetch[TE.book.id][pageNumber] != "") && (TE.status.prefetch[TE.book.id][pageNumber] != "working"))
+						if ( (TE.status.prefetch[ TE.book.id ][ pageNumber ] != "") && (TE.status.prefetch[ TE.book.id ][ pageNumber ] != "working") )
 						{
-							TE.status.load = TE.load(pageNumber, TE.status.prefetch[TE.book.id][pageNumber]);
+							TE.status.load = TE.load( pageNumber, TE.status.prefetch[ TE.book.id ][ pageNumber ] );
 							// Once the requested page is loaded, continue.
-							$.when(TE.status.load).then($.proxy(function ()
-							{
-								if (TE.status.pagesLoaded[pageNumber] == "done")
-								{
-									TE.log("CPC going");
-									cpc(pageNumber);
-								}
-								else
-								{
-									TE.log("CPC ERROR");
-								}
-							}, this));
+							$.when( TE.status.load ).then( $.proxy( function ()
+															{
+																if ( TE.status.pagesLoaded[ pageNumber ] == "done" )
+																{
+																	TE.log( "CPC going" );
+																	cpc( pageNumber );
+																}
+																else
+																{
+																	TE.log( "CPC ERROR" );
+																}
+															}, this ) );
 						}
 						else
 						{
-							TE.log("gname", name, "Prefetch is still initializing...")
+							TE.log( "gname", name, "Prefetch is still initializing..." )
 						}
 					}
 				}
 				// If the user requested a page that was less than 1 or greater than the total number of pages, stop.
 				else
 				{
-					if (pageNumber == false)
+					if ( pageNumber == false )
 					{
-						global.location.href = TE.site.book.url + TE.book.id;
+						w.location.href = TE.site.book.url + TE.book.id;
 					}
-					TE.log("gname", "Seamless Viewing", "Image " + pageNumber + " is out of range and will not be loaded.");
+					TE.log( "gname", "Seamless Viewing", "Image " + pageNumber + " is out of range and will not be loaded." );
 					dfd.resolve();
 				}
 				return dfd.promise();
 			},
-			updateLinks    : function ()
+			updateLinks     : function ()
 			{
-				TE.vbLog("gname", name, "Updating links... ");
+				TE.vbLog( "gname", name, "Updating links... " );
 				// Remove old click binds from links.
-				$("#te_prevButton").off("click");
-				$("#te_nextButton").off("click");
-				$("#te_imageLink").off("click");
+				$( "#te_prevButton" ).off( "click" );
+				$( "#te_nextButton" ).off( "click" );
+				$( "#te_imageLink" ).off( "click" );
 
 				// Establish updated click binds.
-				if (TE.book.currentPage <= TE.book.totalPages)
+				if ( TE.book.currentPage <= TE.book.totalPages )
 				{
-					$("#te_nextButton").css("display", "inline");
-					$("#te_nextButton").click($.proxy(function ()
-					{
-						this.changePage(TE.book.nextPage);
-					}, this));
-					$("#te_imageLink").click($.proxy(function ()
-					{
-						this.changePage(TE.book.nextPage);
-					}, this));
+					$( "#te_nextButton" ).css( "display", "inline" );
+					$( "#te_nextButton" ).click( $.proxy( function ()
+												   {
+													   this.changePage( TE.book.nextPage );
+												   }, this ) );
+					$( "#te_imageLink" ).click( $.proxy( function ()
+												  {
+													  this.changePage( TE.book.nextPage );
+												  }, this ) );
 				}
-				if (TE.book.currentPage == TE.book.totalPages)
+				if ( TE.book.currentPage == TE.book.totalPages )
 				{
-					$("#te_nextButton").css("display", "none");
-					$("#te_imageLink").click($.proxy(function ()
-					{
-						this.changePage(TE.book.nextPage);
-					}, this));
+					$( "#te_nextButton" ).css( "display", "none" );
+					$( "#te_imageLink" ).click( $.proxy( function ()
+												  {
+													  this.changePage( TE.book.nextPage );
+												  }, this ) );
 				}
 
-				if (TE.book.currentPage > 1)
+				if ( TE.book.currentPage > 1 )
 				{
-					$("#te_prevButton").css("display", "inline");
-					$("#te_prevButton").click($.proxy(function ()
-					{
-						this.changePage(TE.book.prevPage);
-					}, this));
+					$( "#te_prevButton" ).css( "display", "inline" );
+					$( "#te_prevButton" ).click( $.proxy( function ()
+												   {
+													   this.changePage( TE.book.prevPage );
+												   }, this ) );
 
 				}
 				else
 				{
-					$("#te_prevButton").css("display", "none");
+					$( "#te_prevButton" ).css( "display", "none" );
 				}
 
-				$("#te_currentPage").html("<a href='" + TE.book.currentPageURL + "'>" + TE.book.currentPage + "</a>");
+				$( "#te_currentPage" ).html( "<a href='" + TE.book.currentPageURL + "'>" + TE.book.currentPage + "</a>" );
 			},
-			init           : function ()
+			init            : function ()
 			{
-				if (TE.on.reader)
+				if ( TE.on.reader )
 				{
-					$.when(TE.status.enhancePage).done($.proxy(function ()
-					{
-						global.history.replaceState({pageNumber: TE.book.currentPage}, $("title").text(), TE.book.currentPageURL);
+					$.when( TE.status.enhancePage ).done( $.proxy( function ()
+														  {
+															  w.history.replaceState( {pageNumber : TE.book.currentPage}, $( "title" ).text(), TE.book.currentPageURL );
 
-						// Allow history navigation to work with Seamless Viewing.
-						$(global).on("popstate", $.proxy(function ()
-						{
-							if (history.state)
-							{
-								this.changePage(history.state.pageNumber);
-							}
-						}, this));
+															  // Allow history navigation to work with Seamless Viewing.
+															  $( w ).on( "popstate", $.proxy( function ()
+																					    {
+																						    if ( history.state )
+																						    {
+																							    this.changePage( history.state.pageNumber );
+																						    }
+																					    }, this ) );
 
-						TE.log("gname", name, "Initializining...");
+															  TE.log( "gname", name, "Initializining..." );
 
-						// Replace default Tsumino reader keybinds with Enhanced Seamless Viewing keybinds.
-						this.replaceKeybinds();
+															  // Replace default Tsumino reader keybinds with Enhanced Seamless Viewing keybinds.
+															  this.replaceKeybinds();
 
-						// Automatic Repositioning.
-						TE.Enhancements.automaticRepositioning.fn.run();
+															  // Automatic Repositioning.
+															  TE.Enhancements.automaticRepositioning.fn.run();
 
-						// Unstickied Header.
-						TE.Enhancements.unstickiedHeader.fn.run();
+															  // Unstickied Header.
+															  TE.Enhancements.unstickiedHeader.fn.run();
 
-						// Remove default Tsumino doujin navigation links.
-						$("#te_prevButton").attr("href", "javascript:;");
-						$("#te_nextButton").attr("href", "javascript:;");
-						$("#te_imageLink").attr("href", "javascript:;");
+															  // Remove default Tsumino doujin navigation links.
+															  $( "#te_prevButton" ).attr( "href", "javascript:;" );
+															  $( "#te_nextButton" ).attr( "href", "javascript:;" );
+															  $( "#te_imageLink" ).attr( "href", "javascript:;" );
 
-						// Prepare Prefetch
-						TE.status.prefetch[TE.book.id] = {};
-						for (i = 1; i <= TE.book.totalPages; i++)
-						{
-							TE.status.prefetch[TE.book.id][i] = "";
-						}
-						TE.fn.prefetch.init(TE.book.currentPage);
+															  // Prepare Prefetch
+															  TE.status.prefetch[ TE.book.id ] = {};
+															  for (i = 1 ; i <= TE.book.totalPages ; i++)
+															  {
+																  TE.status.prefetch[ TE.book.id ][ i ] = "";
+															  }
+															  TE.fn.prefetch.init( TE.book.currentPage );
 
-						// Update doujin navigation links.
-						this.updateLinks();
-						$("body").append("<img id='te_loadImage_" + TE.book.currentPage + "' style='display:none;'>");
+															  // Update doujin navigation links.
+															  this.updateLinks();
+															  $( "body" ).append( "<img id='te_loadImage_" + TE.book.currentPage + "' style='display:none;'>" );
 
-						// "Cache" the first image that loads for later.
-						var originImage    = new Image();
-						originImage.onload = function ()
-						{
-							var canvas    = document.createElement('canvas');
-							canvas.width  = this.naturalWidth;
-							canvas.height = this.naturalHeight;
-							canvas.getContext('2d').drawImage(this, 0, 0);
-							var newSrc = canvas.toDataURL('image/jpeg');
-							$("#te_loadImage_" + TE.book.currentPage).attr("src", newSrc);
-						};
-						originImage.src    = $("#te_readerCurrentImage").attr("src");
+															  // "Cache" the first image that loads for later.
+															  var originImage    = new Image();
+															  originImage.onload = function ()
+															  {
+																  var canvas    = document.createElement( 'canvas' );
+																  canvas.width  = this.naturalWidth;
+																  canvas.height = this.naturalHeight;
+																  canvas.getContext( '2d' ).drawImage( this, 0, 0 );
+																  var newSrc = canvas.toDataURL( 'image/jpeg' );
+																  $( "#te_loadImage_" + TE.book.currentPage ).attr( "src", newSrc );
+															  };
+															  originImage.src    = $( "#te_readerCurrentImage" ).attr( "src" );
 
-					}, this));
+														  }, this ) );
 				}
-				else if (TE.on.auth)
+				else if ( TE.on.auth )
 				{
 					// Reserved
 				}
@@ -1838,25 +1840,25 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		    {
-			    type        : "enable",
-			    name        : false,
-			    description : false,
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "enable",
+			    name         : false,
+			    description  : false,
+			    defaultValue : false,
+			    arguments    : false,
 		    };
 		var opt2 =
 		    {
-			    type        : "toggle",
-			    name        : "Show Messages",
-			    description : "Displays loading messages while preparing images for display.",
-			    defaultValue: true,
-			    arguments   : false,
+			    type         : "toggle",
+			    name         : "Show Messages",
+			    description  : "Displays loading messages while preparing images for display.",
+			    defaultValue : true,
+			    arguments    : false,
 		    };
 
-		options.push(new TE.Enhancement.option.main(opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments));
+		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
 		//options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
 
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name, description, options, section, incompatible, main);
+		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -1866,7 +1868,7 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		 * Page Jumper - Reader Enhancement
 		 *******************************************************/
 		var name         = "Page Jumper",
-		    shortName    = TE.fn.camelize(name),
+		    shortName    = TE.fn.camelize( name ),
 		    description  = "Adds a dropdown box to the Reader that lets you skip directly to a page.",
 		    options      = [],
 		    section      = "Reader",
@@ -1875,40 +1877,40 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 
 		main =
 		{
-			init: function ()
+			init : function ()
 			{
-				if (TE.on.reader)
+				if ( TE.on.reader )
 				{
-					$.when(TE.status.enhancePage).done($.proxy(function ()
-					{
-						$("#te_readerPagination").after("<h1 style='display:inline;'>Jump to page: </h1><select class='ui compact search dropdown' id='te_pageJumper'></select><br />");
-						for (i = 1; i <= TE.book.totalPages; i++)
-						{
-							$("#te_pageJumper").append("<option value='" + i + "'>" + i + "</option>");
-						}
-						$("#te_pageJumper").val(TE.book.currentPage);
+					$.when( TE.status.enhancePage ).done( $.proxy( function ()
+														  {
+															  $( "#te_readerPagination" ).after( "<h1 style='display:inline;'>Jump to page: </h1><select class='ui compact search dropdown' id='te_pageJumper'></select><br />" );
+															  for (i = 1 ; i <= TE.book.totalPages ; i++)
+															  {
+																  $( "#te_pageJumper" ).append( "<option value='" + i + "'>" + i + "</option>" );
+															  }
+															  $( "#te_pageJumper" ).val( TE.book.currentPage );
 
-						$("#te_pageJumper").change($.proxy(function ()
-						{
-							// Seamless Viewing Compatibility
-							if (TE.User.seamlessViewing.enable)
-							{
-								var pageNumber = parseInt($("#te_pageJumper").val());
+															  $( "#te_pageJumper" ).change( $.proxy( function ()
+																							 {
+																								 // Seamless Viewing Compatibility
+																								 if ( TE.User.seamlessViewing.enable )
+																								 {
+																									 var pageNumber = parseInt( $( "#te_pageJumper" ).val() );
 
-								$.when(TE.fn.prefetch.init(pageNumber)).then(function ()
-								{
-									TE.Enhancements.seamlessViewing.fn.changePage(pageNumber);
-								});
+																									 $.when( TE.fn.prefetch.init( pageNumber ) ).then( function ()
+																																			 {
+																																				 TE.Enhancements.seamlessViewing.fn.changePage( pageNumber );
+																																			 } );
 
-							}
-							// Vanilla Tsumino
-							else
-							{
-								global.location.href = TE.site.reader.url + TE.book.id + "/" + pageNumber;
-							}
-						}, this));
-						$("#te_pageJumper").dropdown();
-					}, this));
+																								 }
+																								 // Vanilla Tsumino
+																								 else
+																								 {
+																									 w.location.href = TE.site.reader.url + TE.book.id + "/" + pageNumber;
+																								 }
+																							 }, this ) );
+															  $( "#te_pageJumper" ).dropdown();
+														  }, this ) );
 				}
 			}
 		};
@@ -1916,15 +1918,15 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		    {
-			    type        : "enable",
-			    name        : false,
-			    description : false,
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "enable",
+			    name         : false,
+			    description  : false,
+			    defaultValue : false,
+			    arguments    : false,
 		    };
-		options.push(new TE.Enhancement.option.main(opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments));
+		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
 
-		TE.Enhancements[shortName] = new TE.Enhancement.main(name, description, options, section, incompatible, main);
+		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -1934,23 +1936,23 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		 * Infinity Scrolling - Reader Enhancement
 		 *******************************************************/
 		var name         = "Infinity Scrolling",
-		    shortName    = TE.fn.camelize(name),
+		    shortName    = TE.fn.camelize( name ),
 		    description  = "Scroll down to load images.",
 		    options      = [],
 		    section      = "Reader",
-		    incompatible = ["Seamless Viewing"],
+		    incompatible = [ "Seamless Viewing" ],
 		    main         = {};
 
 		main =
 		{
-			init: function ()
+			init : function ()
 			{
-				if (TE.on.reader)
+				if ( TE.on.reader )
 				{
-					$.when(TE.status.enhancePage).done(function ()
-					{
+					$.when( TE.status.enhancePage ).done( function ()
+												   {
 
-					});
+												   } );
 				}
 			},
 
@@ -1959,13 +1961,13 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		//TE.Enhancement.option.main(type,name,description,defaultValue,arguments)
 		var opt1 =
 		    {
-			    type        : "enable",
-			    name        : false,
-			    description : false,
-			    defaultValue: false,
-			    arguments   : false,
+			    type         : "enable",
+			    name         : false,
+			    description  : false,
+			    defaultValue : false,
+			    arguments    : false,
 		    };
-		options.push(new TE.Enhancement.option.main(opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments));
+		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
 
 		//TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
@@ -1976,9 +1978,9 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 	 *************************************************************************************/
 	TE.settings =
 	{
-		render: function ()
+		render : function ()
 		{
-			if (!TE.User.readNews)
+			if ( !TE.User.readNews )
 			{
 				TE.User.readNews = {};
 			}
@@ -2001,131 +2003,131 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 			 }
 			 $("#te_settingsTop").css("margin-bottom", "2px");
 			 */
-			$("#te_config_modal").html("<div id='te_settings' style='font-size: 1.4em;'></div>");
-			$("#te_config_modal").prepend('<div class="header"><h1><span class="te_mainColor">Tsumino Enhanced</span> <span id="te_version" class="small">' + TE.version + '</span></h1></div>');
-			if (!TE.User.tsuminoEnhanced.upToDate)
+			$( "#te_config_modal" ).html( "<div id='te_settings' style='font-size: 1.4em;'></div>" );
+			$( "#te_config_modal" ).prepend( '<div class="header"><h1><span class="te_mainColor">Tsumino Enhanced</span> <span id="te_version" class="small">' + TE.version + '</span></h1></div>' );
+			if ( !TE.User.tsuminoEnhanced.upToDate )
 			{
 				var installLocation = TE.updateLocation;
-				installLocation     = installLocation.replace("/scripts/", "/install/");
+				installLocation     = installLocation.replace( "/scripts/", "/install/" );
 				installLocation     = installLocation + ".user.js";
 				//$("#te_version").append("&nbsp;&nbsp;-&nbsp;&nbsp;<a style='color:#ff0000; text-decoration:none;' href='" + installLocation + "'>Update!</a>");
-				$("#te_version").after('&nbsp;&nbsp;<div id="te_updateButton" class="ui big labeled button" tabindex="0"><div class="ui red button"><i class="upload icon"></i>Update!</div><a class="ui basic red left pointing label">' + TE.User.tsuminoEnhanced.latestVersion + '</a></div>');
+				$( "#te_version" ).after( '&nbsp;&nbsp;<div id="te_updateButton" class="ui big labeled button" tabindex="0"><div class="ui red button"><i class="upload icon"></i>Update!</div><a class="ui basic red left pointing label">' + TE.User.tsuminoEnhanced.latestVersion + '</a></div>' );
 				//$("#te_config_modal").append("<a id='te_secretUpdateLink' style='display:none;' href='" + installLocation + "'>Update!</a>")
-				$("#te_updateButton").click(function ()
-				{
-					$("body").append('<div id="te_refresh_modal" class="ui basic modal"><i class="close icon"></i><div class="header" style="font-size: 3em;"><i class="upload icon"></i> Updating Tsumino Enhanced...</div><div class="image content"><div class="image"><i class="refresh icon"></i></div><div class="description" style="font-size: 1.5em;"><p>You will be prompted to install the update in just a moment.</p><p>In order for the update to take effect, you must refresh this page after it has finished installing.</p><p>Do you wish to refresh the page now?</p></div></div><div class="actions"><button id="te_refreshPageButton" class="massive fluid green ui button">Refresh</button></div></div>');
-					$("#te_config_modal").modal('hide');
-					$("#te_refresh_modal").modal();
-					$("#te_refresh_modal").modal('show');
-					$('#te_refresh_modal').modal('refresh');
-					setTimeout(function ()
-					{
-						global.location.href = installLocation;
-					}, 5000);
-					$("#te_refreshPageButton").click(function ()
-					{
-						global.location.reload();
-					});
-				});
+				$( "#te_updateButton" ).click( function ()
+										 {
+											 $( "body" ).append( '<div id="te_refresh_modal" class="ui basic modal"><i class="close icon"></i><div class="header" style="font-size: 3em;"><i class="upload icon"></i> Updating Tsumino Enhanced...</div><div class="image content"><div class="image"><i class="refresh icon"></i></div><div class="description" style="font-size: 1.5em;"><p>You will be prompted to install the update in just a moment.</p><p>In order for the update to take effect, you must refresh this page after it has finished installing.</p><p>Do you wish to refresh the page now?</p></div></div><div class="actions"><button id="te_refreshPageButton" class="massive fluid green ui button">Refresh</button></div></div>' );
+											 $( "#te_config_modal" ).modal( 'hide' );
+											 $( "#te_refresh_modal" ).modal();
+											 $( "#te_refresh_modal" ).modal( 'show' );
+											 $( '#te_refresh_modal' ).modal( 'refresh' );
+											 setTimeout( function ()
+													   {
+														   w.location.href = installLocation;
+													   }, 5000 );
+											 $( "#te_refreshPageButton" ).click( function ()
+																		  {
+																			  w.location.reload();
+																		  } );
+										 } );
 			}
 			//$("#te_page_footer").html("<a href='http://codingtoby.com/userscripts/tsumino-enhanced/te-updates/' target='_blank'>Tsumino Enhanced</a> was written by <a href='http://www.tsumino.com/Forum/memberlist.php?mode=viewprofile&u=191' target='_blank'>Toby</a>.");
 
 			// Settings page navigation structure.
 			//$("#te_settings").prepend("<div id='te_tabContainer' class='te_configTab'><nav><ul><li id='tab_generalEnhancements'><a href='javascript:;'>General</a></li><li id='tab_browsingEnhancements'><a href='javascript:;'>Browsing</a></li><li id='tab_readerEnhancements'><a href='javascript:;'>Reader</a></li><li id='tab_teNews'><a href='javascript:;'>TE News</a></li><li id='tab_searchEnhancements'><a href='javascript:;'>Search</a></li></ul></nav></div>");
 
-			$("#te_settings").prepend('<div id="te_settings_tabs" class="ui top attached inverted large tabular menu"></div>');
-			$("#te_settings_tabs").append('<a class="item active" data-tab="generalEnhancements">General Enhancements</a>');
-			$("#te_settings_tabs").append('<a class="item" data-tab="browsingEnhancements">Browsing Enhancements</a>');
-			$("#te_settings_tabs").append('<a class="item" data-tab="readerEnhancements">Reader Enhancements</a>');
-			$("#te_settings_tabs").append('<a class="item" data-tab="teAbout">About</a>');
+			$( "#te_settings" ).prepend( '<div id="te_settings_tabs" class="ui top attached inverted large tabular menu"></div>' );
+			$( "#te_settings_tabs" ).append( '<a class="item active" data-tab="generalEnhancements">General Enhancements</a>' );
+			$( "#te_settings_tabs" ).append( '<a class="item" data-tab="browsingEnhancements">Browsing Enhancements</a>' );
+			$( "#te_settings_tabs" ).append( '<a class="item" data-tab="readerEnhancements">Reader Enhancements</a>' );
+			$( "#te_settings_tabs" ).append( '<a class="item" data-tab="teAbout">About</a>' );
 
-			$("#te_settings").append('<div id="te_settings_tab_generalEnhancements" class="ui bottom attached inverted tab segment active" data-tab="generalEnhancements"></div>');
-			$("#te_settings").append('<div id="te_settings_tab_browsingEnhancements" class="ui bottom attached inverted tab segment" data-tab="browsingEnhancements"></div>');
-			$("#te_settings").append('<div id="te_settings_tab_readerEnhancements" class="ui bottom attached inverted tab segment" data-tab="readerEnhancements"></div>');
-			$("#te_settings").append('<div id="te_settings_tab_teAbout" class="ui bottom attached tab segment inverted" data-tab="teAbout"></div>');
+			$( "#te_settings" ).append( '<div id="te_settings_tab_generalEnhancements" class="ui bottom attached inverted tab segment active" data-tab="generalEnhancements"></div>' );
+			$( "#te_settings" ).append( '<div id="te_settings_tab_browsingEnhancements" class="ui bottom attached inverted tab segment" data-tab="browsingEnhancements"></div>' );
+			$( "#te_settings" ).append( '<div id="te_settings_tab_readerEnhancements" class="ui bottom attached inverted tab segment" data-tab="readerEnhancements"></div>' );
+			$( "#te_settings" ).append( '<div id="te_settings_tab_teAbout" class="ui bottom attached tab segment inverted" data-tab="teAbout"></div>' );
 
-			$("#te_settings_tab_teAbout").append('Tsumino Enhanced was written by <a target="_blank" href="http://codingtoby.com/">Toby</a>.<br />');
-			$("#te_settings_tab_teAbout").append('<br />');
-			$("#te_settings_tab_teAbout").append('Be sure to check out the <a target="_blank" href="http://codingtoby.com/category/userscripts/tsumino-enhanced/te-updates/">Changelog</a> to see what\'s new!<br />');
-			$("#te_settings_tab_teAbout").append('<br />');
-			$("#te_settings_tab_teAbout").append('You can also fork the project on <a target="_blank" href="https://github.com/tobiaskelmandia/TsuminoEnhanced">Github</a>!<br />');
-			$("#te_settings_tab_teAbout").append('<br />');
-			$("#te_settings_tab_teAbout").append('Want to request a new feature? PM <a href="http://www.tsumino.com/Forum/ucp.php?i=pm&mode=compose&u=191" target="_blank">Toby</a> on the Tsumino Forums!<br />');
+			$( "#te_settings_tab_teAbout" ).append( 'Tsumino Enhanced was written by <a target="_blank" href="http://codingtoby.com/">Toby</a>.<br />' );
+			$( "#te_settings_tab_teAbout" ).append( '<br />' );
+			$( "#te_settings_tab_teAbout" ).append( 'Be sure to check out the <a target="_blank" href="http://codingtoby.com/category/userscripts/tsumino-enhanced/te-updates/">Changelog</a> to see what\'s new!<br />' );
+			$( "#te_settings_tab_teAbout" ).append( '<br />' );
+			$( "#te_settings_tab_teAbout" ).append( 'You can also fork the project on <a target="_blank" href="https://github.com/tobiaskelmandia/TsuminoEnhanced">Github</a>!<br />' );
+			$( "#te_settings_tab_teAbout" ).append( '<br />' );
+			$( "#te_settings_tab_teAbout" ).append( 'Want to request a new feature? PM <a href="http://www.tsumino.com/Forum/ucp.php?i=pm&mode=compose&u=191" target="_blank">Toby</a> on the Tsumino Forums!<br />' );
 
 			// Populate Sections.
 			for (var key in TE.Enhancements)
 			{
-				if (TE.Enhancements.hasOwnProperty(key))
+				if ( TE.Enhancements.hasOwnProperty( key ) )
 				{
-					var obj = TE.Enhancements[key];
+					var obj = TE.Enhancements[ key ];
 
-					if (obj["section"] != false)
+					if ( obj[ "section" ] != false )
 					{
 						// Determine which section to append to.
 						var sectionID = "";
-						if (obj["section"] == "General")
+						if ( obj[ "section" ] == "General" )
 						{
 							sectionID = "#te_settings_tab_generalEnhancements";
 						}
-						else if (obj["section"] == "Browsing")
+						else if ( obj[ "section" ] == "Browsing" )
 						{
 							sectionID = "#te_settings_tab_browsingEnhancements";
 						}
-						else if (obj["section"] == "Reader")
+						else if ( obj[ "section" ] == "Reader" )
 						{
 							sectionID = "#te_settings_tab_readerEnhancements";
 						}
 
 						// Append the Enhancement's options group to the section.
-						$(sectionID).append("<div id='" + obj["shortName"] + "_group' class='te_optionGroup'></div>");
+						$( sectionID ).append( "<div id='" + obj[ "shortName" ] + "_group' class='te_optionGroup'></div>" );
 
 						// Add the description.
-						if (obj["description"] != false)
+						if ( obj[ "description" ] != false )
 						{
-							$("#" + obj["shortName"] + "_group").append("<div class='te_optionDescription'>" + obj["description"] + "</div>");
+							$( "#" + obj[ "shortName" ] + "_group" ).append( "<div class='te_optionDescription'>" + obj[ "description" ] + "</div>" );
 						}
 
 						// Add the primary options area.
-						$("#" + obj["shortName"] + "_group").append("<div id='te_options_" + obj["shortName"] + "'></div>");
+						$( "#" + obj[ "shortName" ] + "_group" ).append( "<div id='te_options_" + obj[ "shortName" ] + "'></div>" );
 
 						var noEnable = true;
-						if (obj["options"] != false)
+						if ( obj[ "options" ] != false )
 						{
 							// Display all options.
-							for (var oKey in obj["options"])
+							for (var oKey in obj[ "options" ])
 							{
-								if (obj["options"].hasOwnProperty(oKey))
+								if ( obj[ "options" ].hasOwnProperty( oKey ) )
 								{
-									var option = obj["options"][oKey];
+									var option = obj[ "options" ][ oKey ];
 									// Write the Enable option.
-									if (option["type"] == "enable")
+									if ( option[ "type" ] == "enable" )
 									{
 										//$("#" + obj["shortName"] + "_group").prepend("<input class='te_switch te_switch-style' /><label for='tes_" + obj["shortName"] + "_enable'></label></div><div class='te_fauxCell'><a href='javascript:;' class='te_enhancementName' id='enhancement_header_" + obj["shortName"] + "'>" + obj["name"] + "</a></div></div>");
-										$("#" + obj["shortName"] + "_group").prepend('<div class="ui toggle checkbox"><input id="tes_' + obj["shortName"] + '_enable" name="tes_' + obj["shortName"] + '_enable" type="checkbox"><label for="tes_' + obj["shortName"] + '_enable"><a class="ui large blue label">' + obj["name"] + '</a></label></div>');
+										$( "#" + obj[ "shortName" ] + "_group" ).prepend( '<div class="ui toggle checkbox"><input id="tes_' + obj[ "shortName" ] + '_enable" name="tes_' + obj[ "shortName" ] + '_enable" type="checkbox"><label for="tes_' + obj[ "shortName" ] + '_enable"><a class="ui large blue label">' + obj[ "name" ] + '</a></label></div>' );
 
-										$("#enhancement_header_" + obj["shortName"]).click({obj: obj}, function (event)
+										$( "#enhancement_header_" + obj[ "shortName" ] ).click( {obj : obj}, function (event)
 										{
-											TE.log($("#tes_" + event.data.obj["shortName"] + "_enable"));
-											if ($("#tes_" + event.data.obj["shortName"] + "_enable").prop("checked") == true)
+											TE.log( $( "#tes_" + event.data.obj[ "shortName" ] + "_enable" ) );
+											if ( $( "#tes_" + event.data.obj[ "shortName" ] + "_enable" ).prop( "checked" ) == true )
 											{
-												$("#tes_" + event.data.obj["shortName"] + "_enable").prop("checked", false);
+												$( "#tes_" + event.data.obj[ "shortName" ] + "_enable" ).prop( "checked", false );
 											}
 											else
 											{
-												$("#tes_" + event.data.obj["shortName"] + "_enable").prop("checked", true);
+												$( "#tes_" + event.data.obj[ "shortName" ] + "_enable" ).prop( "checked", true );
 											}
-										});
+										} );
 										noEnable = false;
 									}
 									// Write Toggle Options.
-									if (option["type"] == "toggle")
+									if ( option[ "type" ] == "toggle" )
 									{
 										//$("#te_options_" + obj["shortName"]).append("<br /><div id='" + obj["shortName"] + "_optionContainer_" + option['shortName'] + "'><input id='tes_" + obj["shortName"] + "_" + option['shortName'] + "' name='tes_" + obj["shortName"] + "_" + option['shortName'] + "' type='checkbox' class='te_subOption' /><label for='tes_" + obj["shortName"] + "_" + option['shortName'] + "'><span></span>" + option['name'] + "</label></div>");
-										$("#te_options_" + obj["shortName"]).append('<br /><div class="ui toggle checkbox"><input id="tes_' + obj["shortName"] + '_' + option["shortName"] + '" name="tes_' + obj["shortName"] + '_' + option["shortName"] + '" type="checkbox" class="te_subOption" /> <label for="tes_' + obj["shortName"] + '_' + option["shortName"] + '"><a class="ui large blue label">' + option["name"] + '</a></label></div>');
+										$( "#te_options_" + obj[ "shortName" ] ).append( '<br /><div class="ui toggle checkbox"><input id="tes_' + obj[ "shortName" ] + '_' + option[ "shortName" ] + '" name="tes_' + obj[ "shortName" ] + '_' + option[ "shortName" ] + '" type="checkbox" class="te_subOption" /> <label for="tes_' + obj[ "shortName" ] + '_' + option[ "shortName" ] + '"><a class="ui large blue label">' + option[ "name" ] + '</a></label></div>' );
 										// Write the option's description.
-										if (option["description"] != false)
+										if ( option[ "description" ] != false )
 										{
-											$("#" + obj["shortName"] + "_optionContainer_" + option['shortName']).append("<br />" + option["description"]);
+											$( "#" + obj[ "shortName" ] + "_optionContainer_" + option[ 'shortName' ] ).append( "<br />" + option[ "description" ] );
 										}
 									}
 								}
@@ -2133,21 +2135,21 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 						}
 
 						// If there was no "enable" option found:
-						if (noEnable)
+						if ( noEnable )
 						{
 							// Display the title without a switch.
-							$("#" + obj["shortName"] + "_group").prepend("<h2 class='te_enhancementName'>" + obj["name"] + "</h2>");
+							$( "#" + obj[ "shortName" ] + "_group" ).prepend( "<h2 class='te_enhancementName'>" + obj[ "name" ] + "</h2>" );
 
 							// Apply user settings.
-							if (typeof TE.User[obj["shortName"]] !== "undefined")
+							if ( typeof TE.User[ obj[ "shortName" ] ] !== "undefined" )
 							{
-								for (var oKey in obj["options"])
+								for (var oKey in obj[ "options" ])
 								{
-									var option = obj["options"][oKey];
-									if (option["type"] == "toggle")
+									var option = obj[ "options" ][ oKey ];
+									if ( option[ "type" ] == "toggle" )
 									{
-										$("#tes_" + obj["shortName"] + "_" + option['shortName'])
-											.prop("checked", TE.User[obj["shortName"]][option['shortName']]);
+										$( "#tes_" + obj[ "shortName" ] + "_" + option[ 'shortName' ] )
+											.prop( "checked", TE.User[ obj[ "shortName" ] ][ option[ 'shortName' ] ] );
 									}
 								}
 							}
@@ -2155,48 +2157,48 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 						else
 						{
 							// Apply user settings.
-							if (typeof TE.User[obj["shortName"]] !== "undefined")
+							if ( typeof TE.User[ obj[ "shortName" ] ] !== "undefined" )
 							{
-								for (var oKey in obj["options"])
+								for (var oKey in obj[ "options" ])
 								{
-									var option = obj["options"][oKey];
-									if (TE.User[obj["shortName"]]["enable"] == true)
+									var option = obj[ "options" ][ oKey ];
+									if ( TE.User[ obj[ "shortName" ] ][ "enable" ] == true )
 									{
-										if (option["type"] == "enable")
+										if ( option[ "type" ] == "enable" )
 										{
-											$("#tes_" + obj["shortName"] + "_" + option['shortName']).prop("checked", true);
+											$( "#tes_" + obj[ "shortName" ] + "_" + option[ 'shortName' ] ).prop( "checked", true );
 										}
 										else
 										{
-											if (option["type"] == "toggle")
+											if ( option[ "type" ] == "toggle" )
 											{
-												$("#tes_" + obj["shortName"] + "_" + option['shortName'])
-													.prop("checked", TE.User[obj["shortName"]][option['shortName']]);
+												$( "#tes_" + obj[ "shortName" ] + "_" + option[ 'shortName' ] )
+													.prop( "checked", TE.User[ obj[ "shortName" ] ][ option[ 'shortName' ] ] );
 											}
 										}
 									}
 									else
 									{
-										if (option["type"] != "enable")
+										if ( option[ "type" ] != "enable" )
 										{
-											$("#tes_" + obj["shortName"] + "_" + option['shortName']).prop("checked", false);
-											$("#tes_" + obj["shortName"] + "_" + option['shortName']).prop("disabled", "disabled");
+											$( "#tes_" + obj[ "shortName" ] + "_" + option[ 'shortName' ] ).prop( "checked", false );
+											$( "#tes_" + obj[ "shortName" ] + "_" + option[ 'shortName' ] ).prop( "disabled", "disabled" );
 										}
 									}
 								}
 							}
 							else
 							{
-								for (var oKey in obj["options"])
+								for (var oKey in obj[ "options" ])
 								{
-									if (obj["options"].hasOwnProperty(oKey))
+									if ( obj[ "options" ].hasOwnProperty( oKey ) )
 									{
-										var option = obj["options"][oKey];
-										if (option["type"] != "enable")
+										var option = obj[ "options" ][ oKey ];
+										if ( option[ "type" ] != "enable" )
 										{
-											if (!$("#tes_" + obj["shortName"] + "_" + option['shortName']).prop("disabled"))
+											if ( !$( "#tes_" + obj[ "shortName" ] + "_" + option[ 'shortName' ] ).prop( "disabled" ) )
 											{
-												$("#tes_" + obj["shortName"] + "_" + option['shortName']).prop("disabled", "disabled");
+												$( "#tes_" + obj[ "shortName" ] + "_" + option[ 'shortName' ] ).prop( "disabled", "disabled" );
 											}
 										}
 									}
@@ -2204,19 +2206,19 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 							}
 
 							// Apply default values to options when enabling an Enhancement.
-							$("#tes_" + obj["shortName"] + "_enable").change({obj: obj}, function (event)
+							$( "#tes_" + obj[ "shortName" ] + "_enable" ).change( {obj : obj}, function (event)
 							{
-								if ($("#tes_" + event.data.obj["shortName"] + "_enable").prop("checked") == true)
+								if ( $( "#tes_" + event.data.obj[ "shortName" ] + "_enable" ).prop( "checked" ) == true )
 								{
-									for (var oKey in event.data.obj["options"])
+									for (var oKey in event.data.obj[ "options" ])
 									{
-										if (event.data.obj["options"].hasOwnProperty(oKey))
+										if ( event.data.obj[ "options" ].hasOwnProperty( oKey ) )
 										{
-											var option = event.data.obj["options"][oKey];
-											if (option["type"] == "toggle")
+											var option = event.data.obj[ "options" ][ oKey ];
+											if ( option[ "type" ] == "toggle" )
 											{
-												$("#tes_" + event.data.obj["shortName"] + "_" + option['shortName']).removeProp("disabled");
-												$("#tes_" + event.data.obj["shortName"] + "_" + option['shortName']).prop("checked", option['defaultValue']);
+												$( "#tes_" + event.data.obj[ "shortName" ] + "_" + option[ 'shortName' ] ).removeProp( "disabled" );
+												$( "#tes_" + event.data.obj[ "shortName" ] + "_" + option[ 'shortName' ] ).prop( "checked", option[ 'defaultValue' ] );
 											}
 										}
 									}
@@ -2224,33 +2226,33 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 								// Disable Enhancement options unless the enhancement is enabled.
 								else
 								{
-									for (var oKey in event.data.obj["options"])
+									for (var oKey in event.data.obj[ "options" ])
 									{
-										if (event.data.obj["options"].hasOwnProperty(oKey))
+										if ( event.data.obj[ "options" ].hasOwnProperty( oKey ) )
 										{
-											var option = event.data.obj["options"][oKey];
-											if (option["type"] != "enable")
+											var option = event.data.obj[ "options" ][ oKey ];
+											if ( option[ "type" ] != "enable" )
 											{
-												if (option["type"] == "toggle")
+												if ( option[ "type" ] == "toggle" )
 												{
-													$("#tes_" + event.data.obj["shortName"] + "_" + option['shortName']).prop("checked", false);
+													$( "#tes_" + event.data.obj[ "shortName" ] + "_" + option[ 'shortName' ] ).prop( "checked", false );
 												}
-												$("#tes_" + event.data.obj["shortName"] + "_" + option['shortName']).prop("disabled", "disabled");
+												$( "#tes_" + event.data.obj[ "shortName" ] + "_" + option[ 'shortName' ] ).prop( "disabled", "disabled" );
 											}
 										}
 									}
 								}
-							});
+							} );
 						}
 						// List any incompatibilities.
-						if (obj["incompatible"] != false)
+						if ( obj[ "incompatible" ] != false )
 						{
-							$("#" + obj["shortName"] + "_group").append("<br /><div class='te_en_incompatible' id='" + obj["shortName"] + "_incompatible'>This Enhancement is incompatible with: </div>");
+							$( "#" + obj[ "shortName" ] + "_group" ).append( "<br /><div class='te_en_incompatible' id='" + obj[ "shortName" ] + "_incompatible'>This Enhancement is incompatible with: </div>" );
 							var punct = "";
-							for (i = 0; i < obj["incompatible"].length; i++)
+							for (i = 0 ; i < obj[ "incompatible" ].length ; i++)
 							{
-								$("#" + obj["shortName"] + "_incompatible").append("<span class='te_enhancementColor'>" + obj["incompatible"][i] + "</span>");
-								if (i + 1 == obj["incompatible"].length)
+								$( "#" + obj[ "shortName" ] + "_incompatible" ).append( "<span class='te_enhancementColor'>" + obj[ "incompatible" ][ i ] + "</span>" );
+								if ( i + 1 == obj[ "incompatible" ].length )
 								{
 									punct = ".";
 								}
@@ -2258,13 +2260,13 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 								{
 									punct = ", ";
 								}
-								$("#" + obj["shortName"] + "_incompatible").append(punct);
-								$("#" + obj["shortName"] + "_group").append("<br /><br />");
+								$( "#" + obj[ "shortName" ] + "_incompatible" ).append( punct );
+								$( "#" + obj[ "shortName" ] + "_group" ).append( "<br /><br />" );
 							}
 						}
 						else
 						{
-							$("#" + obj["shortName"] + "_group").append("<br /><br />");
+							$( "#" + obj[ "shortName" ] + "_group" ).append( "<br /><br />" );
 						}
 					}
 				}
@@ -2275,23 +2277,23 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 			//$("#te_settings").append("<div id='forumEnhancements' class='te_options'></div>");
 
 			// Create Buttons
-			$("#te_settings").append("<br /><br /><div id='te_buttonContainer'></div><br /><br />");
-			$("#te_buttonContainer").append("<a id='te_saveAndCloseButton' class='book-read-button'>Save &amp; Reload</a>&nbsp;&nbsp;");
-			$("#te_saveAndCloseButton").click($.proxy(function ()
-			{
-				this.save();
-				location.reload();
-			}, this));
-			$("#te_buttonContainer").append("<a id='te_applySettingsButton' class='book-read-button'>Apply</a>&nbsp;&nbsp;");
-			$("#te_applySettingsButton").click($.proxy(function ()
-			{
-				this.save();
-			}, this));
-			$("#te_buttonContainer").append("<a id='te_cancelSettingsButton' class='book-read-button'>Cancel</a>");
-			$("#te_cancelSettingsButton").click($.proxy(function ()
-			{
-				this.remove();
-			}, this));
+			$( "#te_settings" ).append( "<br /><br /><div id='te_buttonContainer'></div><br /><br />" );
+			$( "#te_buttonContainer" ).append( "<a id='te_saveAndCloseButton' class='book-read-button'>Save &amp; Reload</a>&nbsp;&nbsp;" );
+			$( "#te_saveAndCloseButton" ).click( $.proxy( function ()
+												 {
+													 this.save();
+													 location.reload();
+												 }, this ) );
+			$( "#te_buttonContainer" ).append( "<a id='te_applySettingsButton' class='book-read-button'>Apply</a>&nbsp;&nbsp;" );
+			$( "#te_applySettingsButton" ).click( $.proxy( function ()
+												  {
+													  this.save();
+												  }, this ) );
+			$( "#te_buttonContainer" ).append( "<a id='te_cancelSettingsButton' class='book-read-button'>Cancel</a>" );
+			$( "#te_cancelSettingsButton" ).click( $.proxy( function ()
+												   {
+													   this.remove();
+												   }, this ) );
 
 			// Activate settings page navigation.
 			/*
@@ -2336,46 +2338,46 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 			 }
 			 })();
 			 */
-			$('.menu .item').tab();
-			$('#te_config_modal').modal();
-			$('.menu .item').click(function ()
-			{
-				$('#te_config_modal').modal('refresh');
-			});
+			$( '.menu .item' ).tab();
+			$( '#te_config_modal' ).modal();
+			$( '.menu .item' ).click( function ()
+								 {
+									 $( '#te_config_modal' ).modal( 'refresh' );
+								 } );
 		},
-		remove: function ()
+		remove : function ()
 		{
-			$('#te_config_modal').modal('hide');
+			$( '#te_config_modal' ).modal( 'hide' );
 		},
-		save  : function ()
+		save   : function ()
 		{
 			// Find all enhancement groups within the main settings area.
-			var enhancementGroups   = $("#te_settings").find("div[id*='_group']"),
+			var enhancementGroups   = $( "#te_settings" ).find( "div[id*='_group']" ),
 			    enhancementSettings = {};
 
 			// Loop through the groups to get all the individual settings.
-			for (i = 0; i < enhancementGroups.length; i++)
+			for (i = 0 ; i < enhancementGroups.length ; i++)
 			{
-				var thisEnhancement              = enhancementGroups[i];
-				var thisEnhName                  = $(thisEnhancement).attr("id");
-				thisEnhName                      = thisEnhName.replace("_group", "");
-				var thisEnhSettings              = $(thisEnhancement).find("*[id*='tes_" + thisEnhName + "_']");
-				enhancementSettings[thisEnhName] = {};
-				for (es = 0; es < thisEnhSettings.length; es++)
+				var thisEnhancement                = enhancementGroups[ i ];
+				var thisEnhName                    = $( thisEnhancement ).attr( "id" );
+				thisEnhName                        = thisEnhName.replace( "_group", "" );
+				var thisEnhSettings                = $( thisEnhancement ).find( "*[id*='tes_" + thisEnhName + "_']" );
+				enhancementSettings[ thisEnhName ] = {};
+				for (es = 0 ; es < thisEnhSettings.length ; es++)
 				{
-					var thisEnSetting     = $(thisEnhSettings)[es],
-					    thisEnSettingName = $(thisEnSetting).attr("id");
-					thisEnSettingName     = thisEnSettingName.replace("tes_" + thisEnhName + "_", "");
-					if ($(thisEnSetting).prop("tagName") == "INPUT")
+					var thisEnSetting     = $( thisEnhSettings )[ es ],
+					    thisEnSettingName = $( thisEnSetting ).attr( "id" );
+					thisEnSettingName     = thisEnSettingName.replace( "tes_" + thisEnhName + "_", "" );
+					if ( $( thisEnSetting ).prop( "tagName" ) == "INPUT" )
 					{
-						if ($(thisEnSetting).prop("type") == "checkbox")
+						if ( $( thisEnSetting ).prop( "type" ) == "checkbox" )
 						{
-							enhancementSettings[thisEnhName][thisEnSettingName] = $(thisEnSetting).prop("checked");
+							enhancementSettings[ thisEnhName ][ thisEnSettingName ] = $( thisEnSetting ).prop( "checked" );
 						}
 					}
 				}
 			}
-			$.extend(true, TE.User, enhancementSettings);
+			$.extend( true, TE.User, enhancementSettings );
 			TE.updateSettings();
 		},
 	};
@@ -2390,9 +2392,9 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 
 		// Output initializating messages to the console.
 		var debugState = "Disabled";
-		if (TE.config.debug)
+		if ( TE.config.debug )
 		{
-			if (TE.config.verboseDebug)
+			if ( TE.config.verboseDebug )
 			{
 				debugState = "Verbose";
 			}
@@ -2408,25 +2410,25 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		    autoOn              = [];
 		for (var key in TE.User)
 		{
-			if (TE.User.hasOwnProperty(key))
+			if ( TE.User.hasOwnProperty( key ) )
 			{
-				var obj = TE.User[key];
+				var obj = TE.User[ key ];
 				for (var prop in obj)
 				{
-					if (obj.hasOwnProperty(prop))
+					if ( obj.hasOwnProperty( prop ) )
 					{
-						if ((prop == "enable") && (obj[prop] == true))
+						if ( (prop == "enable") && (obj[ prop ] == true) )
 						{
 							// Add enabled Enhancements to the appropriate array.
-							if (typeof TE.Enhancements[key] !== "undefined")
+							if ( typeof TE.Enhancements[ key ] !== "undefined" )
 							{
-								enabledEnhancements.push(key);
-								eeLongNames = eeLongNames + "[X] " + TE.Enhancements[key].name + "\r\n";
+								enabledEnhancements.push( key );
+								eeLongNames = eeLongNames + "[X] " + TE.Enhancements[ key ].name + "\r\n";
 							}
 						}
-						else if ((prop == "enable") && (obj[prop] == false))
+						else if ( (prop == "enable") && (obj[ prop ] == false) )
 						{
-							eeLongNames = eeLongNames + "[ ] " + TE.Enhancements[key].name + "\r\n";
+							eeLongNames = eeLongNames + "[ ] " + TE.Enhancements[ key ].name + "\r\n";
 						}
 					}
 				}
@@ -2435,26 +2437,26 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 		// Check for automatic enhancements.
 		for (var key in TE.Enhancements)
 		{
-			if (TE.Enhancements.hasOwnProperty(key))
+			if ( TE.Enhancements.hasOwnProperty( key ) )
 			{
-				var obj = TE.Enhancements[key];
-				autoOn.push(obj['shortName']);
+				var obj = TE.Enhancements[ key ];
+				autoOn.push( obj[ 'shortName' ] );
 				for (var prop in obj)
 				{
-					if (obj.hasOwnProperty(prop))
+					if ( obj.hasOwnProperty( prop ) )
 					{
-						if (prop == "options")
+						if ( prop == "options" )
 						{
-							for (var optNum in obj['options'])
+							for (var optNum in obj[ 'options' ])
 							{
-								for (var opt in obj['options'][optNum])
+								for (var opt in obj[ 'options' ][ optNum ])
 								{
-									if ((opt == "type") && (obj['options'][optNum][opt] == "enable"))
+									if ( (opt == "type") && (obj[ 'options' ][ optNum ][ opt ] == "enable") )
 									{
-										var thisIndex = autoOn.indexOf(obj['shortName']);
-										if (thisIndex > -1)
+										var thisIndex = autoOn.indexOf( obj[ 'shortName' ] );
+										if ( thisIndex > -1 )
 										{
-											autoOn.splice(thisIndex, 1);
+											autoOn.splice( thisIndex, 1 );
 										}
 									}
 								}
@@ -2465,67 +2467,68 @@ $.ajaxTransport("+binary", function (options, originalOptions, jqXHR)
 			}
 		}
 		// Enable automatic enhancements.
-		for (i = 0; i < autoOn.length; i++)
+		for (i = 0 ; i < autoOn.length ; i++)
 		{
-			enabledEnhancements.push(autoOn[i]);
-			eeLongNames = eeLongNames + "[X] " + TE.Enhancements[autoOn[i]].name + "\r\n";
+			enabledEnhancements.push( autoOn[ i ] );
+			eeLongNames = eeLongNames + "[X] " + TE.Enhancements[ autoOn[ i ] ].name + "\r\n";
 		}
 
 		// Output initialization messages.
-		TE.log("gname", TE.name, "Version:	" + TE.version, "Latest:		" + TE.User.tsuminoEnhanced.latestVersion, "Debugging:	" + debugState, "Enhancements:", eeLongNames);
-		TE.vbLog("gname", TE.name, "Current Settings:", TE.User);
-		TE.vbLog("gname", "TE.site", TE.site);
-		TE.vbLog("gname", "TE.on", TE.on);
-		TE.vbLog("gname", "TE.Enhancements", TE.Enhancements);
+		TE.log( "gname", TE.name, "Version:	" + TE.version, "Latest:		" + TE.User.tsuminoEnhanced.latestVersion, "Debugging:	" + debugState, "Enhancements:", eeLongNames );
+		TE.vbLog( "gname", TE.name, "Current Settings:", TE.User );
+		TE.vbLog( "gname", "TE.site", TE.site );
+		TE.vbLog( "gname", "TE.on", TE.on );
+		TE.vbLog( "gname", "TE.Enhancements", TE.Enhancements );
 
 		// Set up TE.status.enhancePage for Enhancements that require it to run.
 		TE.status.enhancePage = TE.enhancePage();
 
 		// Initialize all enabled Enhancements.
-		for (i = 0; i < enabledEnhancements.length; i++)
+		for (i = 0 ; i < enabledEnhancements.length ; i++)
 		{
-			if (typeof TE.Enhancements[enabledEnhancements[i]] !== "undefined")
+			if ( typeof TE.Enhancements[ enabledEnhancements[ i ] ] !== "undefined" )
 			{
-				TE.Enhancements[enabledEnhancements[i]].fn.init();
+				TE.Enhancements[ enabledEnhancements[ i ] ].fn.init();
 			}
 		}
 	};
 
 	// Export Tsumino Enhanced to the window.
-	if (global.TE)
+	if ( w.TE )
 	{
-		throw new Error(TE.name + " has already been defined");
+		throw new Error( TE.name + " has already been defined" );
 	}
 	else
 	{
-		global.TE = TE;
+		w.TE = TE;
 	}
 
-})(typeof window === "undefined" ? this : window);
+})( typeof window === "undefined" ? this : window, this.jQuery );
 
 // Initialize Tsumino Enhanced.
-if (TE.on.tsumino)
+if ( TE.on.tsumino )
 {
 	TE.init();
 }
 // Check for updates. (Iframe)
-else if ((window.self !== window.top) && (window.location.href == TE.updateLocation))
+else if ( (window.self !== window.top) && (window.location.href == TE.updateLocation) )
 {
-	$(document).ready(function ()
-	{
-		TE.log("gname", TE.name, "Checking for updates...");
-		TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt(new Date().getTime());
-		var latestVersion                       = $("code")[0];
-		latestVersion                           = $(latestVersion).text();
-		TE.User.tsuminoEnhanced.latestVersion   = latestVersion;
-		TE.updateSettings();
-		if (TE.User.tsuminoEnhanced.latestVersion != TE.version)
+	$( document ).ready(
+		function ()
 		{
-			TE.log("gname", TE.name, "An update is available!");
-		}
-		else
-		{
-			TE.log("gname", TE.name, TE.name + " is up to date!");
-		}
-	});
+			TE.log( "gname", TE.name, "Checking for updates..." );
+			TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt( new Date().getTime() );
+			var latestVersion                       = $( "code" )[ 0 ];
+			latestVersion                           = $( latestVersion ).text();
+			TE.User.tsuminoEnhanced.latestVersion   = latestVersion;
+			TE.updateSettings();
+			if ( TE.User.tsuminoEnhanced.latestVersion != TE.version )
+			{
+				TE.log( "gname", TE.name, "An update is available!" );
+			}
+			else
+			{
+				TE.log( "gname", TE.name, TE.name + " is up to date!" );
+			}
+		} );
 }
