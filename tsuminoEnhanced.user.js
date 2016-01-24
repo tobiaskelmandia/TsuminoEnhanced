@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.3
+// @version				2.0.3.4
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				http://www.tsumino.com/*
@@ -546,7 +546,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				this.updateSettings();
 			}
 
-			if ( now >= (parseInt( TE.User.tsuminoEnhanced.lastUpdateCheck ) + oneHour) )
+			if ( now >= (parseInt( TE.User.tsuminoEnhanced.lastUpdateCheck ) + oneMinute) )
 			{
 				$( document ).ready( function ()
 				{
@@ -2326,7 +2326,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				$( "#te_updateButton" ).click( function ()
 				{
 					$( "body" ).append( `
-					<div id="te_refresh_modal" class="ui basic modal"><i class="remove icon"></i>
+					<div id="te_refresh_modal" class="ui basic modal">
 					<div class="header" style="font-size: 3em;"><i class="upload icon"></i> Updating Tsumino Enhanced...</div>
 					<div class="image content"><div class="image"><i class="refresh icon"></i></div>
 					<div class="description" style="font-size: 1.5em;">
@@ -2335,8 +2335,8 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 						<p>Do you wish to refresh the page now?</p>
 						</div></div>
 					<div class="actions">
-						<button id="te_refreshPageButton" class="massive fluid green ui button">Refresh</button>
-					</div></div>` );
+						<button id="te_refreshPageButton" class="massive fluid gray ui button disabled">Refresh</button>
+					</div></span>` );
 					$( "#te_config_modal" ).modal( 'hide' );
 					$( "#te_refresh_modal" ).modal();
 					$( "#te_refresh_modal" ).modal( 'show' );
@@ -2344,10 +2344,16 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					setTimeout( function ()
 					{
 						w.location.href = installLocation;
+						$("#te_refreshPageButton").removeClass("disabled");
+						$("#te_refreshPageButton").removeClass("gray");
+						$("#te_refreshPageButton").addClass("green");
 					}, 5000 );
 					$( "#te_refreshPageButton" ).click( function ()
 					{
-						w.location.reload();
+						if(!$("#te_refreshPageButton").hasClass("disabled"))
+						{
+							w.location.reload();
+						}
 					} );
 				} );
 
