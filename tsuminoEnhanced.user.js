@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.1
+// @version				2.0.3.2
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				http://www.tsumino.com/*
@@ -124,12 +124,22 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 
 		// Define prefixes for all major site pages.
 	TE.site = {
-		account   : {prefix : "/Account/Home"}, auth : {prefix : "/Read/Auth/"}, baseURL : TE.myLocation.split( ".com" )[ 0 ] + ".com",
-		book      : {prefix : "/Book/Info/"}, browse : {prefix : "/Browse/Index/"}, browseTags : {prefix : "/Browse/Tags"},
-		favorites : {prefix : "/Browse/Favorites"}, error : {prefix : "/Error/Index/"}, image : {prefix : "/Image/Object/?data="},
-		login     : {prefix : "/Account/Login"}, manageTags : {prefix : "/Account/ManageTags"}, query : {prefix : "/Browse/Query"},
-		reader    : {prefix : "/Read/View/"}, search : {prefix : "/Search"}, forum : {prefix : "/Forum"}
+		account    : {prefix : "/Account/Home", regex : "(\/Account\/Home*)"},
+		auth       : {prefix : "/Read/Auth/", regex : "(\/Read\/Auth\/[\\s\\S]*)"},
+		baseURL    : {root : TE.myLocation.split( ".com" )[ 0 ] + ".com"},
+		book       : {prefix : "/Book/Info/", regex : "(\/Book\/Info\/[\\s\\S]*)"},
+		browse     : {prefix : "/Browse/Index/", regex : "(\/Browse\/[\\s\\S]*)||(\/*)"},
+		error      : {prefix : "/Error/Index/", regex : "(\/Error\/Index\/[\\s\\S]*)"},
+		image      : {prefix : "/Image/Object/?data=", regex : "(\/Image\/Object\/\\?data=[\\s\\S]*)"},
+		login      : {prefix : "/Account/Login", regex : "(\/Account\/Login[\\s\\S]*)"},
+		manageTags : {prefix : "/Account/ManageTags", regex : "(\/Account\/ManageTags[\\s\\S]*)"},
+		reader     : {prefix : "/Read/View/", regex : "(\/Read\/View\/[\\s\\S]*)"},
+		search     : {prefix : "/Search", regex : "(\/Search[\\s\\S]*)"},
+		forum      : {prefix : "/Forum", regex : "(\/Forum[\\s\\S]*)"}
 	};
+
+	var temp              = TE.site.baseURL.root;
+	TE.site.baseURL.regex = temp.replace( /([.*+?\^=!:${}()\|\[\]\/\\])/g, "\\$1" );
 
 	// Location Checking object.
 	TE.on = {};
@@ -140,40 +150,35 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		if ( TE.site.hasOwnProperty( key ) )
 		{
 			var obj = TE.site[ key ];
-			for (var prop in obj)
+			if ( obj.hasOwnProperty( "prefix" ) )
 			{
-				if ( obj.hasOwnProperty( prop ) )
-				{
-					// Create Full URLs.
-					obj[ "url" ] = TE.site.baseURL + obj[ prop ];
+				// Create Full URLs.
+				obj[ "url" ] = TE.site.baseURL.root + obj[ "prefix" ];
 
-					// Perform location checking.
-					if ( obj[ "prefix" ] )
+				// Perform location checking.
+				if ( obj[ "prefix" ] )
+				{
+					if ( RegExp( "^(" + TE.site.baseURL.regex + ")" + obj[ "regex" ] + "$" ).test( TE.myLocation ) )
 					{
-						TE.on[ key ] = !!RegExp( TE.site.baseURL + obj[ "prefix" ] + "*" ).exec( TE.myLocation );
+						TE.on[ key ] = true;
+					}
+					else
+					{
+						TE.on[ key ] = false;
 					}
 				}
 			}
 		}
 	}
-	// Location Checking Exceptions
-	// User should be counted as browsing if:
-	// * On the homepage.
-	// * Using sorting on the homepage.
-	// * Looking at search results
-	var onHome = false;
-	if ( (TE.site.baseURL == TE.myLocation) || (TE.site.baseURL + "/" == TE.myLocation) || (RegExp( TE.site.baseURL
-																									+ "/\\?sort=*" ).exec( TE.myLocation )) )
-	{
-		onHome = true;
-	}
-	if ( (onHome) || (TE.on.query) || (TE.on.favorites) )
-	{
-		TE.on.browse = true;
-	}
 
-	TE.on.tsumino = !!RegExp( "tsumino.com*" ).exec( TE.myLocation );
-
+	if ( RegExp( "^(" + TE.site.baseURL.regex + ")([\\s\\S]*)$").test( TE.myLocation ) )
+	{
+		TE.on[ "tsumino" ] = true;
+	}
+	else
+	{
+		TE.on[ "tsumino" ] = false;
+	}
 
 	// Prepare prefetch.
 	TE.status.prefetch = {};
@@ -234,7 +239,8 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					console.log();
 				}
 			}
-		}, vbLog           : function ()
+		},
+		vbLog           : function ()
 		{
 			if ( TE.config.verboseDebug )
 			{
@@ -243,17 +249,20 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					this.log.apply( this.log, arguments );
 				}
 			}
-		}, errorMsg        : function (code, situation, error)
+		},
+		errorMsg        : function (code, situation, error)
 		{
 			this.log( "gname", TE.name, "An error was detected while:", situation, "Error Code: " + code, error );
-		}, replaceAll      : function (str, find, replace)
+		},
+		replaceAll      : function (str, find, replace)
 		{
 			// Escape regex.
 			find = find.replace( /([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1" );
 			return str.replace( new RegExp( find, 'g' ), replace );
-		}, load            : function (pageNumber, imageUrl)
+		},
+		load            : function (pageNumber, imageUrl)
 		{
-			var dfd = jQuery.Deferred(), authUrl = TE.site.baseURL + TE.site.auth.prefix + TE.book.id + "/" + pageNumber;
+			var dfd = jQuery.Deferred(), authUrl = TE.site.baseURL.root + TE.site.auth.prefix + TE.book.id + "/" + pageNumber;
 
 			if ( (TE.status.pagesLoaded[ pageNumber ] != "working") && (TE.status.pagesLoaded[ pageNumber ] != "done") )
 			{
@@ -264,10 +273,10 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				// Make an ajax request expecting a binary (arraybuffer) datatype.
 				var loadImage = $.ajax( {
 					method           : "GET",
-					url : imageUrl,
-					dataType : "binary",
-					processData : false,
-					responseType : 'arraybuffer',
+					url              : imageUrl,
+					dataType         : "binary",
+					processData      : false,
+					responseType     : 'arraybuffer',
 					success          : $.proxy( function (data, textStatus, request)
 					{
 						// Put the response headers into an array.
@@ -372,7 +381,8 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				dfd.resolve();
 			}
 			return dfd.promise();
-		}, prefetch        : {
+		},
+		prefetch        : {
 			init   : function (pageNumber)
 			{
 				var dfd = jQuery.Deferred();
@@ -411,23 +421,21 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					}
 				}
 				return dfd.promise();
-			}, get : function (pageNumber)
+			},
+			get : function (pageNumber)
 			{
 				TE.status.prefetch[ TE.book.id ][ pageNumber ] = "working";
 				var dfd                                        = jQuery.Deferred();
-				var url                                        = TE.site.baseURL + TE.site.reader.prefix + TE.book.id + "/" + pageNumber;
+				var url                                        = TE.site.baseURL.root + TE.site.reader.prefix + TE.book.id + "/" + pageNumber;
 				TE.vbLog( "gname", "Prefetch", url );
 				$.get( url ).done( function (data)
 				{
-					data = TE.fn.replaceAll(data,"src=","data-content=");
-					data = TE.fn.replaceAll(data,"script","div");
-					data = TE.fn.replaceAll(data,"type=","data-notype=");
-					data = TE.fn.replaceAll(data,"link","div");
+					data = TE.fn.cleanAjaxResponse(data);
 					var pfImg                                      = $( data ).find( "img.reader-img" );
 					var pfImgSrc                                   = $( pfImg ).attr( "data-content" );
 					TE.status.prefetch[ TE.book.id ][ pageNumber ] = pfImgSrc;
 					TE.vbLog( "gname", "Prefetch", "Prefetched image src for page " + pageNumber, pfImgSrc );
-					TE.vbLog( "gname", "Prefetch", data);
+					TE.vbLog( "gname", "Prefetch", data );
 					if ( TE.config.preload )
 					{
 						$.when( TE.fn.load( pageNumber, pfImgSrc ) ).then( function ()
@@ -443,7 +451,8 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				} );
 				return dfd.promise();
 			}
-		}, camelize        : function (str)
+		},
+		camelize        : function (str)
 		{
 			return str.replace( /(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index)
 			{
@@ -453,10 +462,12 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				}
 				return index == 0 ? match.toLowerCase() : match.toUpperCase();
 			} );
-		}, updateSettings  : function ()
+		},
+		updateSettings  : function ()
 		{
 			GM_setValue( "TE_settings", JSON.stringify( TE.User ) );
-		}, checkForUpdates : function ()
+		},
+		checkForUpdates : function ()
 		{
 			if ( !TE.User.tsuminoEnhanced )
 			{
@@ -507,6 +518,14 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 										+ "' id='te_updateCheckFrame' style='display:none;'></iframe>" );
 				} );
 			}
+		},
+		cleanAjaxResponse : function(data)
+		{
+			data                                           = TE.fn.replaceAll( data, "src=", "data-content=" );
+			data                                           = TE.fn.replaceAll( data, "script", "div" );
+			data                                           = TE.fn.replaceAll( data, "type=", "data-notype=" );
+			data                                           = TE.fn.replaceAll( data, "link", "div" );
+			return data;
 		}
 	};
 
@@ -998,7 +1017,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					var returnToIndexLink = sessionStorage.getItem( 'te_returnLink' );
 					if ( typeof returnToIndexLink === "object" )
 					{
-						$( "#te_returnToIndexButton" ).attr( "href", TE.site.baseURL );
+						$( "#te_returnToIndexButton" ).attr( "href", TE.site.baseURL.root );
 					}
 					else
 					{
@@ -1158,7 +1177,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 			{
 				this.run();
 			},
-			run : function ()
+			run  : function ()
 			{
 				$( "#te_siteNavbar" ).css( "position", "absolute" );
 			}
@@ -1466,13 +1485,13 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				{
 					$.ajax( {
 						method  : "GET",
-						url     : TE.site.baseURL + TE.site.browseTags.prefix,
+						url     : TE.site.baseURL.root + TE.site.browseTags.prefix,
 						data    : {infpage : pageNum},
 						success : $.proxy( function (data)
 						{
 							if ( data.trim() != "" )
 							{
-								data = TE.fn.replaceAll( data, "src", "data-src" );
+								data = TE.fn.cleanAjaxResponse(data);
 								$( data ).find( "a" ).each( function ()
 								{
 									TE.status.tagList.push( $( this ).text() );
@@ -1517,8 +1536,13 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					numTags++;
 					thisTag         = TE.User.tsuminoEnhanced.tagList[ i ];
 					thisTag         = thisTag.trim();
+					thisTag = thisTag.replace(/\w\S*/g, function(txt)
+					{
+						return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+					});
+
 					urlFormattedTag = TE.fn.replaceAll( thisTag, " ", "+" );
-					thisTagUrl      = TE.site.query.url + "?TagInclude=" + urlFormattedTag;
+					thisTagUrl      = TE.site.baseURL.root + "/Browse/Tag?name=" + urlFormattedTag;
 					idFormattedTag  = TE.fn.replaceAll( thisTag, " ", "_" );
 					thisTagFL       = thisTag.charAt( 0 );
 					tagCounter[ thisTagFL ]++;
@@ -1597,7 +1621,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 												{
 													var thisLink = $( this ).find( "a.overlay-button" ).attr( "href" );
 												}
-												thisLink = TE.site.baseURL + thisLink;
+												thisLink = TE.site.baseURL.root + thisLink;
 												if ( e.ctrlKey )
 												{
 													w.open( thisLink );
@@ -1621,7 +1645,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 												{
 													var thisLink = $( this ).find( "a.overlay-button" ).attr( "href" );
 												}
-												thisLink = TE.site.baseURL + thisLink;
+												thisLink = TE.site.baseURL.root + thisLink;
 												w.open( thisLink );
 											}
 										}
