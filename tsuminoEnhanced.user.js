@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.5d
+// @version				2.0.3.6
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?([\s\S]*))/
