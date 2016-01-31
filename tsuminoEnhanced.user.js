@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.6
+// @version				2.0.3.7
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?([\s\S]*))/
@@ -84,7 +84,8 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		name           : GM_info[ "script" ][ "name" ],
 		version        : GM_info[ "script" ][ "version" ],
 		status         : {},
-		updateLocation : "https://openuserjs.org/scripts/Tobias.Kelmandia/Tsumino_Enhanced"
+		updateLocation : "https://openuserjs.org/scripts/Tobias.Kelmandia/Tsumino_Enhanced",
+		installLocation: "https://openuserjs.org/install/Tobias.Kelmandia/Tsumino_Enhanced.user.js"
 	};
 	TE.status.pagesLoaded = {};
 
@@ -544,20 +545,13 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		},
 		checkForUpdates : function ()
 		{
-			if ( !TE.User.tsuminoEnhanced )
+			var dfd = jQuery.Deferred();
+
+			if ( typeof TE.User.tsuminoEnhanced === "undefined" )
 			{
-				TE.User.tsuminoEnhanced = {};
-				this.updateSettings();
-			}
-			if ( !TE.User.tsuminoEnhanced.lastUpdateCheck )
-			{
-				TE.User.tsuminoEnhanced.lastUpdateCheck = 0;
-				this.updateSettings();
-			}
-			if ( !TE.User.tsuminoEnhanced.latestVersion )
-			{
-				TE.User.tsuminoEnhanced.latestVersion = TE.version;
-				TE.User.tsuminoEnhanced.upToDate      = true;
+				TE.User.tsuminoEnhanced                 = {};
+				TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt( new Date().getTime() );
+				TE.User.tsuminoEnhanced.upToDate        = true;
 				this.updateSettings();
 			}
 
@@ -577,13 +571,6 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 			var oneHour   = oneMinute * 60;
 			var oneDay    = oneHour * 24;
 
-			if ( typeof TE.User.tsuminoEnhanced === "undefined" )
-			{
-				TE.User.tsuminoEnhanced                 = {};
-				TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt( new Date().getTime() );
-				TE.User.tsuminoEnhanced.upToDate        = true;
-				this.updateSettings();
-			}
 
 			if ( now >= (parseInt( TE.User.tsuminoEnhanced.lastUpdateCheck ) + oneMinute) )
 			{
@@ -602,16 +589,24 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 							TE.log( "gname", TE.name, "An update is available!" );
 							TE.User.tsuminoEnhanced.upToDate = false;
 							this.updateSettings();
+							dfd.resolve();
 						}
 						else
 						{
 							TE.log( "gname", TE.name, TE.name + " is up to date!" );
 							TE.User.tsuminoEnhanced.upToDate = true;
 							this.updateSettings();
+							dfd.resolve();
 						}
 					},this)
 				});
 			}
+			else
+			{
+				dfd.resolve();
+			}
+
+			return dfd.promise();
 		}
 	};
 
@@ -964,13 +959,6 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 
 			if ( !TE.on.forum )
 			{
-				$( "head" )
-				// Include Semantic CSS
-					.prepend( "<link rel='stylesheet' href='http://js.codingtoby.com/semantic.min.css' />" )
-					// Apply Tsumino Enhanced CSS.
-					.append( "<style>" + TE.ui.css.master + "</style>" );
-
-
 				// Prepare config modal
 				$( "body" ).append( `<div id="te_config_modal" class="ui fullscreen basic modal"></div>` );
 				TE.settings.render();
@@ -985,14 +973,6 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				// Add Tsumino Enhanced config link to navbar.
 				var navbar = $( ".tsumino-nav-left" )[ 0 ];
 				$( navbar ).attr( "id", "te_navbarMain" );
-				$( "#te_navbarMain" ).append( `
-					<li><a href='javascript:;' style='color:` + TE.ui.mainColor + ` !important;' id=`+TE.config.internalIDs.teConfigLink+`>ENHANCED</a></li>
-					` );
-				$( "#"+TE.config.internalIDs.teConfigLink ).click( function ()
-				{
-					$( "#te_config_modal" ).modal( "show" );
-					$( "#te_config_modal" ).modal( "refresh" );
-				} );
 
 				// Add ID to browse button link and swap href from # to javascript:;.
 				var browseButton = $( "#te_navbarMain" ).find( "a[href=#]" )[ 0 ];
@@ -1006,12 +986,13 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 
 				if ( !TE.User.tsuminoEnhanced.upToDate )
 				{
-					$( "#"+TE.config.internalIDs.teConfigLink ).append( "&nbsp;&nbsp;<i class='ui red icon upload'></i>" );
-					$( "#"+TE.config.internalIDs.teConfigLink ).parent().popup( {
-						title : 'An update is available!'
-					} );
 					$( w ).load( function ()
 					{
+						$( "#"+TE.config.internalIDs.teConfigLink ).append( "&nbsp;&nbsp;<i class='ui red icon upload'></i>" );
+						$(".search-wrapper input").css("margin-left","8em");
+						$( "#"+TE.config.internalIDs.teConfigLink ).parent().popup( {
+							title : 'An update is available!'
+						} );
 						$( "#"+TE.config.internalIDs.teConfigLink ).parent().css( "background-color", "#333333" );
 						setTimeout( function ()
 						{
@@ -1030,6 +1011,52 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 
 				var footer = $( "div.nav-footer" )[ 0 ];
 				$( footer ).attr( "id", "te_page_footer" );
+
+
+				var teNLC_className = TE.fn.randomString();
+				var teNLC_height = $("nav.tsumino-nav").height();
+				var teNLC_left = $("#te_navbarMain").offset().left;
+				teNLC_left += $("#te_navbarMain").width();
+				var teNLC_top = 0;
+
+				TE.ui.css.master = TE.ui.css.master + `
+					.a`+teNLC_className+`
+					{
+						float: left;
+						position: absolute;
+						top:`+teNLC_top+`px;
+						left:`+teNLC_left+`px;
+						height: `+teNLC_height+`px;
+						z-index:999;
+						border-left: 1px solid #282828;
+					}
+					.a`+TE.config.internalIDs.teConfigLink+`
+					{
+						margin:10px 5px;
+					}
+				`;
+
+				$( "body" ).append( `
+				<div class="a`+teNLC_className+`">
+					<div id="`+TE.config.internalIDs.teConfigLink+`" class="a`+TE.config.internalIDs.teConfigLink+`">
+						<a href='javascript:;' style='color:` + TE.ui.mainColor + ` !important;'>ENHANCED</a>
+					</div>
+				</div>
+					` );
+				$( "#"+TE.config.internalIDs.teConfigLink ).click( function ()
+				{
+					$( "#te_config_modal" ).modal( "show" );
+					$( "#te_config_modal" ).modal( "refresh" );
+				} );
+
+				$(".search-wrapper input").css("margin-left","6.5em");
+
+
+				$( "head" )
+				// Include Semantic CSS
+					.prepend( "<link rel='stylesheet' href='http://js.codingtoby.com/semantic.min.css' />" )
+					// Apply Tsumino Enhanced CSS.
+					.append( "<style>" + TE.ui.css.master + "</style>" );
 			}
 
 			/*************************************************************************************
@@ -2374,6 +2401,38 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		//TE.Enhancements[shortName] = new TE.Enhancement.main(name,description,options,section,incompatible,main);
 	})();
 
+	(function ()
+	{
+		/*******************************************************
+		 * Automatic Repositioning - Reader Enhancement
+		 *******************************************************/
+		var name, shortName, description, options, section, incompatible, main;
+		name         = "Automatic Update Installation";
+		shortName    = TE.fn.camelize( name );
+		description  = `If your version of Tsumino Enhanced is out of date, it will automatically attempt to update.<br />
+						You must still accept your browser's prompt to install the update.`;
+		options      = [];
+		section      = "TsuminoEnhanced";
+		incompatible = false;
+		main         = {
+			init   : function ()
+			{
+				// No INIT.
+			}
+		};
+
+		var opt1 = {
+			type         : "enable",
+			name         : false,
+			description  : false,
+			defaultValue : false,
+			arguments    : false
+		};
+		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
+		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
+	})();
+
+
 
 	/*************************************************************************************
 	 * Tsumino Enhanced Settings Page
@@ -2448,6 +2507,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 			$( "#te_settings_tabs" ).append( `<a class="item active" data-tab="generalEnhancements">General Enhancements</a>` );
 			$( "#te_settings_tabs" ).append( `<a class="item" data-tab="browsingEnhancements">Browsing Enhancements</a>` );
 			$( "#te_settings_tabs" ).append( `<a class="item" data-tab="readerEnhancements">Reader Enhancements</a>` );
+			$( "#te_settings_tabs" ).append( `<a class="item" data-tab="TE_options">TE Configuration</a>` );
 			$( "#te_settings_tabs" ).append( `<a class="item" data-tab="teAbout">About</a>` );
 
 			$( "#te_settings" ).append( `
@@ -2458,6 +2518,9 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 			` );
 			$( "#te_settings" ).append( `
 				<div id="te_settings_tab_readerEnhancements" class="ui bottom attached inverted tab segment" data-tab="readerEnhancements"></div>
+			` );
+			$( "#te_settings" ).append( `
+				<div id="te_settings_tab_TE_options" class="ui bottom attached inverted tab segment" data-tab="TE_options"></div>
 			` );
 			$( "#te_settings" ).append( `
 				<div id="te_settings_tab_teAbout" class="ui bottom attached tab segment inverted" data-tab="teAbout"></div>
@@ -2613,6 +2676,10 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 						else if ( obj[ "section" ] == "Reader" )
 						{
 							sectionID = "#te_settings_tab_readerEnhancements";
+						}
+						else if ( obj[ "section" ] == "TsuminoEnhanced" )
+						{
+							sectionID = "#te_settings_tab_TE_options";
 						}
 
 						// Append the Enhancement's options group to the section.
@@ -2906,7 +2973,30 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		// Initialization.
 	TE.init = function ()
 	{
-		TE.fn.checkForUpdates();
+		$.when(TE.fn.checkForUpdates).then(function()
+		{
+			if ( TE.User.tsuminoEnhanced.latestVersion != TE.version )
+			{
+				TE.User.tsuminoEnhanced.upToDate = false;
+				TE.fn.updateSettings();
+			}
+			else
+			{
+				TE.User.tsuminoEnhanced.upToDate = true;
+				TE.fn.updateSettings();
+			}
+
+			if(!TE.User.tsuminoEnhanced.upToDate)
+			{
+				if(TE.User.automaticUpdateInstallation)
+				{
+					if(TE.User.automaticUpdateInstallation.enable)
+					{
+						GM_openInTab(TE.installLocation);
+					}
+				}
+			}
+		});
 
 		// Output initializating messages to the console.
 		var debugState = "Disabled";
@@ -2989,10 +3079,13 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 			eeLongNames = eeLongNames + "[X] " + TE.Enhancements[ autoOn[ i ] ].name + "\r\n";
 		}
 
+
+
 		// Output initialization messages.
 		TE.log( "gname", TE.name,
 			"Version:	" + TE.version,
 			"Latest:		" + TE.User.tsuminoEnhanced.latestVersion,
+			"Up2Date:	" + TE.User.tsuminoEnhanced.upToDate,
 			"Debugging:	" + debugState,
 			"Enhancements:", eeLongNames );
 		TE.vbLog( "gname", TE.name, "Current Settings:", TE.User );
@@ -3013,13 +3106,13 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		}
 	};
 
-
+	var tempMyLocation = TE.myLocation;
 	// Initialize Tsumino Enhanced.
 	if ( !TE.on.forum )
 	{
 		TE.init();
 	}
-	else if(TE.myLocation == "http://www.tsumino.com/Forum/viewtopic.php?p=1472#p1472")
+	else if((TE.on.forum) && (tempMyLocation.indexOf("#p1472") != -1))
 	{
 		var messageID = TE.randomString();
 		$(document).ready(function()
