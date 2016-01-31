@@ -3,18 +3,11 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.5
+// @version				2.0.3.5a
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
-// @include				http://www.tsumino.com/*
-// @include				http://tsumino.com/*
-// @include				https://www.tsumino.com/*
-// @include				https://tsumino.com/*
-// @include				https://openuserjs.org/scripts/Tobias.Kelmandia/Tsumino_Enhanced
-// @exclude				http://www.tsumino.com/Forum/*
-// @exclude				http://tsumino.com/Forum/*
-// @exclude				https://www.tsumino.com/Forum/*
-// @exclude				https://tsumino.com/Forum/*
+// @include				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?([\s\S]*))/
+// @exclude				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?(Forum)(\/)?([\s\S]*))/
 // @require				https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // @require				http://js.codingtoby.com/semantic.min.js
 // @require				https://cdnjs.cloudflare.com/ajax/libs/bean/1.0.15/bean.min.js
@@ -24,6 +17,7 @@
 // @grant				GM_deleteValue
 // @grant				unsafeWindow
 // @grant				GM_openInTab
+// @grant				GM_xmlhttpRequest
 // @run-at				document-start
 // ==/UserScript==
 
@@ -100,9 +94,12 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		debug        : true,
 		verboseDebug : true,
 		pfRange      : 5,
-		preload      : true
+		preload      : true,
+		navlink		 : ((Math.random()).toString()).replace(".","")
 	};
 
+	console.log(TE.config.navlink);
+	
 	// User's current location.
 	TE.myLocation = w.location.href;
 
@@ -472,7 +469,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 						setTimeout(function()
 						{
 							dfd.resolve();
-						},1);
+						},500);
 					} );
 					//TE.fn.load(pageNumber, pfImgSrc);
 				}
@@ -523,6 +520,14 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		{
 			GM_setValue( "TE_settings", JSON.stringify( TE.User ) );
 		},
+		scrubAjaxData   : function (data)
+		{
+			data = TE.fn.replaceAll( data, "src=", "data-content=" );
+			data = TE.fn.replaceAll( data, "script", "div" );
+			data = TE.fn.replaceAll( data, "type=", "data-notype=" );
+			data = TE.fn.replaceAll( data, "link", "div" );
+			return data;
+		},
 		checkForUpdates : function ()
 		{
 			if ( !TE.User.tsuminoEnhanced )
@@ -568,23 +573,30 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 
 			if ( now >= (parseInt( TE.User.tsuminoEnhanced.lastUpdateCheck ) + oneMinute) )
 			{
-				$( document ).ready( function ()
-				{
-					$( "body" ).append( "<iframe height='0' width='0' src='" + TE.updateLocation
-										+ "' id='te_updateCheckFrame' style='display:none;'></iframe>" );
-				} );
+				GM_xmlhttpRequest({
+					method: "GET",
+					url: TE.updateLocation,
+					onload: $.proxy(function(response) {
+						var scrubbed = this.scrubAjaxData(response.responseText);
+						TE.log( "gname", TE.name, "Checking for updates..." );
+						TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt( new Date().getTime() );
+						var latestVersion                       = $(response).find( "code" )[ 0 ];
+						latestVersion                           = $( latestVersion ).text();
+						TE.User.tsuminoEnhanced.latestVersion   = latestVersion;
+						TE.updateSettings();
+						if ( TE.User.tsuminoEnhanced.latestVersion != TE.version )
+						{
+							TE.log( "gname", TE.name, "An update is available!" );
+						}
+						else
+						{
+							TE.log( "gname", TE.name, TE.name + " is up to date!" );
+						}
+					},this)
+				});
 			}
-		},
-		scrubAjaxData   : function (data)
-		{
-			data = TE.fn.replaceAll( data, "src=", "data-content=" );
-			data = TE.fn.replaceAll( data, "script", "div" );
-			data = TE.fn.replaceAll( data, "type=", "data-notype=" );
-			data = TE.fn.replaceAll( data, "link", "div" );
-			return data;
 		}
 	};
-
 
 	// Alias specific commonly used utility functions to the main namespace.
 	TE.log            = TE.fn.log;
@@ -899,7 +911,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 			{
 				$( "#te_navMenu" ).toggleClass( "tsumino-nav-visible" );
 			}
-			else if ( $( thisLink ).prop( "id" ) == "te_configNavLink" )
+			else if ( $( thisLink ).prop( "id" ) == TE.config.navlink )
 			{
 				$( '#te_config_modal' )
 					.modal( 'show' )
@@ -929,7 +941,6 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 
 			if ( !TE.on.forum )
 			{
-
 				$( "head" )
 				// Include Semantic CSS
 					.prepend( "<link rel='stylesheet' href='http://js.codingtoby.com/semantic.min.css' />" )
@@ -952,9 +963,9 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				var navbar = $( ".tsumino-nav-left" )[ 0 ];
 				$( navbar ).attr( "id", "te_navbarMain" );
 				$( "#te_navbarMain" ).append( `
-					<li><a href='javascript:;' style='color:` + TE.ui.mainColor + ` !important;' id='te_configNavLink'>ENHANCED</a></li>
+					<li><a href='javascript:;' style='color:` + TE.ui.mainColor + ` !important;' id=`+TE.config.navlink+`>ENHANCED</a></li>
 					` );
-				$( "#te_configNavLink" ).click( function ()
+				$( "#"+TE.config.navlink ).click( function ()
 				{
 					$( '#te_config_modal' ).modal( 'show' );
 					$( '#te_config_modal' ).modal( 'refresh' );
@@ -970,19 +981,18 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				$( navMenu ).prop( "id", "te_navMenu" );
 				TE.fixNavbar();
 
-
 				if ( !TE.User.tsuminoEnhanced.upToDate )
 				{
-					$( "#te_configNavLink" ).append( "&nbsp;&nbsp;<i class='ui red icon upload'></i>" );
-					$( "#te_configNavLink" ).parent().popup( {
+					$( "#"+TE.config.navlink ).append( "&nbsp;&nbsp;<i class='ui red icon upload'></i>" );
+					$( "#"+TE.config.navlink ).parent().popup( {
 						title : 'An update is available!'
 					} );
 					$( w ).load( function ()
 					{
-						$( "#te_configNavLink" ).parent().css( "background-color", "#333333" );
+						$( "#"+TE.config.navlink ).parent().css( "background-color", "#333333" );
 						setTimeout( function ()
 						{
-							$( "#te_configNavLink" ).parent()
+							$( "#"+TE.config.navlink ).parent()
 													.velocity( {backgroundColor : "#2D5467"} )
 													.velocity( {backgroundColor : "#333333"} )
 													.velocity( {backgroundColor : "#2D5467"} )
