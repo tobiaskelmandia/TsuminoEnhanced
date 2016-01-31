@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.5c
+// @version				2.0.3.5d
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?([\s\S]*))/
@@ -1120,7 +1120,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					var bookInfoButton = $( "a[href*='" + TE.site.book.prefix + "']:contains('RETURN')" );
 					$( bookInfoButton ).attr( "id", "te_bookInfoButton" );
 					$( "#te_bookInfoButton" )
-						.attr("href",TE.site.book.prefix + "/" + TE.book.id)
+						.attr("href",TE.site.book.prefix + TE.book.id)
 						.text( "BOOK INFO" );
 
 					// Add a return button that takes you to the index.
@@ -2080,9 +2080,9 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					if ( (!history.state) || (history.state && history.state.pageNumber != TE.book.currentPage) )
 					{
 						w.history.pushState( {pageNumber : TE.book.currentPage}, $( "title" ).text(), TE.book.currentPageURL );
-						TE.log( w.history );
 					}
 					TE.log( "gname", name, "Image " + pageNumber + " has been placed in the reader." );
+					unsafeWindow.ga('send', 'pageview', TE.site.reader.prefix + TE.book.id + '/' + TE.book.currentPage);
 					dfd.resolve();
 				}
 
