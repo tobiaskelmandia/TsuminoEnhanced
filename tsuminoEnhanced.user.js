@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.5a
+// @version				2.0.3.5b
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?([\s\S]*))/
@@ -98,8 +98,6 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		navlink		 : ((Math.random()).toString()).replace(".","")
 	};
 
-	console.log(TE.config.navlink);
-	
 	// User's current location.
 	TE.myLocation = w.location.href;
 
@@ -580,17 +578,20 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 						var scrubbed = this.scrubAjaxData(response.responseText);
 						TE.log( "gname", TE.name, "Checking for updates..." );
 						TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt( new Date().getTime() );
-						var latestVersion                       = $(response).find( "code" )[ 0 ];
+						var latestVersion                       = $(scrubbed).find( "code" )[ 0 ];
 						latestVersion                           = $( latestVersion ).text();
 						TE.User.tsuminoEnhanced.latestVersion   = latestVersion;
-						TE.updateSettings();
 						if ( TE.User.tsuminoEnhanced.latestVersion != TE.version )
 						{
 							TE.log( "gname", TE.name, "An update is available!" );
+							TE.User.tsuminoEnhanced.upToDate = false;
+							TE.updateSettings();
 						}
 						else
 						{
 							TE.log( "gname", TE.name, TE.name + " is up to date!" );
+							TE.User.tsuminoEnhanced.upToDate = true;
+							TE.updateSettings();
 						}
 					},this)
 				});
@@ -2998,25 +2999,4 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 if ( TE.on.tsumino )
 {
 	TE.init();
-}
-// Check for updates. (Iframe)
-else if ( (window.self !== window.top) && (window.location.href == TE.updateLocation) )
-{
-	$( document ).ready( function ()
-	{
-		TE.log( "gname", TE.name, "Checking for updates..." );
-		TE.User.tsuminoEnhanced.lastUpdateCheck = parseInt( new Date().getTime() );
-		var latestVersion                       = $( "code" )[ 0 ];
-		latestVersion                           = $( latestVersion ).text();
-		TE.User.tsuminoEnhanced.latestVersion   = latestVersion;
-		TE.updateSettings();
-		if ( TE.User.tsuminoEnhanced.latestVersion != TE.version )
-		{
-			TE.log( "gname", TE.name, "An update is available!" );
-		}
-		else
-		{
-			TE.log( "gname", TE.name, TE.name + " is up to date!" );
-		}
-	} );
 }
