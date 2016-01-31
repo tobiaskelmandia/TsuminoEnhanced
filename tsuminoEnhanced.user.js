@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.7
+// @version				2.0.3.8
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?([\s\S]*))/
@@ -2973,19 +2973,8 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		// Initialization.
 	TE.init = function ()
 	{
-		$.when(TE.fn.checkForUpdates).then(function()
+		$.when(TE.fn.checkForUpdates()).then(function()
 		{
-			if ( TE.User.tsuminoEnhanced.latestVersion != TE.version )
-			{
-				TE.User.tsuminoEnhanced.upToDate = false;
-				TE.fn.updateSettings();
-			}
-			else
-			{
-				TE.User.tsuminoEnhanced.upToDate = true;
-				TE.fn.updateSettings();
-			}
-
 			if(!TE.User.tsuminoEnhanced.upToDate)
 			{
 				if(TE.User.automaticUpdateInstallation)
