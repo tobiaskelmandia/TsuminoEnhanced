@@ -3,10 +3,12 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.8
+// @version				2.0.3.9
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?([\s\S]*))/
+// @exclude				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?(Read\/AuthProcess)/
+// @exclude				http://www.tsumino.com/bhome/*
 // @require				https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // @require				http://js.codingtoby.com/semantic.min.js
 // @require				https://cdnjs.cloudflare.com/ajax/libs/bean/1.0.15/bean.min.js
@@ -339,7 +341,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 						}
 
 						// Local logging to examine response headers.
-						//TE.vbLog("gname","TE.fn.load","Response Headers",responseHeader);
+						TE.vbLog("gname","TE.fn.load","Response Headers",responseHeader);
 
 						// Content-Type is undefined if Tsumino requires us to solve a captcha.
 						if ( typeof responseHeader[ "Content-Type" ] === "undefined" )
@@ -1068,7 +1070,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 				TE.book = {};
 
 				// Reader only.
-				if ( TE.on.reader )
+				if ( TE.on.reader && false )
 				{
 					// Create IDs.
 					$( ".reader-page" ).attr( "id", "te_readerPageMain" );
@@ -1434,7 +1436,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 						}
 					}, this ) );
 				}
-				if ( TE.on.reader )
+				if ( TE.on.reader && false )
 				{
 					$.when( TE.status.enhancePage ).done( $.proxy( function ()
 					{
@@ -1780,6 +1782,62 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 								$( "#te_sidebarContainer" ).remove();
 								$( "#te_bookshelfContainer" ).css( "width", "100%" );
 							}
+
+							if ( TE.User[ shortName ].moreBooks )
+							{
+								$( "style" ).append( "@media(min-width:768px) { .overlay-title { font-size:.8em; } .col-sm-4 { width: 25% } }" );
+								$( "style" ).append( "@media(min-width:992px) { .col-md-3 { width: 20% } }" );
+							}
+							if ( TE.User[ shortName ].skipInfo )
+							{
+								// Apply new CSS.
+								$( "style" ).append( TE.ui.css.browsingTweaks.master );
+								$( "div.overlay" ).each( function ()
+								{
+									// Get Book ID
+									var bookID = $( this ).attr( "id" );
+									bookID     = bookID.replace( "te_book_", "" );
+									bookID     = bookID.replace( "_overlay", "" );
+									bookID     = parseInt( bookID );
+
+									// Replace old class on view button.
+									var viewInfoButton = $( this ).find( "a.overlay-button" );
+									var linkURL = TE.site.reader.prefix + bookID + "/1";
+									$( viewInfoButton ).after(`<a href="`+linkURL+`" class="te_browsetweak_readbutton">READ</a>`);
+									var readButton = $( this ).next();
+									$( viewInfoButton ).text( "INFO" );
+									$( viewInfoButton ).removeClass( "overlay-button" );
+									$( viewInfoButton ).addClass( "te_browsetweak_infobutton" );
+									// Add new read button.
+
+
+									if ( TE.User.recordKeeper )
+									{
+										if ( TE.User.recordKeeper.data[ bookID ] )
+										{
+											linkURL = TE.site.reader.prefix + bookID + "/" + TE.User.recordKeeper.data[ bookID ][ 'lastSeen' ];
+											$( readButton ).attr( "href", linkURL );
+										}
+									}
+								} );
+							}
+							if ( TE.User[ shortName ].fitTitles )
+							{
+								$( "div.overlay" ).each( function ()
+								{
+									var thisTitle   = $( this ).find( ".overlay-title" ).text();
+									var titleLength = thisTitle.split( "" );
+									titleLength     = titleLength.length;
+									if ( (titleLength > 40) && (titleLength < 50) )
+									{
+										$( this ).find( ".overlay-title" ).css( "font-size", ".75em" );
+									}
+									else if ( (titleLength > 50) )
+									{
+										$( this ).find( ".overlay-title" ).css( "font-size", ".65em" );
+									}
+								} );
+							}
 							if ( TE.User[ shortName ].thumbnailLinks )
 							{
 								$( "div.overlay" ).each( function ()
@@ -1831,65 +1889,6 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 										}
 										e.preventDefault();
 									}, this ) );
-								} );
-							}
-							if ( TE.User[ shortName ].moreBooks )
-							{
-								$( "style" ).append( "@media(min-width:768px) { .overlay-title { font-size:.8em; } .col-sm-4 { width: 25% } }" );
-								$( "style" ).append( "@media(min-width:992px) { .col-md-3 { width: 20% } }" );
-							}
-							if ( TE.User[ shortName ].skipInfo )
-							{
-								// Apply new CSS.
-								$( "style" ).append( TE.ui.css.browsingTweaks.master );
-								$( "div.overlay" ).each( function ()
-								{
-									// Get Book ID
-									var bookID = $( this ).attr( "id" );
-									bookID     = bookID.replace( "te_book_", "" );
-									bookID     = bookID.replace( "_overlay", "" );
-									bookID     = parseInt( bookID );
-
-									// Replace old class on view button.
-									var viewInfoButton = $( this ).find( "a.overlay-button" );
-									$( viewInfoButton ).text( "INFO" );
-									var viewButtonSrc = $( viewInfoButton )[ 0 ][ 'outerHTML' ];
-									$( viewInfoButton ).removeClass( "overlay-button" );
-									$( viewInfoButton ).addClass( "te_browsetweak_infobutton" );
-
-									// Add new read button.
-									var readButtonSrc = viewButtonSrc.replace( "INFO", "READ" );
-									readButtonSrc     = readButtonSrc.replace( "class=\"overlay-button\"", "class=\"te_browsetweak_readbutton\"" );
-									$( this ).append( readButtonSrc );
-									var readButton = $( this ).find( "a.te_browsetweak_readbutton" );
-									var linkURL    = TE.site.reader.prefix + bookID + "/1";
-									$( readButton ).attr( "href", linkURL );
-
-									if ( TE.User.recordKeeper )
-									{
-										if ( TE.User.recordKeeper.data[ bookID ] )
-										{
-											linkURL = TE.site.reader.prefix + bookID + "/" + TE.User.recordKeeper.data[ bookID ][ 'lastSeen' ];
-											$( readButton ).attr( "href", linkURL );
-										}
-									}
-								} );
-							}
-							if ( TE.User[ shortName ].fitTitles )
-							{
-								$( "div.overlay" ).each( function ()
-								{
-									var thisTitle   = $( this ).find( ".overlay-title" ).text();
-									var titleLength = thisTitle.split( "" );
-									titleLength     = titleLength.length;
-									if ( (titleLength > 40) && (titleLength < 50) )
-									{
-										$( this ).find( ".overlay-title" ).css( "font-size", ".75em" );
-									}
-									else if ( (titleLength > 50) )
-									{
-										$( this ).find( ".overlay-title" ).css( "font-size", ".65em" );
-									}
 								} );
 							}
 						}
@@ -2095,7 +2094,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					}
 
 					// Prefetch new pages.
-					TE.fn.prefetch.init( TE.book.currentPage );
+					// TE.fn.prefetch.init( TE.book.currentPage );
 
 					// Update title.
 					$( "title" ).text( "Tsumino - " + TE.book.title + " - Page " + TE.book.currentPage );
@@ -2125,8 +2124,9 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 					{
 						if ( (TE.status.prefetch[ TE.book.id ][ pageNumber ] != "") && (TE.status.prefetch[ TE.book.id ][ pageNumber ] != "working") )
 						{
-							TE.status.load = TE.load( pageNumber, TE.status.prefetch[ TE.book.id ][ pageNumber ] );
+							//TE.status.load = TE.load( pageNumber, TE.status.prefetch[ TE.book.id ][ pageNumber ] );
 							// Once the requested page is loaded, continue.
+							/*
 							$.when( TE.status.load ).then( $.proxy( function ()
 							{
 								if ( TE.status.pagesLoaded[ pageNumber ] == "done" )
@@ -2139,6 +2139,18 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 									TE.log( "CPC ERROR" );
 								}
 							}, this ) );
+							*/
+							$( "body" ).append( `
+								<img id="te_loadImage_"` + pageNumber + `" src="/Image/Image/"` + TE.book.id + `/` + pageNumber + `" style="display:none;">
+							` );
+							$("#te_loadImage_" + pageNumber).load(function ()
+							{
+								cpc ( pageNumber );
+							});
+							if ($("#te_loadImage_" + pageNumber).complete)
+							{
+								$(this).load();
+							}
 						}
 						else
 						{
@@ -2288,7 +2300,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
 		//options.push(new TE.Enhancement.option.main(opt2.type,opt2.name,opt2.description,opt2.defaultValue,opt2.arguments));
 
-		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
+		// TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -3101,7 +3113,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 	{
 		TE.init();
 	}
-	else if((TE.on.forum) && (tempMyLocation.indexOf("#p1472") != -1))
+	else if((TE.on.forum) && ( (tempMyLocation.indexOf("#p1472") != -1) || (tempMyLocation.indexOf("p=1472") != -1) ) )
 	{
 		var messageID = TE.randomString();
 		$(document).ready(function()
