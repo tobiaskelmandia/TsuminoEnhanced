@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name				Tsumino Enhanced
 // @namespace			http://codingtoby.com
-// @version				2.0.3.9
+// @version				2.0.3.10
 // @description			Adds a collection of customizable tweaks, enhancements, and new features to Tsumino.com.
 // @author				Toby
 // @include				/((http)(s)?(\:\/\/)(www\.)?(tsumino\.com)(\/)?([\s\S]*))/
@@ -1350,7 +1350,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 			arguments    : false
 		};
 		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
-		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
+		// TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -1984,7 +1984,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 			arguments    : false
 		};
 		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
-		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
+		// TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
@@ -2370,7 +2370,7 @@ $.ajaxTransport( "+binary", function (options, originalOptions, jqXHR)
 		};
 		options.push( new TE.Enhancement.option.main( opt1.type, opt1.name, opt1.description, opt1.defaultValue, opt1.arguments ) );
 
-		TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
+		//TE.Enhancements[ shortName ] = new TE.Enhancement.main( name, description, options, section, incompatible, main );
 	})();
 
 
